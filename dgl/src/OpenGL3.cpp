@@ -90,14 +90,6 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-struct OpenGL3GraphicsContext : GraphicsContext
-{
-    mutable int prog, obuf, vbuf, color, pos, tex, texok;
-    mutable uint w, h;
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-
 static void notImplemented(const char* const name)
 {
     d_stderr2("OpenGL3 function not implemented: %s", name);
@@ -110,7 +102,7 @@ void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
 {
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
     const GLfloat color[4] = { red, green, blue, includeAlpha ? alpha : 1.f };
@@ -127,30 +119,30 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == -1)
         return;
 
-    const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.w) * 2 - 1;
-    const GLfloat y1 = (static_cast<double>(posStart.y) / gl3context.h) * -2 + 1;
-    const GLfloat x2 = (static_cast<double>(posEnd.x) / gl3context.w) * 2 - 1;
-    const GLfloat y2 = (static_cast<double>(posEnd.y) / gl3context.h) * -2 + 1;
+    const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.width) * 2 - 1;
+    const GLfloat y1 = (static_cast<double>(posStart.y) / gl3context.height) * -2 + 1;
+    const GLfloat x2 = (static_cast<double>(posEnd.x) / gl3context.width) * 2 - 1;
+    const GLfloat y2 = (static_cast<double>(posEnd.y) / gl3context.height) * -2 + 1;
 
     glLineWidth(static_cast<GLfloat>(width));
 
     const GLfloat vertices[] = { x1, y1, x2, y2, };
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(gl3context.bounds);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     const GLubyte order[] = { 0, 1 };
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
     glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(gl3context.pos);
+    glDisableVertexAttribArray(gl3context.bounds);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -187,7 +179,7 @@ static void drawCircle(const GraphicsContext& context,
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
     const double origx = static_cast<double>(pos.getX());
@@ -199,19 +191,19 @@ static void drawCircle(const GraphicsContext& context,
     GLfloat vertices[(MAX_CIRCLE_SEGMENTS + 1) * 2];
     for (uint i = 0; i < numSegments; ++i)
     {
-        vertices[i * 2 + 0] = ((x + origx) / gl3context.w) * 2 - 1;
-        vertices[i * 2 + 1] = ((y + origy) / gl3context.h) * -2 + 1;
+        vertices[i * 2 + 0] = ((x + origx) / gl3context.width) * 2 - 1;
+        vertices[i * 2 + 1] = ((y + origy) / gl3context.height) * -2 + 1;
 
         t = x;
         x = cos * x - sin * y;
         y = sin * t + cos * y;
     }
 
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * (numSegments + 1), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glEnableVertexAttribArray(gl3context.bounds);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
 
     if (outline)
     {
@@ -229,8 +221,8 @@ static void drawCircle(const GraphicsContext& context,
     else
     {
         // center position
-        vertices[numSegments * 2 + 0] = (origx / gl3context.w) * 2 - 1;
-        vertices[numSegments * 2 + 1] = (origy / gl3context.h) * -2 + 1;
+        vertices[numSegments * 2 + 0] = (origx / gl3context.width) * 2 - 1;
+        vertices[numSegments * 2 + 1] = (origy / gl3context.height) * -2 + 1;
 
         GLushort order[MAX_CIRCLE_SEGMENTS * 3];
         for (uint i = 0; i < numSegments; ++i)
@@ -246,7 +238,7 @@ static void drawCircle(const GraphicsContext& context,
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(gl3context.pos);
+    glDisableVertexAttribArray(gl3context.bounds);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -300,27 +292,27 @@ static void drawTriangle(const GraphicsContext& context,
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
-    const GLfloat x1 = (static_cast<double>(pos1.getX()) / gl3context.w) * 2 - 1;
-    const GLfloat y1 = (static_cast<double>(pos1.getY()) / gl3context.h) * -2 + 1;
-    const GLfloat x2 = (static_cast<double>(pos2.getX()) / gl3context.w) * 2 - 1;
-    const GLfloat y2 = (static_cast<double>(pos2.getY()) / gl3context.h) * -2 + 1;
-    const GLfloat x3 = (static_cast<double>(pos3.getX()) / gl3context.w) * 2 - 1;
-    const GLfloat y3 = (static_cast<double>(pos3.getY()) / gl3context.h) * -2 + 1;
+    const GLfloat x1 = (static_cast<double>(pos1.getX()) / gl3context.width) * 2 - 1;
+    const GLfloat y1 = (static_cast<double>(pos1.getY()) / gl3context.height) * -2 + 1;
+    const GLfloat x2 = (static_cast<double>(pos2.getX()) / gl3context.width) * 2 - 1;
+    const GLfloat y2 = (static_cast<double>(pos2.getY()) / gl3context.height) * -2 + 1;
+    const GLfloat x3 = (static_cast<double>(pos3.getX()) / gl3context.width) * 2 - 1;
+    const GLfloat y3 = (static_cast<double>(pos3.getY()) / gl3context.height) * -2 + 1;
 
     const GLfloat vertices[] = { x1, y1, x2, y2, x3, y3 };
 
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(gl3context.bounds);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     if (outline)
     {
         static constexpr const GLubyte order[] = { 0, 1, 1, 2, 2, 0 };
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
         glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -330,7 +322,7 @@ static void drawTriangle(const GraphicsContext& context,
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 
-    glDisableVertexAttribArray(gl3context.pos);
+    glDisableVertexAttribArray(gl3context.bounds);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -380,21 +372,21 @@ static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& re
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
-    const GLfloat x = (static_cast<double>(rect.getX()) / gl3context.w) * 2 - 1;
-    const GLfloat y = (static_cast<double>(rect.getY()) / gl3context.h) * -2 + 1;
-    const GLfloat w = (static_cast<double>(rect.getWidth()) / gl3context.w) * 2;
-    const GLfloat h = (static_cast<double>(rect.getHeight()) / gl3context.h) * -2;
+    const GLfloat x = (static_cast<double>(rect.getX()) / gl3context.width) * 2 - 1;
+    const GLfloat y = (static_cast<double>(rect.getY()) / gl3context.height) * -2 + 1;
+    const GLfloat w = (static_cast<double>(rect.getWidth()) / gl3context.width) * 2;
+    const GLfloat h = (static_cast<double>(rect.getHeight()) / gl3context.height) * -2;
 
     const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
 
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glEnableVertexAttribArray(gl3context.bounds);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
 
     if (outline)
     {
@@ -410,7 +402,7 @@ static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& re
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(gl3context.pos);
+    glDisableVertexAttribArray(gl3context.bounds);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -489,10 +481,11 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   #ifndef DGL_USE_GLES
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-   #ifndef DGL_USE_GLES
     static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
    #endif
@@ -520,7 +513,7 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
     if (! setupCalled)
@@ -529,36 +522,39 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
         setupCalled = true;
     }
 
-    const GLfloat x = (static_cast<double>(pos.getX()) / gl3context.w) * 2 - 1;
-    const GLfloat y = (static_cast<double>(pos.getY()) / gl3context.h) * -2 + 1;
-    const GLfloat w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
-    const GLfloat h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
+    const GLfloat x = (static_cast<double>(pos.getX()) / gl3context.width) * 2 - 1;
+    const GLfloat y = (static_cast<double>(pos.getY()) / gl3context.height) * -2 + 1;
+    const GLfloat w = (static_cast<double>(getWidth()) / gl3context.width) * 2;
+    const GLfloat h = (static_cast<double>(getHeight()) / gl3context.height) * -2;
+
+    const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glUniform4fv(gl3context.color, 1, color);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    glUniform1i(gl3context.texok, 1);
+    glUniform1i(gl3context.usingTexture, 1);
 
     const GLfloat vertices[] = {
         x, y, x, y + h, x + w, y + h, x + w, y,
         0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f,
     };
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glEnableVertexAttribArray(gl3context.tex);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
+    glEnableVertexAttribArray(gl3context.bounds);
+    glEnableVertexAttribArray(gl3context.textureMap);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(gl3context.textureMap, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
 
     static constexpr const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
     glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(gl3context.tex);
-    glDisableVertexAttribArray(gl3context.pos);
-    glUniform1i(gl3context.texok, 0);
+    glDisableVertexAttribArray(gl3context.textureMap);
+    glDisableVertexAttribArray(gl3context.bounds);
+    glUniform1i(gl3context.usingTexture, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -624,7 +620,7 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
 {
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(getGraphicsContext());
 
-    if (gl3context.prog == -1)
+    if (gl3context.program == 0)
         return;
 
     const ImageFormat imageFormat = pData->image.getFormat();
@@ -640,7 +636,7 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pData->glTextureId);
-    glUniform1i(gl3context.texok, 1);
+    glUniform1i(gl3context.usingTexture, 1);
 
     if (! pData->isReady)
     {
@@ -668,10 +664,10 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+       #ifndef DGL_USE_GLES
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-       #ifndef DGL_USE_GLES
         static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
        #endif
@@ -715,38 +711,38 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
         // TODO
         x = -1;
         y = 1;
-        w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
-        h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
+        w = (static_cast<double>(getWidth()) / gl3context.width) * 2;
+        h = (static_cast<double>(getHeight()) / gl3context.height) * -2;
     }
     else
     {
         x = -1;
         y = 1;
-        w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
-        h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
+        w = (static_cast<double>(getWidth()) / gl3context.width) * 2;
+        h = (static_cast<double>(getHeight()) / gl3context.height) * -2;
     }
 
     const GLfloat vertices[] = {
         x, y, x, y + h, x + w, y + h, x + w, y,
         0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f,
     };
-    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.buffers[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
-    glEnableVertexAttribArray(gl3context.pos);
-    glEnableVertexAttribArray(gl3context.tex);
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
+    glEnableVertexAttribArray(gl3context.bounds);
+    glEnableVertexAttribArray(gl3context.textureMap);
+    glVertexAttribPointer(gl3context.bounds, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(gl3context.textureMap, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
 
     static constexpr const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.buffers[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
     glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray(gl3context.tex);
-    glDisableVertexAttribArray(gl3context.pos);
-    glUniform1i(gl3context.texok, 0);
+    glDisableVertexAttribArray(gl3context.textureMap);
+    glDisableVertexAttribArray(gl3context.bounds);
+    glUniform1i(gl3context.usingTexture, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -765,7 +761,7 @@ template class ImageBaseSwitch<OpenGLImage>;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& gl3context, GLuint shaderErr = 0)
+static void shaderCreationFail(const GLuint shaderErr, const GLuint shader2 = 0)
 {
     if (shaderErr != 0)
     {
@@ -776,16 +772,22 @@ static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& 
         glGetShaderInfoLog(shaderErr, len, &len, errorLog.data());
 
         d_stderr2("OpenGL3 shader compilation error: %s", errorLog.data());
+
+        glDeleteShader(shaderErr);
     }
 
-    gl3context.prog = -1;
-    return gl3context;
+    glDeleteShader(shader2);
 }
 
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+static void contextCreationFail(const GLuint program, const GLuint shader1, const GLuint shader2)
 {
-    const OpenGL3GraphicsContext& gl3context = reinterpret_cast<const OpenGL3GraphicsContext&>(graphicsContext);
+    glDeleteProgram(program);
+    glDeleteShader(shader1);
+    glDeleteShader(shader2);
+}
 
+void Window::PrivateData::createContext()
+{
 #if defined(DISTRHO_OS_WINDOWS)
 # if defined(__GNUC__) && (__GNUC__ >= 9)
 #  pragma GCC diagnostic push
@@ -794,12 +796,12 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
     static bool needsInit = true;
 # define DGL_EXT(PROC, func) \
       if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
-      DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, contextCreationFail(gl3context));
+      DISTRHO_SAFE_ASSERT_RETURN(func != nullptr,);
 # define DGL_EXT2(PROC, func, fallback) \
       if (needsInit) { \
         func = (PROC) wglGetProcAddress ( #func ); \
         if (func == nullptr) func = (PROC) wglGetProcAddress ( #fallback ); \
-      } DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, contextCreationFail(gl3context));
+      } DISTRHO_SAFE_ASSERT_RETURN(func != nullptr,);
 DGL_EXT(PFNGLACTIVETEXTUREPROC,            glActiveTexture)
 DGL_EXT(PFNGLATTACHSHADERPROC,             glAttachShader)
 DGL_EXT(PFNGLBINDBUFFERPROC,               glBindBuffer)
@@ -829,104 +831,114 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 # endif
 #endif
 
-    // previous context creation failed
-    if (gl3context.prog == -1)
-        return gl3context;
+    OpenGL3GraphicsContext& gl3context = reinterpret_cast<OpenGL3GraphicsContext&>(graphicsContext);
+    int status;
 
-    // create new context
-    if (gl3context.prog == 0)
+    const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    DISTRHO_SAFE_ASSERT_RETURN(fragment != 0, shaderCreationFail(fragment));
+
+    const GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+    DISTRHO_SAFE_ASSERT_RETURN(vertex != 0, shaderCreationFail(vertex, fragment));
+
+    const GLuint program = glCreateProgram();
+    DISTRHO_SAFE_ASSERT_RETURN(program != 0,);
+
+   #if defined(DGL_USE_GLES2)
+    #define DGL_SHADER_HEADER "#version 100\n"
+   #elif defined(DGL_USE_GLES3)
+    #define DGL_SHADER_HEADER "#version 300 es\n"
+   #else
+    #define DGL_SHADER_HEADER "#version 150 core\n"
+   #endif
+
     {
-        int status;
-        GLuint obuffer, vbuffer;
+        static constexpr const char* const src = DGL_SHADER_HEADER
+            "precision mediump float;"
+            "uniform vec4 color;"
+            "uniform sampler2D stex;"
+            "uniform bool texok;"
+           #ifdef DGL_USE_GLES3
+            "in vec2 vtex;"
+            "out vec4 FragColor;"
+            "void main() { FragColor = texok ? texture(stex, vtex) : color; }";
+           #else
+            "varying vec2 vtex;"
+            "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
+           #endif
 
-        glGenBuffers(1, &obuffer);
-        DISTRHO_SAFE_ASSERT_RETURN(obuffer != 0, contextCreationFail(gl3context));
+        glShaderSource(fragment, 1, &src, nullptr);
+        glCompileShader(fragment);
 
-        glGenBuffers(1, &vbuffer);
-        DISTRHO_SAFE_ASSERT_RETURN(vbuffer != 0, contextCreationFail(gl3context));
-
-        const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        DISTRHO_SAFE_ASSERT_RETURN(fragment != 0, contextCreationFail(gl3context));
-
-        const GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
-        DISTRHO_SAFE_ASSERT_RETURN(vertex != 0, contextCreationFail(gl3context));
-
-        const GLuint program = glCreateProgram();
-        DISTRHO_SAFE_ASSERT_RETURN(program != 0, contextCreationFail(gl3context));
-
-       #if defined(DGL_USE_GLES2)
-        #define DGL_SHADER_HEADER "#version 100\n"
-       #elif defined(DGL_USE_GLES3)
-        #define DGL_SHADER_HEADER "#version 300 es\n"
-       #else
-        #define DGL_SHADER_HEADER "#version 150 core\n"
-       #endif
-
-        {
-            static constexpr const char* const src = DGL_SHADER_HEADER
-                "precision mediump float;"
-                "uniform vec4 color;"
-                "uniform sampler2D stex;"
-                "uniform bool texok;"
-               #ifdef DGL_USE_GLES3
-                "in vec2 vtex;"
-                "out vec4 FragColor;"
-                "void main() { FragColor = texok ? texture(stex, vtex) : color; }";
-               #else
-                "varying vec2 vtex;"
-                "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
-               #endif
-
-            glShaderSource(fragment, 1, &src, nullptr);
-            glCompileShader(fragment);
-
-            glGetShaderiv(fragment, GL_COMPILE_STATUS, &status);
-            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context, fragment));
-        }
-
-        {
-            static constexpr const char* const src = DGL_SHADER_HEADER
-               #ifdef DGL_USE_GLES3
-                "in vec4 pos;"
-                "in vec2 tex;"
-                "out vec2 vtex;"
-               #else
-                "attribute vec4 pos;"
-                "attribute vec2 tex;"
-                "varying vec2 vtex;"
-               #endif
-                "void main() { gl_Position = pos; vtex = tex; }";
-
-            glShaderSource(vertex, 1, &src, nullptr);
-            glCompileShader(vertex);
-
-            glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
-            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context, vertex));
-        }
-
-        glAttachShader(program, fragment);
-        glAttachShader(program, vertex);
-        glLinkProgram(program);
-
-        glGetProgramiv(program, GL_LINK_STATUS, &status);
-        DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
-
-        gl3context.prog = program;
-        gl3context.obuf = obuffer;
-        gl3context.vbuf = vbuffer;
-        gl3context.color = glGetUniformLocation(program, "color");
-        gl3context.texok = glGetUniformLocation(program, "texok");
-        gl3context.pos = glGetAttribLocation(program, "pos");
-        gl3context.tex = glGetAttribLocation(program, "tex");
+        glGetShaderiv(fragment, GL_COMPILE_STATUS, &status);
+        DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(program, fragment, vertex));
     }
 
+    {
+        static constexpr const char* const src = DGL_SHADER_HEADER
+           #ifdef DGL_USE_GLES3
+            "in vec4 pos;"
+            "in vec2 tex;"
+            "out vec2 vtex;"
+           #else
+            "attribute vec4 pos;"
+            "attribute vec2 tex;"
+            "varying vec2 vtex;"
+           #endif
+            "void main() { gl_Position = pos; vtex = tex; }";
+
+        glShaderSource(vertex, 1, &src, nullptr);
+        glCompileShader(vertex);
+
+        glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
+        DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(program, fragment, vertex));
+    }
+
+    glAttachShader(program, fragment);
+    glAttachShader(program, vertex);
+    glLinkProgram(program);
+
+    glGetProgramiv(program, GL_LINK_STATUS, &status);
+    DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(program, fragment, vertex));
+
+    glGenBuffers(2, gl3context.buffers);
+    DISTRHO_SAFE_ASSERT_RETURN(gl3context.buffers[0] != 0, contextCreationFail(program, fragment, vertex));
+    DISTRHO_SAFE_ASSERT_RETURN(gl3context.buffers[1] != 0, contextCreationFail(program, fragment, vertex));
+
+    glDeleteShader(fragment);
+    glDeleteShader(vertex);
+
+    gl3context.program = program;
+    gl3context.color = glGetUniformLocation(gl3context.program, "color");
+    gl3context.usingTexture = glGetUniformLocation(gl3context.program, "texok");
+    gl3context.bounds = glGetAttribLocation(gl3context.program, "pos");
+    gl3context.textureMap = glGetAttribLocation(gl3context.program, "tex");
+}
+
+void Window::PrivateData::destroyContext()
+{
+    OpenGL3GraphicsContext& gl3context = reinterpret_cast<OpenGL3GraphicsContext&>(graphicsContext);
+
+    if (gl3context.program == 0)
+        return;
+
+    glDeleteBuffers(2, gl3context.buffers);
+    glDeleteProgram(gl3context.program);
+    gl3context.program = 0;
+}
+
+void Window::PrivateData::startContext()
+{
+    OpenGL3GraphicsContext& gl3context = reinterpret_cast<OpenGL3GraphicsContext&>(graphicsContext);
     const PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
-    gl3context.w = size.width;
-    gl3context.h = size.height;
 
-    glUseProgram(gl3context.prog);
+    gl3context.width = size.width;
+    gl3context.height = size.height;
+    glUseProgram(gl3context.program);
+}
 
-    return gl3context;
+void Window::PrivateData::endContext()
+{
+    glUseProgram(0);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

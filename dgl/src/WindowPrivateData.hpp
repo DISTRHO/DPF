@@ -46,6 +46,10 @@ struct Window::PrivateData : IdleCallback {
 
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(int) * 9];
+    void createContext();
+    void destroyContext();
+    void startContext();
+    void endContext();
 
     /** The top-level widgets associated with this Window. */
     std::list<TopLevelWidget*> topLevelWidgets;

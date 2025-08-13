@@ -271,6 +271,7 @@ Window::PrivateData::~PrivateData()
         isVisible = false;
     }
 
+    destroyContext();
     puglFreeView(view);
 }
 
@@ -319,6 +320,8 @@ bool Window::PrivateData::initPost()
         d_stderr2("Failed to realize Pugl view, everything will fail!");
         return false;
     }
+
+    createContext();
 
     if (isEmbed)
     {
@@ -454,6 +457,13 @@ void Window::PrivateData::setResizable(const bool resizable)
     DGL_DBG("Window setResizable called\n");
 
     puglSetResizable(view, resizable);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    return reinterpret_cast<const GraphicsContext&>(graphicsContext);
 }
 
 // -----------------------------------------------------------------------
@@ -695,6 +705,8 @@ void Window::PrivateData::onPuglExpose()
     puglOnDisplayPrepare(view);
 
 #ifndef DPF_TEST_WINDOW_CPP
+    startContext();
+
     FOR_EACH_TOP_LEVEL_WIDGET(it)
     {
         TopLevelWidget* const widget(*it);
@@ -710,6 +722,8 @@ void Window::PrivateData::onPuglExpose()
         renderToPicture(filename, getGraphicsContext(), size.width, size.height);
         std::free(filename);
     }
+
+    endContext();
 #endif
 }
 

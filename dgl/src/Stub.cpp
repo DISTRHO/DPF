@@ -219,9 +219,20 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
 
 // --------------------------------------------------------------------------------------------------------------------
 
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+void Window::PrivateData::createContext()
 {
-    return reinterpret_cast<GraphicsContext&>(graphicsContext);
+}
+
+void Window::PrivateData::destroyContext()
+{
+}
+
+void Window::PrivateData::startContext()
+{
+}
+
+void Window::PrivateData::endContext()
+{
 }
 
 // --------------------------------------------------------------------------------------------------------------------

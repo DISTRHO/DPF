@@ -26,6 +26,112 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifdef DGL_USE_OPENGL3
+/**
+   OpenGL3 Graphics context.
+
+   This provides access to the program, shaders and uniforms used by the underlying DPF implementation.
+ */
+struct OpenGL3GraphicsContext : GraphicsContext
+{
+   /**
+      The OpenGL3 program used for this context.
+      It is activated automatically before any widget onDisplay() is called.
+      If changing the current OpenGL program make sure to revert back to this one at the end of your pipeline.
+
+      @code
+      // use custom program
+      glUseProgram(context.program);
+
+      // custom stuff here
+
+      // revert back
+      glUseProgram(context.program);
+      @endcode
+    */
+    GLuint program;
+
+   /**
+      A vec4 uniform used to set the next drawing color.
+
+      @code
+      const GLfloat color[4] = { red, green, blue, alpha };
+      glUniform4fv(context.color, 1, color);
+      @endcode
+    */
+    GLuint color;
+
+   /**
+      A vertex shader attribute directly linked to gl_Position.
+      Use this to set the bounds for drawing, normalized as -1.0 to +1.0.
+      The @a width and @a height provide the total window size for convenience.
+
+      @code
+      const GLfloat triangle[] = { x1, y1, x2, y2, x3, y3 };
+      glEnableVertexAttribArray(context.bounds);
+      glVertexAttribPointer(context.bounds, 2, GL_FLOAT, GL_FALSE, 0, triangle);
+      @endcode
+    */
+    GLuint bounds;
+
+   /**
+      A vertex shader attribute directly linked to GL_TEXTURE0 map.
+      // TODO find the correct wording, map??.
+
+      @code
+      const GLfloat map[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
+      glEnableVertexAttribArray(context.textureMap);
+      glVertexAttribPointer(context.textureMap, 2, GL_FLOAT, GL_FALSE, 0, map);
+      @endcode
+    */
+    GLuint textureMap;
+
+   /**
+      A boolean uniform used to indicate if next drawing should @a texture or @a color.
+      Set to 0 for color mode, 1 for texture.
+      Default mode is color, if changed make sure to revert to color mode at the end of your pipeline.
+
+      @code
+      // setup for drawing based on texture
+      glUniform1i(context.usingTextureUniform1i, 1);
+
+      // bind texture
+      glBindTexture(GL_TEXTURE_2D, myTextureId);
+      // etc..
+
+      // glDrawElements or similar
+
+      // unbind texture
+      glBindTexture(GL_TEXTURE_2D, 0);
+      // etc..
+
+      // revert to color mode
+      glUniform1i(context.usingTexture, 0);
+      @endcode
+    */
+    GLuint usingTexture;
+
+   /**
+      Set of buffers created with glGenBuffers.
+      Used internally in DPF to draw generic shapes, can be reused in custom code.
+      Unbound by default, make sure to leave them unbound at the end of your pipeline.
+    */
+    GLuint buffers[2];
+
+   /**
+      Total width of the window used for this context.
+    */
+    uint width;
+
+   /**
+      Total height of the window used for this context.
+    */
+    uint height;
+};
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static inline
 ImageFormat asDISTRHOImageFormat(const GLenum format)
 {

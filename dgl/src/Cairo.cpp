@@ -856,15 +856,25 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
     notImplemented("Window::PrivateData::renderToPicture");
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+void Window::PrivateData::createContext()
 {
-    GraphicsContext& context = reinterpret_cast<GraphicsContext&>(graphicsContext);
-    static_cast<CairoGraphicsContext&>(context).handle = static_cast<cairo_t*>(puglGetContext(view));
-    return context;
 }
 
-// -----------------------------------------------------------------------
+void Window::PrivateData::destroyContext()
+{
+}
+
+void Window::PrivateData::startContext()
+{
+    reinterpret_cast<CairoGraphicsContext&>(graphicsContext).handle = static_cast<cairo_t*>(puglGetContext(view));
+}
+
+void Window::PrivateData::endContext()
+{
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
