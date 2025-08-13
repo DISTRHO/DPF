@@ -529,10 +529,10 @@ $(DGL_BUILD_DIR)/libdgl-cairo.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl cairo
 
 $(DGL_BUILD_DIR)/libdgl-gles2.a: $(DGL_POSSIBLE_DEPS)
-	$(MAKE) -C $(DPF_PATH)/dgl gles2
+	$(MAKE) -C $(DPF_PATH)/dgl gles2 USE_GLES2=true
 
 $(DGL_BUILD_DIR)/libdgl-gles3.a: $(DGL_POSSIBLE_DEPS)
-	$(MAKE) -C $(DPF_PATH)/dgl gles3
+	$(MAKE) -C $(DPF_PATH)/dgl gles3 USE_GLES3=true
 
 $(DGL_BUILD_DIR)/libdgl-opengl.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
