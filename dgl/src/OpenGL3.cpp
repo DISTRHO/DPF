@@ -119,7 +119,7 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    if (gl3context.program == -1)
+    if (gl3context.program == 0)
         return;
 
     const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.width) * 2 - 1;
