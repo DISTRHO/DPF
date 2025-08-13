@@ -271,7 +271,9 @@ Window::PrivateData::~PrivateData()
         isVisible = false;
     }
 
+   #ifndef DPF_TEST_WINDOW_CPP
     destroyContext();
+   #endif
     puglFreeView(view);
 }
 
@@ -321,7 +323,9 @@ bool Window::PrivateData::initPost()
         return false;
     }
 
+   #ifndef DPF_TEST_WINDOW_CPP
     createContext();
+   #endif
 
     if (isEmbed)
     {
@@ -371,10 +375,6 @@ void Window::PrivateData::show()
     {
         isClosed = false;
         appData->oneWindowShown();
-
-        // FIXME
-//         PuglRect rect = puglGetFrame(view);
-//         puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
 
 #if defined(DISTRHO_OS_WINDOWS)
         puglWin32ShowCentered(view);
