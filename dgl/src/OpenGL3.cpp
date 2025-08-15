@@ -789,8 +789,13 @@ static void contextCreationFail(const GLuint program, const GLuint shader1, cons
     glDeleteShader(shader2);
 }
 
-void Window::PrivateData::createContext()
+void Window::PrivateData::createContextIfNeeded()
 {
+    OpenGL3GraphicsContext& gl3context = reinterpret_cast<OpenGL3GraphicsContext&>(graphicsContext);
+
+    if (gl3context.program != 0)
+        return;
+
 #if defined(DISTRHO_OS_WINDOWS)
 # if defined(__GNUC__) && (__GNUC__ >= 9)
 #  pragma GCC diagnostic push
@@ -837,7 +842,6 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 # endif
 #endif
 
-    OpenGL3GraphicsContext& gl3context = reinterpret_cast<OpenGL3GraphicsContext&>(graphicsContext);
     int status;
 
     const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);

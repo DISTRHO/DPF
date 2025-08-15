@@ -549,7 +549,7 @@ template class ImageBaseSwitch<OpenGLImage>;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-void Window::PrivateData::createContext()
+void Window::PrivateData::createContextIfNeeded()
 {
 }
 

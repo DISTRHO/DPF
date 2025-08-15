@@ -323,10 +323,6 @@ bool Window::PrivateData::initPost()
         return false;
     }
 
-   #ifndef DPF_TEST_WINDOW_CPP
-    createContext();
-   #endif
-
     if (isEmbed)
     {
         appData->oneWindowShown();
@@ -652,6 +648,10 @@ void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
     DGL_DBGp("PUGL: onReshape : %d %d\n", width, height);
+
+   #ifndef DPF_TEST_WINDOW_CPP
+    createContextIfNeeded();
+   #endif
 
     if (autoScaling)
     {

@@ -273,7 +273,7 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::createContext()
+void Window::PrivateData::createContextIfNeeded()
 {
 }
 
