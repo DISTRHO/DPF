@@ -320,7 +320,12 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
             return status;
     }
    #elif defined(DISTRHO_OS_WASM)
-    // nothing
+    const char* const className = view->world->strings[PUGL_CLASS_NAME];
+    EM_ASM({
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
+      canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
+    }, className, width, height);
    #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
    #elif defined(HAVE_X11)
@@ -386,7 +391,6 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
             return status;
     }
    #elif defined(DISTRHO_OS_WASM)
-    d_stdout("className is %s", view->world->strings[PUGL_CLASS_NAME]);
     emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME], width, height);
    #elif defined(DISTRHO_OS_WINDOWS)
     // matches upstream pugl, except we re-enter context after resize

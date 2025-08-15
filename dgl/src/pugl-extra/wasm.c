@@ -729,8 +729,8 @@ puglRealize(PuglView* const view)
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
   d_stdout("className is %s", className);
 
-  PuglPoint defaultPos = view->positionHints[PUGL_DEFAULT_POSITION];
-  PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
+  const PuglPoint defaultPos = view->positionHints[PUGL_DEFAULT_POSITION];
+  const PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
   if (!defaultSize.width || !defaultSize.height) {
     return PUGL_BAD_CONFIGURATION;
   }
@@ -760,6 +760,15 @@ puglRealize(PuglView* const view)
    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
    canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
   }, className);
+
+  const PuglArea minSize = view->sizeHints[PUGL_MIN_SIZE];
+  if (minSize.width && minSize.height) {
+    EM_ASM({
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
+      canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
+    }, className, minSize.width, minSize.height);
+  }
 
   emscripten_set_canvas_element_size(className, defaultSize.width, defaultSize.height);
 #ifndef PUGL_WASM_NO_KEYBOARD_INPUT
@@ -932,7 +941,30 @@ puglSetSizeHint(PuglView* const    view,
                 const unsigned     width,
                 const unsigned     height)
 {
-  return puglStoreSizeHint(view, hint, width, height);
+  const PuglStatus st = puglStoreSizeHint(view, hint, width, height);
+  if (st != PUGL_SUCCESS)
+    return st;
+  if (!view->impl->created)
+    return PUGL_SUCCESS;
+
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
+
+  switch (hint) {
+  case PUGL_MIN_SIZE:
+    EM_ASM({
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
+      canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
+    }, className, width, height);
+    break;
+  case PUGL_CURRENT_SIZE:
+    emscripten_set_canvas_element_size(className, width, height);
+    break;
+  default:
+    break;
+  }
+
+  return PUGL_SUCCESS;
 }
 
 static EM_BOOL
