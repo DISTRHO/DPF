@@ -93,7 +93,7 @@ struct OpenGL3GraphicsContext : GraphicsContext
 
       @code
       // setup for drawing based on texture
-      glUniform1i(context.usingTextureUniform1i, 1);
+      glUniform1i(context.usingTexture, 1);
 
       // bind texture
       glBindTexture(GL_TEXTURE_2D, myTextureId);
