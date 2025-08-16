@@ -640,7 +640,7 @@ void puglX11SetWindowType(const PuglView* const view, const bool isStandalone)
                         XA_CARDINAL,
                         32,
                         PropModeReplace,
-                        static_cast<const uchar*>(DGL_X11_WINDOW_ICON_NAME),
+                        reinterpret_cast<const uchar*>(DGL_X11_WINDOW_ICON_NAME),
                         DGL_X11_WINDOW_ICON_SIZE);
     }
    #endif
