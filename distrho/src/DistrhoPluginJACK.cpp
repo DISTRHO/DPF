@@ -552,7 +552,7 @@ protected:
         midiData[1] = note;
         midiData[2] = velocity;
         fNotesRingBuffer.writeCustomData(midiData, 3);
-        fNotesRingBuffer.commitWrite();
+        fNotesRingBuffer.commitWrite("PluginJack::sendNote");
     }
 # endif
 

@@ -1,6 +1,6 @@
 /*
  * RtAudio Bridge for DPF
- * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,7 +19,7 @@
 
 #include "NativeBridge.hpp"
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+#if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) == 0
 # error RtAudio without audio does not make sense
 #endif
 
@@ -425,13 +425,15 @@ struct RtAudioBridge : NativeBridge {
 
         RtAudioBridge* const self = static_cast<RtAudioBridge*>(userData);
 
+        const MutexLocker cml(self->midiInLock);
+
         self->midiInBufferPending.writeByte(static_cast<uint8_t>(len));
         // TODO timestamp
         // self->midiInBufferPending.writeDouble(timestamp);
         self->midiInBufferPending.writeCustomData(message->data(), len);
-        for (uint8_t i=len; i<kMaxMIDIInputMessageSize; ++i)
+        for (uint8_t i = len; i < kMaxMIDIInputMessageSize; ++i)
             self->midiInBufferPending.writeByte(0);
-        self->midiInBufferPending.commitWrite();
+        self->midiInBufferPending.commitWrite("RtMidiCallback");
     }
    #endif
 };
