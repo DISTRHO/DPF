@@ -35,8 +35,8 @@
 #endif
 
 using DISTRHO_NAMESPACE::HeapRingBuffer;
-using DISTRHO_NAMESPACE::Mutex;
-using DISTRHO_NAMESPACE::MutexLocker;
+using DISTRHO_NAMESPACE::RecursiveMutex;
+using DISTRHO_NAMESPACE::RecursiveMutexLocker;
 
 struct NativeBridge {
     // Current status information
@@ -81,7 +81,7 @@ struct NativeBridge {
     HeapRingBuffer midiInBufferCurrent;
     HeapRingBuffer midiInBufferPending;
    #endif
-    Mutex midiInLock;
+    RecursiveMutex midiInLock;
    #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     HeapRingBuffer midiOutBuffer;
    #endif
@@ -163,7 +163,7 @@ struct NativeBridge {
         {
             // NOTE: this function is only called once per run
             {
-                const MutexLocker cml(midiInLock);
+                const RecursiveMutexLocker cml(midiInLock);
                 midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
             }
             return midiInBufferCurrent.getReadableDataSize() / kRingBufferMessageSize;

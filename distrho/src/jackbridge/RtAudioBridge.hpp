@@ -425,7 +425,7 @@ struct RtAudioBridge : NativeBridge {
 
         RtAudioBridge* const self = static_cast<RtAudioBridge*>(userData);
 
-        const MutexLocker cml(self->midiInLock);
+        const RecursiveMutexLocker rml(self->midiInLock);
 
         self->midiInBufferPending.writeByte(static_cast<uint8_t>(len));
         // TODO timestamp
