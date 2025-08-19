@@ -375,19 +375,19 @@ else
 jack       = $(TARGET_DIR)/$(NAME)$(APP_EXT)
 endif
 
-ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
+clap       = $(TARGET_DIR)/$(CLAP_FILENAME)
 dssi_dsp   = $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT)
 dssi_ui    = $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_ui$(APP_EXT)
+ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
 lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
+mapi       = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
+static     = $(TARGET_DIR)/$(NAME).a
 vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
-clap       = $(TARGET_DIR)/$(CLAP_FILENAME)
-shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
-static     = $(TARGET_DIR)/$(NAME).a
 
 ifeq ($(MACOS),true)
 BUNDLE_RESOURCES = Info.plist PkgInfo Resources/empty.lproj
@@ -414,45 +414,45 @@ endif
 
 ifeq ($(MACOS),true)
 SYMBOLS_AU     = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/au.exp
-SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
+SYMBOLS_CLAP   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/clap.exp
 SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
+SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
+SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
 SYMBOLS_LV2DSP = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-dsp.exp
 SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
-SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
+SYMBOLS_MAPI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/mapi.exp
 SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
 SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
-SYMBOLS_CLAP   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/clap.exp
-SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
 else ifeq ($(WASM),true)
-SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
+SYMBOLS_CLAP   = -sEXPORTED_FUNCTIONS="['clap_entry']"
 SYMBOLS_DSSI   = -sEXPORTED_FUNCTIONS="['ladspa_descriptor','dssi_descriptor']"
+SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
+SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
 SYMBOLS_LV2DSP = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl']"
 SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
-SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
+SYMBOLS_MAPI   = -sEXPORTED_FUNCTIONS="['mapi_create','mapi_process','mapi_set_parameter','mapi_set_state','mapi_destroy']"
 SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
 SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
-SYMBOLS_CLAP   = -sEXPORTED_FUNCTIONS="['clap_entry']"
-SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
 else ifeq ($(WINDOWS),true)
-SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
+SYMBOLS_CLAP   = $(DPF_PATH)/utils/symbols/clap.def
 SYMBOLS_DSSI   = $(DPF_PATH)/utils/symbols/dssi.def
+SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
+SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
 SYMBOLS_LV2DSP = $(DPF_PATH)/utils/symbols/lv2-dsp.def
 SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
-SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
+SYMBOLS_MAPI   = $(DPF_PATH)/utils/symbols/mapi.def
 SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
 SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
-SYMBOLS_CLAP   = $(DPF_PATH)/utils/symbols/clap.def
-SYMBOLS_SHARED = $(DPF_PATH)/utils/symbols/shared.def
 else ifneq ($(DEBUG),true)
-SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
+SYMBOLS_CLAP   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/clap.version
 SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
+SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
+SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
 SYMBOLS_LV2DSP = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-dsp.version
 SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
-SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
+SYMBOLS_MAPI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/mapi.version
 SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
 SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
-SYMBOLS_CLAP   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/clap.version
-SYMBOLS_SHARED = -Wl,--version-script=$(DPF_PATH)/utils/symbols/shared.version
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -812,6 +812,16 @@ endif
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioToolbox -framework AudioUnit -framework CoreFoundation $(SHARED) $(SYMBOLS_AU) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# MAPI
+
+mapi: $(mapi)
+
+$(mapi): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_MAPI.cpp.o
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating MAPI for $(NAME)"
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_MAPI) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Export
 
 ifeq ($(HAVE_DGL),true)
@@ -822,20 +832,6 @@ endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating export tool for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -o $@
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Shared
-
-shared: $(shared)
-
-ifeq ($(HAVE_DGL),true)
-$(shared): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
-else
-$(shared): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o
-endif
-	-@mkdir -p $(shell dirname $@)
-	@echo "Creating shared library for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Static
@@ -885,28 +881,27 @@ ifneq ($(UI_TYPE),)
 -include $(OBJS_UI:%.o=%.d)
 endif
 
+-include $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_Export.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_LADSPA.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2_single_obj.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_MAPI.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_Export.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
--include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 
--include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_AU.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_LV2_single_obj.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
--include $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.d
--include $(BUILD_DIR)/DistrhoUIMain_AU.cpp.d
--include $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.d
--include $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.d
 
 # ---------------------------------------------------------------------------------------------------------------------
