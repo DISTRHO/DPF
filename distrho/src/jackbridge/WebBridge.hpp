@@ -243,18 +243,39 @@ struct WebBridge : NativeBridge {
             constraints['audio']['sampleSize']['max'] = 32;
             constraints['audio']['sampleSize']['ideal'] = 16;
             // old properties for chrome
-            constraints['audio']['mandatory'] = {};
-            constraints['audio']['mandatory']['googAutoGainControl'] = false;
-            constraints['audio']['mandatory']['googEchoCancellation'] = false;
-            constraints['audio']['mandatory']['googNoiseSuppression'] = false;
-            constraints['audio']['mandatory']['googHighpassFilter'] = false;
-            constraints['audio']['optional'] = {};
+            constraints['audio']['googAudioMirroring'] = {};
+            constraints['audio']['googAudioMirroring']['ideal'] = false;
+            constraints['audio']['googAutoGainControl'] = {};
+            constraints['audio']['googAutoGainControl']['ideal'] = false;
+            constraints['audio']['googAutoGainControl2'] = {};
+            constraints['audio']['googAutoGainControl2']['ideal'] = false;
+            constraints['audio']['googDAEchoCancellation'] = {};
+            constraints['audio']['googDAEchoCancellation']['ideal'] = false;
+            constraints['audio']['googEchoCancellation'] = {};
+            constraints['audio']['googEchoCancellation']['ideal'] = false;
+            constraints['audio']['googEchoCancellation2'] = {};
+            constraints['audio']['googEchoCancellation2']['ideal'] = false;
+            constraints['audio']['googHighpassFilter'] = {};
+            constraints['audio']['googHighpassFilter']['ideal'] = false;
+            constraints['audio']['googNoiseSuppression'] = {};
+            constraints['audio']['googNoiseSuppression']['ideal'] = false;
+            constraints['audio']['googNoiseSuppression2'] = {};
+            constraints['audio']['googNoiseSuppression2']['ideal'] = false;
+            constraints['audio']['googTypingNoiseDetection'] = {};
+            constraints['audio']['googTypingNoiseDetection']['ideal'] = false;
+            constraints['audio']['intelligibilityEnhancer'] = {};
+            constraints['audio']['intelligibilityEnhancer']['ideal'] = false;
+            constraints['audio']['levelControl'] = {};
+            constraints['audio']['levelControl']['ideal'] = false;
+            constraints['audio']['levelControlInitialPeakLevelDBFS'] = {};
+            constraints['audio']['levelControlInitialPeakLevelDBFS']['ideal'] = false;
 
             var success = function(stream) {
                 WAB.captureStreamNode = WAB.audioContext['createMediaStreamSource'](stream);
                 WAB.captureStreamNode.connect(WAB.processor);
             };
-            var fail = function() {
+            var fail = function(err) {
+                console.error(err);
             };
 
             if (navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined) {
