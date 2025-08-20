@@ -56,7 +56,7 @@ public:
     void process(const float* const* ins, float** outs, unsigned int frames)
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        fPlugin.run(ins, outs, frames, nullptr, 0);
+        fPlugin.run(const_cast<const float**>(ins), outs, frames, nullptr, 0);
        #else
         fPlugin.run(const_cast<const float**>(ins), outs, frames);
        #endif
