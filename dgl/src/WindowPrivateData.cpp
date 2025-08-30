@@ -306,8 +306,8 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
 
-    // setting default size triggers system-level calls, do it last
-    puglSetSizeHint(view, PUGL_DEFAULT_SIZE, static_cast<PuglSpan>(width), static_cast<PuglSpan>(height));
+    // setting size triggers system-level calls, do it last
+    puglSetSizeAndDefault(view, width, height);
 }
 
 bool Window::PrivateData::initPost()
