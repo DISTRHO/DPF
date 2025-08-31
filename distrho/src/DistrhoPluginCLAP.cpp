@@ -306,8 +306,10 @@ public:
        #if DISTRHO_UI_USER_RESIZABLE
         if (UIExporter* const ui = fUI.get())
             return ui->isResizable();
-       #endif
+        return true;
+       #else
         return false;
+       #endif
     }
 
     bool getResizeHints(clap_gui_resize_hints_t* const hints) const
