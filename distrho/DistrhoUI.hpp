@@ -106,10 +106,11 @@ public:
 
       The following example code can be use to extract individual colors:
       ```
-      const int red   = (bgColor >> 24) & 0xff;
-      const int green = (bgColor >> 16) & 0xff;
-      const int blue  = (bgColor >>  8) & 0xff;
+      int red   = (bgColor >> 24) & 0xff;
+      int green = (bgColor >> 16) & 0xff;
+      int blue  = (bgColor >>  8) & 0xff;
       ```
+      @see Color::fromRGB
     */
     uint getBackgroundColor() const noexcept;
 
@@ -119,10 +120,11 @@ public:
 
       The following example code can be use to extract individual colors:
       ```
-      const int red   = (fgColor >> 24) & 0xff;
-      const int green = (fgColor >> 16) & 0xff;
-      const int blue  = (fgColor >>  8) & 0xff;
+      int red   = (fgColor >> 24) & 0xff;
+      int green = (fgColor >> 16) & 0xff;
+      int blue  = (fgColor >>  8) & 0xff;
       ```
+      @see Color::fromRGB
     */
     uint getForegroundColor() const noexcept;
 
