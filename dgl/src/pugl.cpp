@@ -974,7 +974,7 @@ PuglWorldInternals* puglInitWorldInternals(PuglWorld* const world, const PuglWor
     {
         if (std::strcmp(backend, "x11") == 0)
             usingX11 = true;
-        else if (std::strcmp(backend, "wayland") != 0)
+        else if (std::strcmp(backend, "wayland") == 0)
             usingWayland = true;
         else
             d_stderr("Unknown DPF_BACKEND value, must be 'x11' or 'wayland'");

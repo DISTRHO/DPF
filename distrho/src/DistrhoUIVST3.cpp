@@ -205,7 +205,8 @@ public:
               nullptr, // TODO file request
               d_nextBundlePath,
               instancePointer,
-              scaleFactor)
+              scaleFactor,
+              DGL_NAMESPACE::Application::kTypeClassic)
     {
     }
 
@@ -1374,7 +1375,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
        #else
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                         view->instancePointer, scaleFactor);
+                         view->instancePointer, scaleFactor, DGL_NAMESPACE::Application::kTypeClassic);
         rect->right = tmpUI.getWidth();
         rect->bottom = tmpUI.getHeight();
         scaleFactor = tmpUI.getScaleFactor();
