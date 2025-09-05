@@ -118,6 +118,13 @@ void puglWin32ShowCentered(PuglView* view);
 
 #define DGL_USING_X11_OR_WAYLAND
 
+// custom flags for world creation
+#define PUGL_WORLD_BACKEND_X11     0x1000
+#define PUGL_WORLD_BACKEND_WAYLAND 0x2000
+
+// X11 or Wayland specific, check if using wayland
+bool puglUsingWayland(PuglWorld* world);
+
 #ifdef HAVE_X11
 #define DGL_USING_X11
 

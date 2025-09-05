@@ -966,32 +966,85 @@ PuglInternals* puglInitViewInternals(PuglWorld* const world)
 PuglWorldInternals* puglInitWorldInternals(PuglWorld* const world, const PuglWorldType type, const PuglWorldFlags flags)
 {
     bool supportsDecorations = true;
-   #ifdef HAVE_WAYLAND
-    const bool usingWayland = puglWaylandStatus(&supportsDecorations);
-   #else
-    constexpr bool usingWayland = false;
-   #endif
-    d_stdout("Using wayland: %d, compositor supports decorations: %d", usingWayland, supportsDecorations);
+    bool usingWayland = false;
+    bool usingX11 = false;
 
-   #ifdef HAVE_WAYLAND
+    // initial choice by env var
+    if (const char* const backend = std::getenv("DPF_BACKEND"))
+    {
+        if (std::strcmp(backend, "x11") == 0)
+            usingX11 = true;
+        else if (std::strcmp(backend, "wayland") != 0)
+            usingWayland = true;
+        else
+            d_stderr("Unknown DPF_BACKEND value, must be 'x11' or 'wayland'");
+    }
+
+    // overridden if required for operation
+    if (flags & PUGL_WORLD_BACKEND_X11)
+    {
+        usingX11 = true;
+        usingWayland = false;
+    }
+    if (flags & PUGL_WORLD_BACKEND_WAYLAND)
+    {
+        usingX11 = false;
+        usingWayland = true;
+       #ifdef HAVE_WAYLAND
+        puglWaylandStatus(&supportsDecorations);
+       #endif
+    }
+
+    // pick backend automatically if none selected
+    if (! (usingX11 || usingWayland))
+    {
+       #ifdef HAVE_WAYLAND
+        usingWayland = puglWaylandStatus(&supportsDecorations);
+        if (! usingWayland)
+       #endif
+        {
+           #ifdef HAVE_X11
+            supportsDecorations = true;
+            usingX11 = true;
+           #endif
+        }
+
+        if (! (usingX11 || usingWayland))
+        {
+            d_stderr("Could not find a usable windowing backend");
+            return nullptr;
+        }
+    }
+
+    if (usingX11)
+    {
+       #ifdef HAVE_X11
+        d_stdout("Using X11");
+        x11::PuglWorld* const x11world = cast<x11::PuglWorld>(world);
+        x11::puglSetWorldHandle(x11world, const_cast<char*>(kUsingX11Check));
+        return cast<PuglWorldInternals>(x11::puglInitWorldInternals(x11world,
+                                                                    static_cast<x11::PuglWorldType>(type),
+                                                                    static_cast<x11::PuglWorldFlags>(flags)));
+       #else
+        return nullptr;
+       #endif
+    }
+
     if (usingWayland)
     {
+       #ifdef HAVE_WAYLAND
+        d_stdout("Using Wayland, compositor supports decorations: %s", supportsDecorations ? "true" : "false");
         wl::PuglWorld* const wlworld = cast<wl::PuglWorld>(world);
         wl::puglSetWorldHandle(wlworld, const_cast<char*>(kUsingWaylandCheck));
         return cast<PuglWorldInternals>(wl::puglInitWorldInternals(wlworld,
                                                                    static_cast<wl::PuglWorldType>(type),
                                                                    static_cast<wl::PuglWorldFlags>(flags)));
+       #else
+        return nullptr;
+       #endif
     }
-   #endif
-   #ifdef HAVE_X11
-    x11::PuglWorld* const x11world = cast<x11::PuglWorld>(world);
-    x11::puglSetWorldHandle(x11world, const_cast<char*>(kUsingX11Check));
-    return cast<PuglWorldInternals>(x11::puglInitWorldInternals(x11world,
-                                                                static_cast<x11::PuglWorldType>(type),
-                                                                static_cast<x11::PuglWorldFlags>(flags)));
-   #else
+
     return nullptr;
-   #endif
 }
 
 
@@ -1182,6 +1235,14 @@ PuglStatus puglViewStringChanged(PuglView* const view, const PuglStringHint key,
     return PUGL_BAD_BACKEND;
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+// X11 or Wayland specific, check if using wayland
+
+bool puglUsingWayland(PuglWorld* const world)
+{
+    return world->handle == kUsingWaylandCheck;
+}
+
 #ifdef HAVE_X11
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1287,18 +1348,6 @@ bool puglWaylandStatus(bool* supportsDecorations)
 
     bool supportsWayland = false;
     *supportsDecorations = false;
-
-    if (const char* const backend = std::getenv("DPF_BACKEND"))
-    {
-        if (std::strcmp(backend, "x11") == 0)
-            return false;
-
-        if (std::strcmp(backend, "wayland") != 0)
-        {
-            d_stderr2("Unknown DPF_BACKEND value, will use X11");
-            return false;
-        }
-    }
 
     if (struct wl_display* const wl_display = wl_display_connect(nullptr))
     {

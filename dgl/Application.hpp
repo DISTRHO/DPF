@@ -84,9 +84,21 @@ class DISTRHO_API Application
 {
 public:
    /**
+      Type of application to setup, either "classic" or "modern".
+
+      What this means depends on the OS.
+      For now it's only relevant on X11 vs Wayland systems, where X11 is kTypeClassic and Wayland is kTypeModern.
+    */
+    enum Type {
+        kTypeAuto,
+        kTypeClassic,
+        kTypeModern,
+    };
+
+   /**
       Constructor for standalone or plugin application.
     */
-    Application(bool isStandalone = true);
+    Application(bool isStandalone = true, Type type = kTypeAuto);
 
    /**
       Constructor for a standalone application.
@@ -140,6 +152,12 @@ public:
       its absolute value has no meaning.
    */
     double getTime() const;
+
+   /**
+      Return the application type, either kTypeClassic or kTypeModern.
+      This function never return kTypeAuto.
+   */
+    Type getType() const noexcept;
 
    /**
       Add a callback function to be triggered on every idle cycle.
