@@ -114,8 +114,11 @@ void puglWin32RestoreWindow(PuglView* view);
 // win32 specific, center view based on parent coordinates (if there is one)
 void puglWin32ShowCentered(PuglView* view);
 
-#elif defined(HAVE_X11)
+#else
 
+#define DGL_USING_X11_OR_WAYLAND
+
+#ifdef HAVE_X11
 #define DGL_USING_X11
 
 // X11 specific, update world without triggering exposure events
@@ -123,6 +126,14 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* world);
 
 // X11 specific, set dialog window type
 void puglX11SetWindowType(const PuglView* view, bool isStandalone);
+#endif
+
+#ifdef HAVE_WAYLAND
+#define DGL_USING_WAYLAND
+
+// Wayland specific, return if running wayland and check if compositor supports decorations
+bool puglWaylandStatus(bool* supportsDecorations);
+#endif
 
 #endif
 

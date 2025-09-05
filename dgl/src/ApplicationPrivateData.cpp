@@ -71,7 +71,6 @@ Application::PrivateData::PrivateData(const bool standalone)
   #ifdef DGL_USING_SDL
     SDL_Init(SDL_INIT_EVENTS|SDL_INIT_TIMER|SDL_INIT_VIDEO);
   #else
-    puglSetWorldHandle(world, this);
    #ifdef __EMSCRIPTEN__
     puglSetWorldString(world, PUGL_CLASS_NAME, "canvas");
    #else

@@ -409,7 +409,7 @@ HAVE_X11     = $(shell $(PKG_CONFIG) --exists x11 && echo true)
 HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
 HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
 HAVE_XRANDR  = $(shell $(PKG_CONFIG) --exists xrandr && echo true)
-HAVE_WAYLAND = $(shell $(PKG_CONFIG) --exists egl xkbcommon wayland-client wayland-egl wayland-protocols && echo true)
+HAVE_WAYLAND = $(shell $(PKG_CONFIG) --exists egl xkbcommon wayland-client wayland-cursor wayland-egl && echo true)
 endif
 
 # Vulkan is not supported yet
@@ -512,8 +512,8 @@ endif
 endif # HAVE_X11
 
 ifeq ($(HAVE_WAYLAND),true)
-DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xkbcommon wayland-client wayland-protocols) -DHAVE_WAYLAND
-DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xkbcommon wayland-client wayland-protocols)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xkbcommon wayland-client wayland-cursor) -DHAVE_WAYLAND
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xkbcommon wayland-client wayland-cursor)
 endif
 
 endif
@@ -845,6 +845,7 @@ features:
 	$(call print_available,HAVE_XCURSOR)
 	$(call print_available,HAVE_XEXT)
 	$(call print_available,HAVE_XRANDR)
+	$(call print_available,HAVE_WAYLAND)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Extra rules for MOD Audio stuff
