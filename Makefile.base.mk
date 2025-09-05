@@ -409,6 +409,7 @@ HAVE_X11     = $(shell $(PKG_CONFIG) --exists x11 && echo true)
 HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
 HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
 HAVE_XRANDR  = $(shell $(PKG_CONFIG) --exists xrandr && echo true)
+HAVE_WAYLAND = $(shell $(PKG_CONFIG) --exists egl xkbcommon wayland-client wayland-egl wayland-protocols && echo true)
 endif
 
 # Vulkan is not supported yet
@@ -510,6 +511,11 @@ DGL_SYSTEM_LIBS += -pthread -lrt
 endif
 endif # HAVE_X11
 
+ifeq ($(HAVE_WAYLAND),true)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xkbcommon wayland-client wayland-protocols) -DHAVE_WAYLAND
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xkbcommon wayland-client wayland-protocols)
+endif
+
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -552,8 +558,16 @@ else ifeq ($(WINDOWS),true)
 OPENGL_FLAGS =
 OPENGL_LIBS  = -lopengl32
 else
-OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl x11)
-OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl x11)
+OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl)
+OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
+ifeq ($(HAVE_X11),true)
+OPENGL_FLAGS += $(shell $(PKG_CONFIG) --cflags x11)
+OPENGL_LIBS  += $(shell $(PKG_CONFIG) --libs x11)
+endif
+ifeq ($(HAVE_WAYLAND),true)
+OPENGL_FLAGS += $(shell $(PKG_CONFIG) --cflags egl wayland-egl)
+OPENGL_LIBS  += $(shell $(PKG_CONFIG) --libs egl wayland-egl)
+endif
 endif
 
 HAVE_CAIRO_OR_OPENGL = true

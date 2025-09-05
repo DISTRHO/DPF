@@ -76,37 +76,57 @@
 #  include <vulkan/vulkan.h>
 #  include <vulkan/vulkan_win32.h>
 # endif
-#elif defined(HAVE_X11)
+#elif defined(HAVE_X11) || defined(HAVE_WAYLAND)
 # include <dlfcn.h>
 # include <limits.h>
 # include <unistd.h>
+# include <sys/mman.h>
 # include <sys/select.h>
 // # include <sys/time.h>
-# include <X11/X.h>
-# include <X11/Xatom.h>
-# include <X11/Xlib.h>
-# include <X11/Xresource.h>
-# include <X11/Xutil.h>
-# include <X11/keysym.h>
-# ifdef HAVE_XCURSOR
-#  include <X11/Xcursor/Xcursor.h>
+# ifdef HAVE_X11
+#  include <X11/X.h>
+#  include <X11/Xatom.h>
+#  include <X11/Xlib.h>
+#  include <X11/Xresource.h>
+#  include <X11/Xutil.h>
+#  include <X11/keysym.h>
+#  ifdef HAVE_XCURSOR
+#   include <X11/Xcursor/Xcursor.h>
 // #  include <X11/cursorfont.h>
+#  endif
+#  ifdef HAVE_XRANDR
+#   include <X11/extensions/Xrandr.h>
+#  endif
+#  ifdef HAVE_XSYNC
+#   include <X11/extensions/sync.h>
+#   include <X11/extensions/syncconst.h>
+#  endif
+#  ifdef DGL_CAIRO
+#   include <cairo-xlib.h>
+#  endif
+#  ifdef DGL_OPENGL
+#   include <GL/glx.h>
+#  endif
+#  ifdef DGL_VULKAN
+#   include <vulkan/vulkan_xlib.h>
+#  endif
 # endif
-# ifdef HAVE_XRANDR
-#  include <X11/extensions/Xrandr.h>
-# endif
-# ifdef HAVE_XSYNC
-#  include <X11/extensions/sync.h>
-#  include <X11/extensions/syncconst.h>
-# endif
-# ifdef DGL_CAIRO
-#  include <cairo-xlib.h>
-# endif
-# ifdef DGL_OPENGL
-#  include <GL/glx.h>
-# endif
-# ifdef DGL_VULKAN
-#  include <vulkan/vulkan_xlib.h>
+# ifdef HAVE_WAYLAND
+#  include <xkbcommon/xkbcommon-keysyms.h>
+#  include <xkbcommon/xkbcommon.h>
+#  include <wayland-client.h>
+#  include <wayland-util.h>
+#  include <wayland-client-core.h>
+#  include <wayland-client-protocol.h>
+#  include <wayland-cursor.h>
+#  ifdef DGL_OPENGL
+#   include <wayland-egl-core.h>
+#   include <EGL/egl.h>
+#   include <EGL/eglplatform.h>
+#  endif
+#  ifdef DGL_VULKAN
+#   include <vulkan/vulkan_wayland.h>
+#  endif
 # endif
 #endif
 
@@ -193,29 +213,80 @@ START_NAMESPACE_DGL
 # ifdef DGL_VULKAN
 #  include "pugl-upstream/src/win_vulkan.c"
 # endif
-#elif defined(HAVE_X11)
-# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#elif defined(HAVE_X11) || defined(HAVE_WAYLAND)
+# include "pugl-upstream/src/types.h"
+# ifdef HAVE_X11
+#  undef PUGL_PUGL_H
+#  undef PUGL_CAIRO_H
+#  undef PUGL_STUB_H
+#  undef PUGL_GL_H
+#  undef PUGL_VULKAN_H
+#  undef PUGL_SRC_TYPES_H
+namespace x11 {
+struct PuglBackendImpl;
+struct PuglInternalsImpl;
+struct PuglViewImpl;
+struct PuglWorldImpl;
+struct PuglWorldInternalsImpl;
+#  include "pugl-upstream/src/common.c"
+#  include "pugl-upstream/src/internal.c"
+#  include "pugl-upstream/src/x11.c"
+#  include "pugl-upstream/src/x11_stub.c"
+#  ifdef DGL_CAIRO
+#   include "pugl-upstream/src/x11_cairo.c"
+#  endif
+#  ifdef DGL_OPENGL
+#   include "pugl-upstream/src/x11_gl.c"
+#  endif
+#  ifdef DGL_VULKAN
+#   include "pugl-upstream/src/x11_vulkan.c"
+#  endif
+}
 # endif
-# include "pugl-upstream/src/x11.c"
-# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#  pragma GCC diagnostic pop
-# endif
-# include "pugl-upstream/src/x11_stub.c"
-# ifdef DGL_CAIRO
-#  include "pugl-upstream/src/x11_cairo.c"
-# endif
-# ifdef DGL_OPENGL
-#  include "pugl-upstream/src/x11_gl.c"
-# endif
-# ifdef DGL_VULKAN
-#  include "pugl-upstream/src/x11_vulkan.c"
+# ifdef HAVE_WAYLAND
+#  undef PUGL_PUGL_H
+#  undef PUGL_CAIRO_H
+#  undef PUGL_STUB_H
+#  undef PUGL_GL_H
+#  undef PUGL_VULKAN_H
+#  undef PUGL_INTERNAL_H
+#  undef PUGL_PLATFORM_H
+#  undef PUGL_SRC_STUB_H
+#  undef PUGL_SRC_TYPES_H
+// #  include "pugl-upstream/src/xdg-shell.h"
+extern "C" {
+#  include "pugl-upstream/src/xdg-shell.c"
+}
+namespace wayland {
+struct PuglBackendImpl;
+struct PuglInternalsImpl;
+struct PuglViewImpl;
+struct PuglWorldImpl;
+struct PuglWorldInternalsImpl;
+#  define wl_callback ::wl_callback
+#  define wl_seat ::wl_seat
+#  define wl_surface ::wl_surface
+#  include "pugl-upstream/src/common.c"
+#  include "pugl-upstream/src/internal.c"
+#  include "pugl-upstream/src/wayland.c"
+#  include "pugl-upstream/src/wayland_stub.c"
+#  ifdef DGL_CAIRO
+#   include "pugl-upstream/src/wayland_cairo.c"
+#  endif
+#  ifdef DGL_OPENGL
+#   include "pugl-upstream/src/wayland_gl.c"
+#  endif
+#  ifdef DGL_VULKAN
+#   include "pugl-upstream/src/wayland_vulkan.c"
+#  endif
+}
 # endif
 #endif
 
-#include "pugl-upstream/src/common.c"
-#include "pugl-upstream/src/internal.c"
+#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS)
+# include "pugl-upstream/src/common.c"
+# include "pugl-upstream/src/internal.c"
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // DGL specific, expose backend enter
@@ -238,6 +309,7 @@ bool puglBackendLeave(PuglView* const view)
 
 void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 {
+  #if (defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS))
    #ifdef DGL_CAIRO
     puglSetBackend(view, puglCairoBackend());
    #endif
@@ -247,6 +319,20 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
    #ifdef DGL_VULKAN
     puglSetBackend(view, puglVulkanBackend());
    #endif
+  #else
+    // const bool usingWayland = true;
+    const PuglBackend* (*puglStubBackend)(void) = nullptr;
+    // usingWayland ? wayland::puglStubBackend : x11::puglStubBackend;
+   #ifdef DGL_CAIRO
+    const PuglBackend* (*puglCairoBackend)(void) = nullptr;
+   #endif
+   #ifdef DGL_OPENGL
+    const PuglBackend* (*puglGlBackend)(void) = nullptr;
+   #endif
+   #ifdef DGL_VULKAN
+    const PuglBackend* (*puglVulkanBackend)(void) = nullptr;
+   #endif
+  #endif
 
     if (view->backend != nullptr)
     {
@@ -290,8 +376,10 @@ void puglRaiseWindow(PuglView* const view)
    #elif defined(DISTRHO_OS_WINDOWS)
     SetForegroundWindow(view->impl->hwnd);
     SetActiveWindow(view->impl->hwnd);
-   #elif defined(HAVE_X11)
+   #else
+    #ifdef HAVE_X11_NOT
     XRaiseWindow(view->world->impl->display, view->impl->win);
+    #endif
    #endif
 }
 
@@ -328,7 +416,8 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
     }, className, width, height);
    #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
-   #elif defined(HAVE_X11)
+   #else
+    #ifdef HAVE_X11_NOT
     if (view->impl->win)
     {
         if (const PuglStatus status = updateSizeHints(view))
@@ -336,6 +425,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 
         XFlush(view->world->impl->display);
     }
+    #endif
    #endif
 
     return PUGL_SUCCESS;
@@ -366,8 +456,10 @@ void puglSetResizable(PuglView* const view, const bool resizable)
                                         : GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);
         SetWindowLong(hwnd, GWL_STYLE, winFlags);
     }
-   #elif defined(HAVE_X11)
+   #else
+    #ifdef HAVE_X11_NOT
     updateSizeHints(view);
+    #endif
    #endif
 }
 
@@ -404,7 +496,8 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
         // make sure to return context back to ourselves
         puglBackendEnter(view);
     }
-   #elif defined(HAVE_X11)
+   #else
+    #ifdef HAVE_X11_NOT
     // matches upstream pugl, adds flush at the end
     if (view->impl->win)
     {
@@ -417,6 +510,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
         // flush size changes
         XFlush(view->world->impl->display);
     }
+    #endif
    #endif
 
     return PUGL_SUCCESS;
@@ -598,28 +692,58 @@ void puglWin32ShowCentered(PuglView* const view)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#elif defined(HAVE_X11)
+#elif defined(HAVE_X11) || defined(HAVE_WAYLAND)
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 vs Wayland redirect
+
+void puglFreeViewInternals(PuglView* const view)
+{
+    return x11::puglFreeViewInternals(reinterpret_cast<x11::PuglView*>(view));
+}
+
+const char* puglGetWorldString(const PuglWorld* world, PuglStringHint key)
+{
+    return x11::puglGetWorldString(reinterpret_cast<const x11::PuglWorld*>(world),
+                                   static_cast<x11::PuglStringHint>(key));
+}
+
+PuglStatus puglSetViewHint(PuglView* view, PuglViewHint hint, int value)
+{
+    return static_cast<PuglStatus>(
+        x11::puglSetViewHint(reinterpret_cast<x11::PuglView*>(view), static_cast<x11::PuglViewHint>(hint), value)
+    );
+}
+
+// PodcastPluginsDGL::puglAcceptOffer
+// PodcastPluginsDGL::puglGetHandle
+// PodcastPluginsDGL::puglStopTimer
+
+#ifdef HAVE_X11
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, update world without triggering exposure events
 
 PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 {
-    const bool wasDispatchingEvents = world->impl->dispatchingEvents;
-    world->impl->dispatchingEvents = true;
-    PuglStatus st = PUGL_SUCCESS;
+    x11::PuglWorld*          const x11world = reinterpret_cast<x11::PuglWorld*>(world);
+    x11::PuglWorldInternals* const impl     = x11world->impl;
 
-    const double startTime = puglGetTime(world);
+    const bool wasDispatchingEvents = impl->dispatchingEvents;
+    impl->dispatchingEvents = true;
+    x11::PuglStatus st = x11::PUGL_SUCCESS;
+
+    const double startTime = puglGetTime(x11world);
     const double endTime   = startTime + 0.03;
 
-    for (double t = startTime; !st && t < endTime; t = puglGetTime(world))
+    for (double t = startTime; !st && t < endTime; t = puglGetTime(x11world))
     {
-        pollX11Socket(world, endTime - t);
-        st = dispatchX11Events(world);
+        pollX11Socket(x11world, endTime - t);
+        st = dispatchX11Events(x11world);
     }
 
-    world->impl->dispatchingEvents = wasDispatchingEvents;
-    return st;
+    impl->dispatchingEvents = wasDispatchingEvents;
+    return static_cast<PuglStatus>(st);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -627,8 +751,9 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 
 void puglX11SetWindowType(const PuglView* const view, const bool isStandalone)
 {
-    const PuglInternals* const impl    = view->impl;
-    Display*             const display = view->world->impl->display;
+    const x11::PuglView*      const x11view = reinterpret_cast<const x11::PuglView*>(view);
+    const x11::PuglInternals* const impl    = x11view->impl;
+    Display*                  const display = x11view->world->impl->display;
 
    #if defined(DGL_X11_WINDOW_ICON_NAME) && defined(DGL_X11_WINDOW_ICON_SIZE)
     if (isStandalone)
@@ -668,6 +793,10 @@ void puglX11SetWindowType(const PuglView* const view, const bool isStandalone)
 // --------------------------------------------------------------------------------------------------------------------
 
 #endif // HAVE_X11
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#endif
 
 #ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
