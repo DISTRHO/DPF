@@ -80,6 +80,7 @@ public:
           void* const dspPtr,
           const float sampleRate,
           const float scaleFactor,
+          const bool isModern,
           const uint32_t bgColor,
           const uint32_t fgColor,
           const char* const appClassName)
@@ -101,7 +102,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               fileRequestCallback,
-              bundlePath, dspPtr, scaleFactor, bgColor, fgColor, appClassName)
+              bundlePath, dspPtr, scaleFactor, isModern, bgColor, fgColor, appClassName)
     {
         if (widget != nullptr)
             *widget = (LV2UI_Widget)fUI.getNativeWindowHandle();
@@ -499,6 +500,9 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
         return nullptr;
     }
 
+    // TODO allow classic vs modern ui type
+    static constexpr const bool isModern = false;
+
     const LV2_Options_Option* options   = nullptr;
     const LV2_URID_Map*       uridMap   = nullptr;
     void*                     parentId  = nullptr;
@@ -633,7 +637,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
 
     return new UiLv2(bundlePath, winId, options, uridMap, features,
                      controller, writeFunction, widget, instance,
-                     sampleRate, scaleFactor, bgColor, fgColor, appClassName);
+                     sampleRate, scaleFactor, isModern, bgColor, fgColor, appClassName);
 }
 
 #define uiPtr ((UiLv2*)ui)

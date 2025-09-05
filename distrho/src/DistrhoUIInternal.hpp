@@ -47,11 +47,12 @@ public:
                const char* const bundlePath = nullptr,
                void* const dspPtr = nullptr,
                const double scaleFactor = 0.0,
+               const bool isModern = false,
                const uint32_t bgColor = 0,
                const uint32_t fgColor = 0xffffffff,
                const char* const appClassName = nullptr)
         : ui(nullptr),
-          uiData(new UI::PrivateData(appClassName))
+          uiData(new UI::PrivateData(appClassName, isModern))
     {
         uiData->sampleRate = sampleRate;
         uiData->bundlePath = bundlePath != nullptr ? strdup(bundlePath) : nullptr;

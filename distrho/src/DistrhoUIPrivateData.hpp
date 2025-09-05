@@ -67,14 +67,14 @@ START_NAMESPACE_DISTRHO
 int dpf_webview_start(int argc, char* argv[]);
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Plugin Application, will set class name based on plugin details
 
 class PluginApplication : public DGL_NAMESPACE::Application
 {
 public:
-    explicit PluginApplication(const char* className)
-        : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE)
+    explicit PluginApplication(const char* className, const bool isModern)
+        : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE, isModern ? kTypeModern : kTypeClassic)
     {
        #if defined(__MOD_DEVICES__) || !defined(__EMSCRIPTEN__)
         if (className == nullptr)
@@ -292,8 +292,8 @@ struct UI::PrivateData {
     setSizeFunc     setSizeCallbackFunc;
     fileRequestFunc fileRequestCallbackFunc;
 
-    PrivateData(const char* const appClassName) noexcept
-        : app(appClassName),
+    PrivateData(const char* const appClassName, const bool isModern) noexcept
+        : app(appClassName, isModern),
           window(nullptr),
          #if DISTRHO_UI_USE_WEB_VIEW
           webview(nullptr),
