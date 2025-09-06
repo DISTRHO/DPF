@@ -68,6 +68,9 @@ typedef void* lib_t;
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #  pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#  if __clang_major__ >= 17
+#   pragma clang diagnostic ignored "-Wvla-cxx-extension"
+#  endif
 # endif
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
