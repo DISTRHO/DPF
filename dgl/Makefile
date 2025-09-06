@@ -272,24 +272,24 @@ $(BUILD_DIR)/dgl/%.mm.cairo.o: src/%.mm
 $(BUILD_DIR)/dgl/%.cpp.gles2.o: src/%.cpp
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $< (GLESv2 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -UDGL_USE_GLES3 -c -o $@
 
 $(BUILD_DIR)/dgl/%.mm.gles2.o: src/%.mm
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $< (GLESv2 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -UDGL_USE_GLES3 -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 $(BUILD_DIR)/dgl/%.cpp.gles3.o: src/%.cpp
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $< (GLESv3 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -UDGL_USE_GLES2 -c -o $@
 
 $(BUILD_DIR)/dgl/%.mm.gles3.o: src/%.mm
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $< (GLESv3 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -UDGL_USE_GLES2 -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
