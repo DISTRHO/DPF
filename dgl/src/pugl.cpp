@@ -350,6 +350,8 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
        #ifdef DGL_VULKAN
         puglSetBackend(wlview, puglVulkanBackend());
        #endif
+        // maybe unused
+        (void)wlview;
       #endif
     }
     else
@@ -366,6 +368,8 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
        #ifdef DGL_VULKAN
         puglSetBackend(x11view, puglVulkanBackend());
        #endif
+        // maybe unused
+        (void)x11view;
       #endif
     }
   #else
