@@ -399,8 +399,8 @@ public:
         {
             parameterValues = new float[parameterCount];
 
-            for (uint32_t i=0; i < parameterCount; ++i)
-                parameterValues[i] = NAN;
+            for (uint32_t i = 0; i < parameterCount; ++i)
+                parameterValues[i] = fPlugin.getParameterDefault(i);
         }
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
