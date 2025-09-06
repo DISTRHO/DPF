@@ -494,7 +494,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         x11::PuglView* const x11view = cast<x11::PuglView>(view);
         if (x11view->impl->win)
         {
-            if (const x11::PuglStatus status = x11::updateSizeHints(x11view))
+            if (const x11::PuglStatus status = x11::puglUpdateSizeHints(x11view))
                 return static_cast<PuglStatus>(status);
 
             XFlush(x11view->world->impl->display);
@@ -538,7 +538,7 @@ void puglSetResizable(PuglView* const view, const bool resizable)
     else
     {
        #ifdef HAVE_X11
-        x11::updateSizeHints(cast<x11::PuglView>(view));
+        x11::puglUpdateSizeHints(cast<x11::PuglView>(view));
        #endif
     }
    #endif
@@ -588,7 +588,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
         x11::PuglView* const x11view = cast<x11::PuglView>(view);
         if (x11view->impl->win)
         {
-            if (const x11::PuglStatus status = updateSizeHints(x11view))
+            if (const x11::PuglStatus status = puglUpdateSizeHints(x11view))
                 return static_cast<PuglStatus>(status);
 
             if (const x11::PuglStatus status = puglSetWindowSize(x11view, width, height))
@@ -799,6 +799,21 @@ PuglStatus puglAcceptOffer(PuglView* const view, const PuglDataOfferEvent* const
     if (view->world->handle == kUsingWaylandCheck)
         return static_cast<PuglStatus>(
             wl::puglAcceptOffer(cast<wl::PuglView>(view), cast<wl::PuglDataOfferEvent>(offer), typeIndex));
+   #endif
+    return PUGL_BAD_BACKEND;
+}
+
+PuglStatus puglApplySizeHint(PuglView* view, PuglSizeHint hint)
+{
+   #ifdef HAVE_X11
+    if (view->world->handle == kUsingX11Check)
+        return static_cast<PuglStatus>(x11::puglApplySizeHint(cast<x11::PuglView>(view),
+                                                              static_cast<x11::PuglSizeHint>(hint)));
+   #endif
+   #ifdef HAVE_WAYLAND
+    if (view->world->handle == kUsingWaylandCheck)
+        return static_cast<PuglStatus>(wl::puglApplySizeHint(cast<wl::PuglView>(view),
+                                                             static_cast<wl::PuglSizeHint>(hint)));
    #endif
     return PUGL_BAD_BACKEND;
 }
@@ -1132,25 +1147,6 @@ PuglStatus puglSetCursor(PuglView* view, PuglCursor cursor)
     return PUGL_BAD_BACKEND;
 }
 
-PuglStatus puglSetPositionHint(PuglView* const view, const PuglPositionHint hint, const int x, const int y)
-{
-   #ifdef HAVE_X11
-    if (view->world->handle == kUsingX11Check)
-        return static_cast<PuglStatus>(x11::puglSetPositionHint(cast<x11::PuglView>(view),
-                                                                static_cast<x11::PuglPositionHint>(hint),
-                                                                x,
-                                                                y));
-   #endif
-   #ifdef HAVE_WAYLAND
-    if (view->world->handle == kUsingWaylandCheck)
-        return static_cast<PuglStatus>(wl::puglSetPositionHint(cast<wl::PuglView>(view),
-                                                               static_cast<wl::PuglPositionHint>(hint),
-                                                               x,
-                                                               y));
-   #endif
-    return PUGL_BAD_BACKEND;
-}
-
 PuglStatus puglSetTransientParent(PuglView* const view, const PuglNativeView parent)
 {
    #ifdef HAVE_X11
@@ -1160,6 +1156,32 @@ PuglStatus puglSetTransientParent(PuglView* const view, const PuglNativeView par
    #ifdef HAVE_WAYLAND
     if (view->world->handle == kUsingWaylandCheck)
         return static_cast<PuglStatus>(wl::puglSetTransientParent(cast<wl::PuglView>(view), parent));
+   #endif
+    return PUGL_BAD_BACKEND;
+}
+
+PuglStatus puglSetWindowPosition(PuglView* view, int x, int y)
+{
+   #ifdef HAVE_X11
+    if (view->world->handle == kUsingX11Check)
+        return static_cast<PuglStatus>(x11::puglSetWindowPosition(cast<x11::PuglView>(view), x, y));
+   #endif
+   #ifdef HAVE_WAYLAND
+    if (view->world->handle == kUsingWaylandCheck)
+        return static_cast<PuglStatus>(wl::puglSetWindowPosition(cast<wl::PuglView>(view), x, y));
+   #endif
+    return PUGL_BAD_BACKEND;
+}
+
+PuglStatus puglSetWindowSize(PuglView* view, unsigned width, unsigned height)
+{
+   #ifdef HAVE_X11
+    if (view->world->handle == kUsingX11Check)
+        return static_cast<PuglStatus>(x11::puglSetWindowSize(cast<x11::PuglView>(view), width, height));
+   #endif
+   #ifdef HAVE_WAYLAND
+    if (view->world->handle == kUsingWaylandCheck)
+        return static_cast<PuglStatus>(wl::puglSetWindowSize(cast<wl::PuglView>(view), width, height));
    #endif
     return PUGL_BAD_BACKEND;
 }
@@ -1253,11 +1275,10 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
     if (world->handle == kUsingWaylandCheck)
         return PUGL_BACKEND_FAILED;
 
-    x11::PuglWorld*          const x11world = cast<x11::PuglWorld>(world);
-    x11::PuglWorldInternals* const impl     = x11world->impl;
+    x11::PuglWorld* const x11world = cast<x11::PuglWorld>(world);
 
-    const bool wasDispatchingEvents = impl->dispatchingEvents;
-    impl->dispatchingEvents = true;
+    const PuglWorldState startState = world->state;
+    world->state = PUGL_WORLD_UPDATING;
     x11::PuglStatus st = x11::PUGL_SUCCESS;
 
     const double startTime = x11::puglGetTime(x11world);
@@ -1265,11 +1286,11 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 
     for (double t = startTime; !st && t < endTime; t = x11::puglGetTime(x11world))
     {
-        x11::pollX11Socket(x11world, endTime - t);
-        st = x11::dispatchX11Events(x11world);
+        if (!(st = x11::pollX11Socket(x11world, endTime - t)))
+            st = x11::dispatchX11Events(x11world);
     }
 
-    impl->dispatchingEvents = wasDispatchingEvents;
+    world->state = startState;
     return static_cast<PuglStatus>(st);
 }
 
