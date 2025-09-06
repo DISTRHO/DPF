@@ -83,6 +83,82 @@ puglInitViewInternals(PuglWorld* const world)
 }
 
 static PuglStatus
+updateSizeHints(const PuglView* const view)
+{
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
+
+  if (!view->hints[PUGL_RESIZABLE]) {
+    PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
+    if (!puglIsValidSize(size.width, size.height)) {
+      size = puglGetSizeHint(view, PUGL_DEFAULT_SIZE);
+    }
+    EM_ASM({
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      var width = parseInt($1 / window.devicePixelRatio);
+      var height = parseInt($2 / window.devicePixelRatio);
+      canvasWrapper.style.setProperty("min-width", width + 'px');
+      canvasWrapper.style.setProperty("max-width", width + 'px');
+      canvasWrapper.style.setProperty("min-height", height + 'px');
+      canvasWrapper.style.setProperty("max-height", height + 'px');
+    }, className, size.width, size.height);
+  } else {
+    // Avoid setting PBaseSize for top level views to avoid window manager bugs
+    const PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
+    if (puglIsValidArea(defaultSize) && view->parent) {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.setProperty("width", parseInt($1 / window.devicePixelRatio) + 'px');
+        canvasWrapper.style.setProperty("height", parseInt($2 / window.devicePixelRatio) + 'px');
+      }, className, defaultSize.width, defaultSize.height);
+    } else {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.removeProperty("width");
+        canvasWrapper.style.removeProperty("height");
+      }, className);
+    }
+
+    const PuglArea minSize = view->sizeHints[PUGL_MIN_SIZE];
+    if (puglIsValidArea(minSize)) {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
+        canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
+      }, className, minSize.width, minSize.height);
+    } else {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.removeProperty("min-width");
+        canvasWrapper.style.removeProperty("min-height");
+      }, className);
+    }
+
+    const PuglArea maxSize = view->sizeHints[PUGL_MAX_SIZE];
+    if (puglIsValidArea(maxSize)) {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.setProperty("max-width", parseInt($1 / window.devicePixelRatio) + 'px');
+        canvasWrapper.style.setProperty("max-height", parseInt($2 / window.devicePixelRatio) + 'px');
+      }, className, maxSize.width, maxSize.height);
+    } else {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.removeProperty("max-width");
+        canvasWrapper.style.removeProperty("max-height");
+      }, className);
+    }
+
+    /* TODO
+     const PuglArea minAspect = view->sizeHints[PUGL_MIN_ASPECT];
+     const PuglArea maxAspect = view->sizeHints[PUGL_MAX_ASPECT];
+     const PuglArea fixedAspect = view->sizeHints[PUGL_FIXED_ASPECT];
+     */
+  }
+
+  return PUGL_SUCCESS;
+}
+
+static PuglStatus
 puglDispatchEventWithContext(PuglView* const view, const PuglEvent* event)
 {
   PuglStatus st0 = PUGL_SUCCESS;
@@ -761,14 +837,7 @@ puglRealize(PuglView* const view)
    canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
   }, className);
 
-  const PuglArea minSize = view->sizeHints[PUGL_MIN_SIZE];
-  if (minSize.width && minSize.height) {
-    EM_ASM({
-      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
-      canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
-      canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
-    }, className, minSize.width, minSize.height);
-  }
+  updateSizeHints(view);
 
   emscripten_set_canvas_element_size(className, defaultSize.width, defaultSize.height);
 #ifndef PUGL_WASM_NO_KEYBOARD_INPUT
@@ -944,24 +1013,12 @@ puglSetSizeHint(PuglView* const    view,
   const PuglStatus st = puglStoreSizeHint(view, hint, width, height);
   if (st != PUGL_SUCCESS)
     return st;
-  if (!view->impl->created)
-    return PUGL_SUCCESS;
 
-  const char* const className = view->world->strings[PUGL_CLASS_NAME];
+  updateSizeHints(view);
 
-  switch (hint) {
-  case PUGL_MIN_SIZE:
-    EM_ASM({
-      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
-      canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
-      canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
-    }, className, width, height);
-    break;
-  case PUGL_CURRENT_SIZE:
+  if (hint == PUGL_CURRENT_SIZE && view->impl->created) {
+    const char* const className = view->world->strings[PUGL_CLASS_NAME];
     emscripten_set_canvas_element_size(className, width, height);
-    break;
-  default:
-    break;
   }
 
   return PUGL_SUCCESS;

@@ -358,7 +358,7 @@ void puglSetResizable(PuglView* const view, const bool resizable)
     }
     // FIXME use [view setAutoresizingMask:NSViewNotSizable] ?
    #elif defined(DISTRHO_OS_WASM)
-    // nothing
+    updateSizeHints(view);
    #elif defined(DISTRHO_OS_WINDOWS)
     if (const HWND hwnd = view->impl->hwnd)
     {
@@ -391,6 +391,9 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
             return status;
     }
    #elif defined(DISTRHO_OS_WASM)
+    if (const PuglStatus status = updateSizeHints(view))
+        return status;
+
     emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME], width, height);
    #elif defined(DISTRHO_OS_WINDOWS)
     // matches upstream pugl, except we re-enter context after resize
