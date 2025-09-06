@@ -398,6 +398,10 @@ vst3files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst3/Contents/%)
 clapfiles += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).clap/Contents/%)
 endif
 
+ifeq ($(WASM),true)
+jackfiles += $(TARGET_DIR)/$(NAME).html
+endif
+
 ifneq ($(HAVE_DGL),true)
 dssi_ui =
 lv2_ui =
@@ -851,6 +855,8 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # macOS files
 
+ifeq ($(MACOS),true)
+
 $(TARGET_DIR)/%.app/Contents/Info.plist: $(DPF_PATH)/utils/plugin.app/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
@@ -867,8 +873,21 @@ $(TARGET_DIR)/%/Resources/empty.lproj: $(DPF_PATH)/utils/plugin.bundle/Contents/
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)cp $< $@
 
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
-# format-specific files
+# wasm files
+
+ifeq ($(WASM),true)
+
+$(TARGET_DIR)/$(NAME).html: $(DPF_PATH)/utils/emscripten.html.in
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)sed -e 's|@NAME@|$(NAME)|g' $< > $@
+
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# auto-generated format-specific files
 
 $(TARGET_DIR)/$(NAME).component/Contents/Info.plist: $(BUILD_DIR)/export$(APP_EXT)
 	-@mkdir -p $(shell dirname $@)

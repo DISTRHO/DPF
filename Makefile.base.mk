@@ -331,6 +331,10 @@ BASE_FLAGS += -DNDEBUG $(BASE_OPTS) -fvisibility=hidden
 CXXFLAGS   += -fvisibility-inlines-hidden
 endif
 
+ifeq ($(WASM),true)
+LINK_OPTS  += -sALLOW_MEMORY_GROWTH
+endif
+
 ifeq ($(WITH_LTO),true)
 BASE_FLAGS += -fno-strict-aliasing -flto
 LINK_OPTS  += -fno-strict-aliasing -flto -Werror=odr
@@ -698,7 +702,7 @@ endif
 # Set app extension
 
 ifeq ($(WASM),true)
-APP_EXT = .html
+APP_EXT = .js
 else ifeq ($(WINDOWS),true)
 APP_EXT = .exe
 endif
