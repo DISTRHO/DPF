@@ -488,7 +488,7 @@ endif
 
 else
 
-ifeq ($(USE_FILEBROWSER)$(HAVE_DBUS),truetrue)
+ifeq ($(USE_FILE_BROWSER)$(HAVE_DBUS),truetrue)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
 endif
