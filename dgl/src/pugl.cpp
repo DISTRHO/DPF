@@ -313,10 +313,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
    #elif defined(DISTRHO_OS_MAC)
     if (view->impl->window)
     {
-        if (const PuglStatus status = updateSizeHint(view, PUGL_MIN_SIZE))
-            return status;
-
-        if (const PuglStatus status = updateSizeHint(view, PUGL_FIXED_ASPECT))
+        if (const PuglStatus status = puglUpdateSizeHints(view))
             return status;
     }
    #elif defined(DISTRHO_OS_WASM)
@@ -331,7 +328,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
    #elif defined(HAVE_X11)
     if (view->impl->win)
     {
-        if (const PuglStatus status = updateSizeHints(view))
+        if (const PuglStatus status = puglUpdateSizeHints(view))
             return status;
 
         XFlush(view->world->impl->display);
@@ -358,7 +355,7 @@ void puglSetResizable(PuglView* const view, const bool resizable)
     }
     // FIXME use [view setAutoresizingMask:NSViewNotSizable] ?
    #elif defined(DISTRHO_OS_WASM)
-    updateSizeHints(view);
+    puglUpdateSizeHints(view);
    #elif defined(DISTRHO_OS_WINDOWS)
     if (const HWND hwnd = view->impl->hwnd)
     {
@@ -367,7 +364,7 @@ void puglSetResizable(PuglView* const view, const bool resizable)
         SetWindowLong(hwnd, GWL_STYLE, winFlags);
     }
    #elif defined(HAVE_X11)
-    updateSizeHints(view);
+    puglUpdateSizeHints(view);
    #endif
 }
 
@@ -391,7 +388,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
             return status;
     }
    #elif defined(DISTRHO_OS_WASM)
-    if (const PuglStatus status = updateSizeHints(view))
+    if (const PuglStatus status = puglUpdateSizeHints(view))
         return status;
 
     emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME], width, height);
@@ -411,7 +408,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* const view, const uint width, const u
     // matches upstream pugl, adds flush at the end
     if (view->impl->win)
     {
-        if (const PuglStatus status = updateSizeHints(view))
+        if (const PuglStatus status = puglUpdateSizeHints(view))
             return status;
 
         if (const PuglStatus status = puglSetWindowSize(view, width, height))
@@ -608,8 +605,8 @@ void puglWin32ShowCentered(PuglView* const view)
 
 PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 {
-    const bool wasDispatchingEvents = world->impl->dispatchingEvents;
-    world->impl->dispatchingEvents = true;
+    const PuglWorldState startState = world->state;
+    world->state = PUGL_WORLD_UPDATING;
     PuglStatus st = PUGL_SUCCESS;
 
     const double startTime = puglGetTime(world);
@@ -617,11 +614,11 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 
     for (double t = startTime; !st && t < endTime; t = puglGetTime(world))
     {
-        pollX11Socket(world, endTime - t);
-        st = dispatchX11Events(world);
+        if (!(st = pollX11Socket(world, endTime - t)))
+            st = dispatchX11Events(world);
     }
 
-    world->impl->dispatchingEvents = wasDispatchingEvents;
+    world->state = startState;
     return st;
 }
 

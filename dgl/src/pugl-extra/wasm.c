@@ -83,7 +83,7 @@ puglInitViewInternals(PuglWorld* const world)
 }
 
 static PuglStatus
-updateSizeHints(const PuglView* const view)
+puglUpdateSizeHints(const PuglView* const view)
 {
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
 
@@ -837,7 +837,7 @@ puglRealize(PuglView* const view)
    canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
   }, className);
 
-  updateSizeHints(view);
+  puglUpdateSizeHints(view);
 
   emscripten_set_canvas_element_size(className, defaultSize.width, defaultSize.height);
 #ifndef PUGL_WASM_NO_KEYBOARD_INPUT
@@ -1014,7 +1014,7 @@ puglSetSizeHint(PuglView* const    view,
   if (st != PUGL_SUCCESS)
     return st;
 
-  updateSizeHints(view);
+  puglUpdateSizeHints(view);
 
   if (hint == PUGL_CURRENT_SIZE && view->impl->created) {
     const char* const className = view->world->strings[PUGL_CLASS_NAME];
