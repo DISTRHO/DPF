@@ -286,7 +286,7 @@ public:
        #else
         UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                         fPlugin.getInstancePointer(), scaleFactor);
+                         fPlugin.getInstancePointer(), scaleFactor, DGL_NAMESPACE::Application::kTypeClassic);
         *width = tmpUI.getWidth();
         *height = tmpUI.getHeight();
         scaleFactor = tmpUI.getScaleFactor();
@@ -584,7 +584,8 @@ private:
                              nullptr, // TODO fileRequestCallback,
                              d_nextBundlePath,
                              fPlugin.getInstancePointer(),
-                             fScaleFactor);
+                             fScaleFactor,
+                             DGL_NAMESPACE::Application::kTypeClassic);
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         fUI->programLoaded(fCurrentProgram);

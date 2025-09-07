@@ -175,7 +175,8 @@ public:
               nullptr, // TODO file request
               d_nextBundlePath,
               plugin->getInstancePointer(),
-              scaleFactor),
+              scaleFactor,
+              DGL_NAMESPACE::Application::kTypeClassic),
           fKeyboardModifiers(0)
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fNotesRingBuffer()
@@ -600,7 +601,7 @@ public:
                #else
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                                 fPlugin.getInstancePointer(), scaleFactor);
+                                 fPlugin.getInstancePointer(), scaleFactor, DGL_NAMESPACE::Application::kTypeClassic);
                 fVstRect.right = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 scaleFactor = tmpUI.getScaleFactor();

@@ -67,14 +67,14 @@ START_NAMESPACE_DISTRHO
 int dpf_webview_start(int argc, char* argv[]);
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Plugin Application, will set class name based on plugin details
 
 class PluginApplication : public DGL_NAMESPACE::Application
 {
 public:
-    explicit PluginApplication(const char* className)
-        : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE)
+    explicit PluginApplication(const char* className, const Application::Type type)
+        : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE, type)
     {
        #if defined(__MOD_DEVICES__) || !defined(__EMSCRIPTEN__)
         if (className == nullptr)
@@ -108,7 +108,7 @@ public:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Plugin Window, will pass some Window events to UI
 
 class PluginWindow : public DGL_NAMESPACE::Window
@@ -243,7 +243,7 @@ protected:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // UI callbacks
 
 typedef void (*editParamFunc)   (void* ptr, uint32_t rindex, bool started);
@@ -253,7 +253,7 @@ typedef void (*sendNoteFunc)    (void* ptr, uint8_t channel, uint8_t note, uint8
 typedef void (*setSizeFunc)     (void* ptr, uint width, uint height);
 typedef bool (*fileRequestFunc) (void* ptr, const char* key);
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // UI private data
 
 struct UI::PrivateData {
@@ -292,8 +292,8 @@ struct UI::PrivateData {
     setSizeFunc     setSizeCallbackFunc;
     fileRequestFunc fileRequestCallbackFunc;
 
-    PrivateData(const char* const appClassName) noexcept
-        : app(appClassName),
+    PrivateData(const char* const appClassName, const DGL_NAMESPACE::Application::Type appType) noexcept
+        : app(appClassName, appType),
           window(nullptr),
          #if DISTRHO_UI_USE_WEB_VIEW
           webview(nullptr),
@@ -392,7 +392,7 @@ struct UI::PrivateData {
    #endif
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // UI private data fileRequestCallback, which requires PluginWindow definitions
 
 inline bool UI::PrivateData::fileRequestCallback(const char* const key)
@@ -419,7 +419,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     return false;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // PluginWindow onFileSelected that require UI::PrivateData definitions
 
 #if DISTRHO_UI_FILE_BROWSER
@@ -457,7 +457,7 @@ inline void PluginWindow::onFileSelected(const char* const filename)
 }
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 
