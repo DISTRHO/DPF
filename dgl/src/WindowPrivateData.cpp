@@ -94,10 +94,7 @@ static PuglView* puglNewViewWithParentWindow(PuglWorld* const world, const uintp
         puglSetParent(view, parentWindowHandle);
 
         if (parentWindowHandle != 0)
-        {
-            puglSetPositionHint(view, PUGL_CURRENT_POSITION, 0, 0);
             puglSetPositionHint(view, PUGL_DEFAULT_POSITION, 0, 0);
-        }
 
         return view;
     }
