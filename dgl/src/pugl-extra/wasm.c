@@ -110,9 +110,8 @@ puglUpdateSizeHints(PuglView* const view)
       canvasWrapper.style.setProperty("max-height", height + 'px');
     }, className, size.width, size.height);
   } else {
-    // Avoid setting PBaseSize for top level views to avoid window manager bugs
     const PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
-    if (puglIsValidArea(defaultSize) && view->parent) {
+    if (puglIsValidArea(defaultSize)) {
       EM_ASM({
         var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
         canvasWrapper.style.setProperty("width", parseInt($1 / window.devicePixelRatio) + 'px');
