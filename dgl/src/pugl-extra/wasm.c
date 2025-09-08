@@ -1,10 +1,11 @@
 // Copyright 2012-2022 David Robillard <d@drobilla.net>
-// Copyright 2021-2022 Filipe Coelho <falktx@falktx.com>
+// Copyright 2021-2025 Filipe Coelho <falktx@falktx.com>
 // SPDX-License-Identifier: ISC
 
 #include "wasm.h"
 
 #include "../pugl-upstream/src/internal.h"
+#include "../pugl-upstream/src/platform.h"
 
 #include <stdio.h>
 
@@ -82,8 +83,15 @@ puglInitViewInternals(PuglWorld* const world)
   return impl;
 }
 
-static PuglStatus
-puglUpdateSizeHints(const PuglView* const view)
+PuglStatus
+puglApplySizeHint(PuglView* const view, const PuglSizeHint PUGL_UNUSED(hint))
+{
+  // No fine-grained updates, hints are always recalculated together
+  return puglUpdateSizeHints(view);
+}
+
+PuglStatus
+puglUpdateSizeHints(PuglView* const view)
 {
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
 
@@ -1005,18 +1013,9 @@ puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const val
 }
 
 PuglStatus
-puglSetSizeHint(PuglView* const    view,
-                const PuglSizeHint hint,
-                const unsigned     width,
-                const unsigned     height)
+puglSetWindowSize(PuglView* const view, const unsigned width, const unsigned height)
 {
-  const PuglStatus st = puglStoreSizeHint(view, hint, width, height);
-  if (st != PUGL_SUCCESS)
-    return st;
-
-  puglUpdateSizeHints(view);
-
-  if (hint == PUGL_CURRENT_SIZE && view->impl->created) {
+  if (view->impl->created) {
     const char* const className = view->world->strings[PUGL_CLASS_NAME];
     emscripten_set_canvas_element_size(className, width, height);
   }
@@ -1247,26 +1246,4 @@ puglSetTransientParent(PuglView* const view, const PuglNativeView parent)
   printf("TODO: %s %d\n", __func__, __LINE__);
   view->transientParent = parent;
   return PUGL_FAILURE;
-}
-
-PuglStatus
-puglSetPositionHint(PuglView* const        view,
-                    const PuglPositionHint hint,
-                    const int              x,
-                    const int              y)
-{
-  if (x <= INT16_MIN || x > INT16_MAX || y <= INT16_MIN || y > INT16_MAX) {
-    return PUGL_BAD_PARAMETER;
-  }
-
-  view->positionHints[hint].x = (PuglCoord)x;
-  view->positionHints[hint].y = (PuglCoord)y;
-
-  if (!view->impl->created || hint != PUGL_CURRENT_POSITION) {
-    return PUGL_SUCCESS;
-  }
-
-  view->lastConfigure.x = x;
-  view->lastConfigure.y = y;
-  return puglObscureView(view);
 }
