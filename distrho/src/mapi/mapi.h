@@ -38,7 +38,7 @@ mapi_handle_t mapi_create(unsigned int sample_rate);
          typically referred to as "in-place processing".
 */
 MAPI_EXPORT
-void mapi_process(mapi_handle_t filter,
+void mapi_process(mapi_handle_t handle,
                   const float* const* ins,
                   float** outs,
                   unsigned int frames);
@@ -47,10 +47,10 @@ void mapi_process(mapi_handle_t filter,
    Set an effect parameter.
    @param handle A previously created effect.
    @param index A known index for this effect.
-   @param value A normalized value between 0 and 1, scaled internally by the effect as necessary.
+   @param value A full-ranged value.
 */
 MAPI_EXPORT
-void mapi_set_parameter(mapi_handle_t filter, unsigned int index, float value);
+void mapi_set_parameter(mapi_handle_t handle, unsigned int index, float value);
 
 /**
    Set an effect state, using strings for both key and value.
@@ -59,14 +59,14 @@ void mapi_set_parameter(mapi_handle_t filter, unsigned int index, float value);
    @param value A non-NULL value, allowed to be empty.
 */
 MAPI_EXPORT
-void mapi_set_state(mapi_handle_t filter, const char* key, const char* value);
+void mapi_set_state(mapi_handle_t handle, const char* key, const char* value);
 
 /**
    Destroy a previously created effect.
    @param handle A previously created effect.
 */
 MAPI_EXPORT
-void mapi_destroy(mapi_handle_t filter);
+void mapi_destroy(mapi_handle_t handle);
 
 #ifdef __cplusplus
 }

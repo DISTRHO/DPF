@@ -66,15 +66,19 @@ public:
 
     void setParameter(unsigned int index, float value)
     {
-        fPlugin.setParameterValue(index, fPlugin.getParameterRanges(index).getUnnormalizedValue(value));
+        fPlugin.setParameterValue(index, fPlugin.getParameterRanges(index).getFixedValue(value));
     }
 
-   #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* key, const char* value)
     {
+       #if DISTRHO_PLUGIN_WANT_STATE
         fPlugin.setState(key, value);
+       #else
+        // unused
+        (void)key;
+        (void)value;
+       #endif
     }
-   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -137,13 +141,11 @@ void mapi_set_parameter(mapi_handle_t handle, unsigned int index, float value)
     static_cast<PluginMAPI*>(handle)->setParameter(index, value);
 }
 
-#if DISTRHO_PLUGIN_WANT_STATE
 MAPI_EXPORT
 void mapi_set_state(mapi_handle_t handle, const char* key, const char* value)
 {
     static_cast<PluginMAPI*>(handle)->setState(key, value);
 }
-#endif
 
 MAPI_EXPORT
 void mapi_destroy(mapi_handle_t handle)

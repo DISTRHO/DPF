@@ -368,6 +368,21 @@ ifeq ($(WINDOWS)$(HAVE_DGL),truetrue)
 JACK_LIBS += -Wl,-subsystem,windows
 endif
 
+ifeq ($(WASM),true)
+ifeq ($(MAPI_MODULE_NAME),)
+$(error MAPI_MODULE_NAME property is requires for Web-Assembly MAPI builds)
+endif
+MAPI_EXT    = -mapi.js
+MAPI_SHARED = \
+	-sEXPORT_NAME="$(MAPI_MODULE_NAME)" \
+	-sEXPORTED_RUNTIME_METHODS=['addFunction','lengthBytesUTF8','stringToUTF8','UTF8ToString'] \
+	-sMAIN_MODULE=2 \
+	-sMODULARIZE=1
+else
+MAPI_EXT    = $(LIB_EXT)
+MAPI_SHARED = $(SHARED)
+endif
+
 ifeq ($(MACOS_APP_BUNDLE),true)
 jack       = $(TARGET_DIR)/$(NAME).app/Contents/MacOS/$(NAME)
 jackfiles  = $(TARGET_DIR)/$(NAME).app/Contents/Info.plist
@@ -382,7 +397,7 @@ ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
 lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
-mapi       = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
+mapi       = $(TARGET_DIR)/$(NAME)$(MAPI_EXT)
 static     = $(TARGET_DIR)/$(NAME).a
 vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
@@ -434,7 +449,7 @@ SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
 SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
 SYMBOLS_LV2DSP = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl']"
 SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
-SYMBOLS_MAPI   = -sEXPORTED_FUNCTIONS="['mapi_create','mapi_process','mapi_set_parameter','mapi_set_state','mapi_destroy']"
+SYMBOLS_MAPI   = -sEXPORTED_FUNCTIONS="['_mapi_create','_mapi_process','_mapi_set_parameter','_mapi_set_state','_mapi_destroy']"
 SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
 SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
 else ifeq ($(WINDOWS),true)
@@ -823,7 +838,7 @@ mapi: $(mapi)
 $(mapi): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_MAPI.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating MAPI for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_MAPI) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(MAPI_SHARED) $(SYMBOLS_MAPI) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Export
