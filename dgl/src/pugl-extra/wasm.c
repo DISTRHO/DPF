@@ -110,21 +110,6 @@ puglUpdateSizeHints(PuglView* const view)
       canvasWrapper.style.setProperty("max-height", height + 'px');
     }, className, size.width, size.height);
   } else {
-    const PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
-    if (puglIsValidArea(defaultSize)) {
-      EM_ASM({
-        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
-        canvasWrapper.style.setProperty("width", parseInt($1 / window.devicePixelRatio) + 'px');
-        canvasWrapper.style.setProperty("height", parseInt($2 / window.devicePixelRatio) + 'px');
-      }, className, defaultSize.width, defaultSize.height);
-    } else {
-      EM_ASM({
-        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
-        canvasWrapper.style.removeProperty("width");
-        canvasWrapper.style.removeProperty("height");
-      }, className);
-    }
-
     const PuglArea minSize = view->sizeHints[PUGL_MIN_SIZE];
     if (puglIsValidArea(minSize)) {
       EM_ASM({

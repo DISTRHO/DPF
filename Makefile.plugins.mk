@@ -369,9 +369,6 @@ JACK_LIBS += -Wl,-subsystem,windows
 endif
 
 ifeq ($(WASM),true)
-ifeq ($(MAPI_MODULE_NAME),)
-$(error MAPI_MODULE_NAME property is requires for Web-Assembly MAPI builds)
-endif
 MAPI_EXT    = -mapi.js
 MAPI_SHARED = \
 	-sEXPORT_NAME="$(MAPI_MODULE_NAME)" \
