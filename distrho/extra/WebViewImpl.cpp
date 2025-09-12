@@ -55,10 +55,10 @@
 # define WEB_VIEW_USING_CHOC 0
 #endif
 
-#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX)
-# define WEB_VIEW_USING_X11_IPC 1
+#if defined(DISTRHO_OS_LINUX) && (defined(HAVE_X11) || defined(HAVE_WAYLAND))
+# define WEB_VIEW_USING_LINUX_IPC 1
 #else
-# define WEB_VIEW_USING_X11_IPC 0
+# define WEB_VIEW_USING_LINUX_IPC 0
 #endif
 
 #if WEB_VIEW_USING_CHOC
@@ -67,7 +67,7 @@
 #elif WEB_VIEW_USING_MACOS_WEBKIT
 # include <Cocoa/Cocoa.h>
 # include <WebKit/WebKit.h>
-#elif WEB_VIEW_USING_X11_IPC
+#elif WEB_VIEW_USING_LINUX_IPC
 # include "ChildProcess.hpp"
 # include "RingBuffer.hpp"
 # include "String.hpp"
@@ -78,7 +78,12 @@
 # include <pthread.h>
 # include <unistd.h>
 # include <sys/mman.h>
-# include <X11/Xlib.h>
+# ifdef HAVE_X11
+#  include <X11/Xlib.h>
+# endif
+# ifdef HAVE_WAYLAND
+#  include <wayland-client.h>
+# endif
 # ifdef DISTRHO_PROPER_CPP11_SUPPORT
 #  include <functional>
 # endif
@@ -240,7 +245,7 @@ START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
 
-#if WEB_VIEW_USING_X11_IPC
+#if WEB_VIEW_USING_LINUX_IPC
 
 #ifdef WEB_VIEW_DGL_NAMESPACE
 using DISTRHO_NAMESPACE::ChildProcess;
@@ -344,7 +349,7 @@ static void getFilenameFromFunctionPtr(char filename[PATH_MAX], const void* cons
     }
 }
 
-#endif // WEB_VIEW_USING_X11_IPC
+#endif // WEB_VIEW_USING_LINUX_IPC
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -357,7 +362,7 @@ struct WebViewData {
     WKWebView* webview;
     NSURLRequest* urlreq;
     WEB_VIEW_DELEGATE_CLASS_NAME* delegate;
-   #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_LINUX_IPC
     int shmfd;
     char shmname[128];
     WebViewRingBuffer* shmptr;
@@ -365,9 +370,22 @@ struct WebViewData {
     void* callbackPtr;
     ChildProcess p;
     RingBufferControl<WebViewSharedBuffer> rbctrl, rbctrl2;
-    ::Display* display;
-    ::Window childWindow;
-    ::Window ourWindow;
+    bool usingWayland;
+    union {
+       #ifdef HAVE_X11
+        struct {
+            ::Display* display;
+            ::Window childWindow;
+            ::Window ourWindow;
+        } x11;
+       #endif
+       #ifdef HAVE_WAYLAND
+        struct {
+            struct wl_display* display;
+            uintptr_t ourWindow;
+        } wl;
+       #endif
+    };
    #endif
     WebViewData();
     DISTRHO_DECLARE_NON_COPYABLE(WebViewData);
@@ -382,7 +400,7 @@ WebViewData::WebViewData()
       webview(nullptr),
       urlreq(nullptr),
       delegate(nullptr)
-   #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_LINUX_IPC
     : shmfd(0),
       shmname(),
       shmptr(nullptr),
@@ -391,14 +409,18 @@ WebViewData::WebViewData()
       p(),
       rbctrl(),
       rbctrl2(),
-      display(nullptr),
-      childWindow(0),
-      ourWindow(0)
+      usingWayland(false)
     #endif
 {
-   #if WEB_VIEW_USING_X11_IPC
+  #if WEB_VIEW_USING_LINUX_IPC
     std::memset(shmname, 0, sizeof(shmname));
+   #ifdef HAVE_X11
+    std::memset(&x11, 0, sizeof(x11));
    #endif
+   #ifdef HAVE_WAYLAND
+    std::memset(&wl, 0, sizeof(wl));
+   #endif
+  #endif
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -572,7 +594,7 @@ WebViewHandle webViewCreate(const char* const url,
     handle->urlreq = urlreq;
     handle->delegate = delegate;
     return handle;
-#elif WEB_VIEW_USING_X11_IPC
+#elif WEB_VIEW_USING_LINUX_IPC
     // get startup paths
     char ldlinux[PATH_MAX] = {};
     getFilenameFromFunctionPtr(ldlinux, dlsym(nullptr, "_rtld_global"));
@@ -627,8 +649,21 @@ WebViewHandle webViewCreate(const char* const url,
     sem_init(&handle->shmptr->server.sem, 1, 0);
    #endif
 
-    ::Display* const display = XOpenDisplay(nullptr);
-    DISTRHO_SAFE_ASSERT_RETURN(display != nullptr, nullptr);
+    // TODO detection
+    const bool usingWayland = false;
+    struct wl_display* wl_display;
+    ::Display* x11display;
+
+    if (usingWayland)
+    {
+        wl_display = wl_display_connect(nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(wl_display != nullptr, nullptr);
+    }
+    else
+    {
+        x11display = XOpenDisplay(nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(x11display != nullptr, nullptr);
+    }
 
     // set up custom child environment
     uint envsize = 0;
@@ -660,9 +695,19 @@ WebViewHandle webViewCreate(const char* const url,
     handle->callbackPtr = options.callbackPtr;
     handle->shmfd = shmfd;
     handle->shmptr = static_cast<WebViewRingBuffer*>(shmptr);
-    handle->display = display;
-    handle->ourWindow = windowId;
+    handle->usingWayland = usingWayland;
     std::memcpy(handle->shmname, shmname, sizeof(shmname));
+
+    if (usingWayland)
+    {
+        handle->wl.display = wl_display;
+        handle->wl.ourWindow = windowId;
+    }
+    else
+    {
+        handle->x11.display = x11display;
+        handle->x11.ourWindow = windowId;
+    }
 
     handle->shmptr->valid = true;
 
@@ -726,7 +771,7 @@ void webViewDestroy(const WebViewHandle handle)
     [handle->webview removeFromSuperview];
     [handle->urlreq release];
     // [handle->delegate release];
-   #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_LINUX_IPC
    #ifndef __linux__
     sem_destroy(&handle->shmptr->client.sem);
     sem_destroy(&handle->shmptr->server.sem);
@@ -734,14 +779,21 @@ void webViewDestroy(const WebViewHandle handle)
     munmap(handle->shmptr, sizeof(WebViewRingBuffer));
     close(handle->shmfd);
     shm_unlink(handle->shmname);
-    XCloseDisplay(handle->display);
+    if (handle->usingWayland)
+    {
+        wl_display_disconnect(handle->wl.display);
+    }
+    else
+    {
+        XCloseDisplay(handle->x11.display);
+    }
    #endif
     delete handle;
 }
 
 void webViewIdle(const WebViewHandle handle)
 {
-   #if WEB_VIEW_USING_X11_IPC
+   #if WEB_VIEW_USING_LINUX_IPC
     uint32_t size = 0;
     void* buffer = nullptr;
 
@@ -798,7 +850,7 @@ void webViewEvaluateJS(const WebViewHandle handle, const char* const js)
                                                   encoding:NSUTF8StringEncoding];
     [handle->webview evaluateJavaScript:nsjs completionHandler:nil];
     [nsjs release];
-   #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_LINUX_IPC
     d_debug("evaluateJS '%s'", js);
     const size_t len = std::strlen(js) + 1;
     handle->rbctrl.writeUInt(kWebViewMessageEvaluateJS) &&
@@ -819,7 +871,7 @@ void webViewReload(const WebViewHandle handle)
     webview_choc_navigate(handle->webview, handle->url);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview loadRequest:handle->urlreq];
-   #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_LINUX_IPC
     d_stdout("reload");
     handle->rbctrl.writeUInt(kWebViewMessageReload);
     if (handle->rbctrl.commitWrite())
@@ -837,25 +889,37 @@ void webViewResize(const WebViewHandle handle, const uint width, const uint heig
     SetWindowPos(hwnd, nullptr, 0, 0, width, height, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
-   #elif WEB_VIEW_USING_X11_IPC
-    if (handle->childWindow == 0)
+   #elif WEB_VIEW_USING_LINUX_IPC
+    if (handle->usingWayland)
     {
-        ::Window rootWindow, parentWindow;
-        ::Window* childWindows = nullptr;
-        uint numChildren = 0;
-
-        XFlush(handle->display);
-        XQueryTree(handle->display, handle->ourWindow, &rootWindow, &parentWindow, &childWindows, &numChildren);
-
-        if (numChildren == 0 || childWindows == nullptr)
-            return;
-
-        handle->childWindow = childWindows[0];
-        XFree(childWindows);
+        // TODO
     }
+    else
+    {
+        if (handle->x11.childWindow == 0)
+        {
+            ::Window rootWindow, parentWindow;
+            ::Window* childWindows = nullptr;
+            uint numChildren = 0;
 
-    XResizeWindow(handle->display, handle->childWindow, width, height);
-    XFlush(handle->display);
+            XFlush(handle->x11.display);
+            XQueryTree(handle->x11.display,
+                       handle->x11.ourWindow,
+                       &rootWindow,
+                       &parentWindow,
+                       &childWindows,
+                       &numChildren);
+
+            if (numChildren == 0 || childWindows == nullptr)
+                return;
+
+            handle->x11.childWindow = childWindows[0];
+            XFree(childWindows);
+        }
+
+        XResizeWindow(handle->x11.display, handle->x11.childWindow, width, height);
+        XFlush(handle->x11.display);
+    }
    #endif
 
     // maybe unused
@@ -865,7 +929,7 @@ void webViewResize(const WebViewHandle handle, const uint width, const uint heig
     (void)scaleFactor;
 }
 
-#if WEB_VIEW_USING_X11_IPC
+#if WEB_VIEW_USING_LINUX_IPC
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -1034,7 +1098,7 @@ static int gtk3_js_cb(WebKitUserContentManager*, WebKitJavascriptResult* const r
     return 0;
 }
 
-static bool gtk3(Display* const display,
+static bool gtk3(Display* const x11display,
                  const Window winId,
                  const int x,
                  const int y,
@@ -1066,6 +1130,7 @@ static bool gtk3(Display* const display,
     typedef GtkWidget* (*gtk_plug_new_t)(Window);
     typedef void (*gtk_widget_show_all_t)(GtkWidget*);
     typedef void (*gtk_window_move_t)(GtkWindow*, int, int);
+    typedef GtkWidget* (*gtk_window_new_t)(int);
     typedef void (*gtk_window_set_default_size_t)(GtkWindow*, int, int);
     typedef WebKitSettings* (*webkit_settings_new_t)();
     typedef void (*webkit_settings_set_enable_developer_extras_t)(WebKitSettings*, gboolean);
@@ -1093,6 +1158,7 @@ static bool gtk3(Display* const display,
     CSYM(gtk_plug_new_t, gtk_plug_new)
     CSYM(gtk_widget_show_all_t, gtk_widget_show_all)
     CSYM(gtk_window_move_t, gtk_window_move)
+    CSYM(gtk_window_new_t, gtk_window_new)
     CSYM(gtk_window_set_default_size_t, gtk_window_set_default_size)
     CSYM(webkit_settings_new_t, webkit_settings_new)
     CSYM(webkit_settings_set_enable_developer_extras_t, webkit_settings_set_enable_developer_extras)
@@ -1134,7 +1200,7 @@ static bool gtk3(Display* const display,
 
     scaleFactor /= gdkScale;
 
-    gdk_set_allowed_backends("x11");
+    gdk_set_allowed_backends(x11display != nullptr ? "x11" : "wayland");
 
     if (! gtk_init_check(nullptr, nullptr))
     {
@@ -1142,8 +1208,18 @@ static bool gtk3(Display* const display,
         return false;
     }
 
-    GtkWidget* const window = gtk_plug_new(winId);
-    DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
+    GtkWidget* window;
+
+    if (x11display != nullptr)
+    {
+        window = gtk_plug_new(winId);
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
+    }
+    else
+    {
+        window = gtk_window_new(0);
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
+    }
 
     gtk_window_set_default_size(GTK_WINDOW(window), width, height);
     gtk_window_move(GTK_WINDOW(window), x, y);
@@ -1189,9 +1265,15 @@ static bool gtk3(Display* const display,
 
     gtk_widget_show_all(window);
 
-    Window wid = gtk_plug_get_id(GTK_PLUG(window));
-    XMapWindow(display, wid);
-    XFlush(display);
+    if (x11display != nullptr)
+    {
+        Window wid = gtk_plug_get_id(GTK_PLUG(window));
+        XMapWindow(x11display, wid);
+        XFlush(x11display);
+    }
+    else
+    {
+    }
 
     struct Gtk3WebFramework : WebFramework {
         const char* const _url;
@@ -1462,7 +1544,7 @@ public:
 // qt5webengine variant
 
 static bool qtwebengine(const int qtVersion,
-                        Display* const display,
+                        Display* const x11display,
                         const Window winId,
                         const int x,
                         const int y,
@@ -1625,7 +1707,7 @@ static bool qtwebengine(const int qtVersion,
     unsetenv("QT_FONT_DPI");
     unsetenv("QT_SCREEN_SCALE_FACTORS");
     unsetenv("QT_USE_PHYSICAL_DPI");
-    setenv("QT_QPA_PLATFORM", "xcb", 1);
+    setenv("QT_QPA_PLATFORM", x11display != nullptr ? "xcb" : "wayland", 1);
 
     if (qtVersion == 5)
     {
@@ -1790,10 +1872,10 @@ static bool qtwebengine(const int qtVersion,
     QWebEngineView_setUrl(&webview, qurl);
 
     // FIXME Qt6 seems to need some forcing..
-    if (qtVersion >= 6)
+    if (qtVersion >= 6 && x11display != nullptr)
     {
-        XReparentWindow(display, QWebEngineView_winId(&webview), winId, x, y);
-        XFlush(display);
+        XReparentWindow(x11display, QWebEngineView_winId(&webview), winId, x, y);
+        XFlush(x11display);
     }
 
     QWebEngineView_show(&webview);
@@ -1958,8 +2040,15 @@ int dpf_webview_start(const int argc, char* argv[])
 
     uselocale(newlocale(LC_NUMERIC_MASK, "C", nullptr));
 
-    Display* const display = XOpenDisplay(nullptr);
-    DISTRHO_SAFE_ASSERT_RETURN(display != nullptr, 1);
+    // TODO detection
+    const bool usingX11 = true;
+    ::Display* x11display = nullptr;
+
+    if (usingX11)
+    {
+        x11display = XOpenDisplay(nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(x11display != nullptr, 1);
+    }
 
     const char* const shmname = argv[2];
     const int shmfd = shm_open(shmname, O_RDWR, 0);
@@ -2030,9 +2119,9 @@ int dpf_webview_start(const int argc, char* argv[])
         sigemptyset(&sig.sa_mask);
         sigaction(SIGTERM, &sig, nullptr);
 
-        if (! qtwebengine(5, display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
-            ! qtwebengine(6, display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
-            ! gtk3(display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr))
+        if (! qtwebengine(5, x11display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
+            ! qtwebengine(6, x11display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
+            ! gtk3(x11display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr))
         {
             d_stderr("Failed to find usable WebView platform");
         }
@@ -2049,14 +2138,15 @@ int dpf_webview_start(const int argc, char* argv[])
     munmap(shmptr, sizeof(WebViewRingBuffer));
     close(shmfd);
 
-    XCloseDisplay(display);
+    if (usingX11)
+        XCloseDisplay(x11display);
 
     return 0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#endif // WEB_VIEW_USING_X11_IPC
+#endif // WEB_VIEW_USING_LINUX_IPC
 
 #ifdef WEB_VIEW_DGL_NAMESPACE
 END_NAMESPACE_DGL
