@@ -678,8 +678,15 @@ function(dpf__determine_vst3_package_architecture OUTPUT_VARIABLE)
   endif()
 
   # transform the processor name to a format that VST3 recognizes
+  # see https://steinbergmedia.github.io/vst3_dev_portal/pages/Technical+Documentation/Locations+Format/Plugin+Format.html
   if(vst3_system_arch MATCHES "^(x86_64|amd64|AMD64|x64|X64)$")
     set(vst3_package_arch "x86_64")
+  elseif(vst3_system_arch MATCHES "^(ARM)$")
+    set(vst3_package_arch "arm")
+  elseif(vst3_system_arch MATCHES "^(ARM64)$")
+    set(vst3_package_arch "arm64")
+  elseif(vst3_system_arch MATCHES "^(ARM64EC)$")
+    set(vst3_package_arch "arm64x")
   elseif(vst3_system_arch MATCHES "^(i.86|x86|X86)$")
     if(WIN32)
       set(vst3_package_arch "x86")
