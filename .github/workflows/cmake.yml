@@ -124,7 +124,7 @@ jobs:
         path: build/bin/
 
   msvc-arm64:
-    runs-on: windows-2022
+    runs-on: windows-11-arm
     steps:
     - uses: actions/checkout@v4
       with:
