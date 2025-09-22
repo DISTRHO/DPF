@@ -122,3 +122,23 @@ jobs:
       with:
         name: msvc-win64
         path: build/bin/
+
+  msvc-arm64:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Configure CMake
+      run: |
+       cmake -S . -B build -G"Visual Studio 17 2022" -A"ARM64" -DCMAKE_BUILD_TYPE="Release"
+    - name: Build all
+      working-directory: build
+      run: cmake --build . --config "Release" -j 2
+    - name: Show built files
+      working-directory: build/bin
+      run: tree
+    - uses: actions/upload-artifact@v4
+      with:
+        name: msvc-arm64
+        path: build/bin/
