@@ -347,7 +347,7 @@ LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
 
 ifeq ($(WASM),true)
 # Special flag for emscripten
-LINK_FLAGS += -sENVIRONMENT=web -sLLD_REPORT_UNDEFINED
+LINK_FLAGS += -sENVIRONMENT=web,worker -sLLD_REPORT_UNDEFINED
 else ifneq ($(MACOS),true)
 # Not available on MacOS
 LINK_FLAGS += -Wl,--no-undefined
