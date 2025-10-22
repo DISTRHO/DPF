@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -52,7 +52,7 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 // unwanted in LV2, resize extension is deprecated and hosts can do it without extensions
 static constexpr const setSizeFunc setSizeCallback = nullptr;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 template <class LV2F>
 static const LV2F* getLv2Feature(const LV2_Feature* const* features, const char* const uri)
@@ -80,6 +80,7 @@ public:
           void* const dspPtr,
           const float sampleRate,
           const float scaleFactor,
+          const DGL_NAMESPACE::Application::Type appType,
           const uint32_t bgColor,
           const uint32_t fgColor,
           const char* const appClassName)
@@ -101,7 +102,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               fileRequestCallback,
-              bundlePath, dspPtr, scaleFactor, bgColor, fgColor, appClassName)
+              bundlePath, dspPtr, scaleFactor, appType, bgColor, fgColor, appClassName)
     {
         if (widget != nullptr)
             *widget = (LV2UI_Widget)fUI.getNativeWindowHandle();
@@ -483,7 +484,7 @@ private:
     }
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
                                       const char* const uri,
@@ -498,6 +499,9 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
         d_stderr("Invalid plugin URI");
         return nullptr;
     }
+
+    // TODO allow classic vs modern ui type
+    static constexpr const DGL_NAMESPACE::Application::Type appType = DGL_NAMESPACE::Application::kTypeClassic;
 
     const LV2_Options_Option* options   = nullptr;
     const LV2_URID_Map*       uridMap   = nullptr;
@@ -633,7 +637,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
 
     return new UiLv2(bundlePath, winId, options, uridMap, features,
                      controller, writeFunction, widget, instance,
-                     sampleRate, scaleFactor, bgColor, fgColor, appClassName);
+                     sampleRate, scaleFactor, appType, bgColor, fgColor, appClassName);
 }
 
 #define uiPtr ((UiLv2*)ui)
@@ -648,7 +652,7 @@ static void lv2ui_port_event(LV2UI_Handle ui, uint32_t portIndex, uint32_t buffe
     uiPtr->lv2ui_port_event(portIndex, bufferSize, format, buffer);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static int lv2ui_idle(LV2UI_Handle ui)
 {
@@ -665,7 +669,7 @@ static int lv2ui_hide(LV2UI_Handle ui)
     return uiPtr->lv2ui_hide();
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static uint32_t lv2_get_options(LV2UI_Handle ui, LV2_Options_Option* options)
 {
@@ -677,7 +681,7 @@ static uint32_t lv2_set_options(LV2UI_Handle ui, const LV2_Options_Option* optio
     return uiPtr->lv2_set_options(options);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
 static void lv2ui_select_program(LV2UI_Handle ui, uint32_t bank, uint32_t program)
@@ -686,7 +690,7 @@ static void lv2ui_select_program(LV2UI_Handle ui, uint32_t bank, uint32_t progra
 }
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static const void* lv2ui_extension_data(const char* uri)
 {
@@ -713,7 +717,7 @@ static const void* lv2ui_extension_data(const char* uri)
 
 #undef instancePtr
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static const LV2UI_Descriptor sLv2UiDescriptor = {
     DISTRHO_UI_URI,
@@ -723,7 +727,7 @@ static const LV2UI_Descriptor sLv2UiDescriptor = {
     lv2ui_extension_data
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 
@@ -929,4 +933,4 @@ void modgui_cleanup(const LV2UI_Handle handle)
 }
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------

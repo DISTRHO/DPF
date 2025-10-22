@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -286,7 +286,7 @@ public:
        #else
         UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                         fPlugin.getInstancePointer(), scaleFactor);
+                         fPlugin.getInstancePointer(), scaleFactor, DGL_NAMESPACE::Application::kTypeClassic);
         *width = tmpUI.getWidth();
         *height = tmpUI.getHeight();
         scaleFactor = tmpUI.getScaleFactor();
@@ -306,13 +306,15 @@ public:
        #if DISTRHO_UI_USER_RESIZABLE
         if (UIExporter* const ui = fUI.get())
             return ui->isResizable();
-       #endif
+        return true;
+       #else
         return false;
+       #endif
     }
 
     bool getResizeHints(clap_gui_resize_hints_t* const hints) const
     {
-        if (canResize())
+        if (fUI != nullptr && fUI->isResizable())
         {
             uint minimumWidth, minimumHeight;
             bool keepAspectRatio;
@@ -344,7 +346,7 @@ public:
 
     bool adjustSize(uint32_t* const width, uint32_t* const height) const
     {
-        if (canResize())
+        if (fUI != nullptr && fUI->isResizable())
         {
             uint minimumWidth, minimumHeight;
             bool keepAspectRatio;
@@ -582,7 +584,8 @@ private:
                              nullptr, // TODO fileRequestCallback,
                              d_nextBundlePath,
                              fPlugin.getInstancePointer(),
-                             fScaleFactor);
+                             fScaleFactor,
+                             DGL_NAMESPACE::Application::kTypeClassic);
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         fUI->programLoaded(fCurrentProgram);
@@ -751,6 +754,7 @@ public:
                   updateStateValueCallback),
           fHost(host),
           fOutputEvents(nullptr),
+          fResetParameterIndex(UINT32_MAX),
          #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
           fUsingCV(false),
          #endif
@@ -763,7 +767,19 @@ public:
          #endif
           fHostExtensions(host)
     {
-        fCachedParameters.setup(fPlugin.getParameterCount());
+        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        {
+            fCachedParameters.setup(paramCount);
+
+            for (uint32_t i=0; i<paramCount; ++i)
+            {
+                if (fPlugin.getParameterDesignation(i) == kParameterDesignationReset)
+                {
+                    fResetParameterIndex = i;
+                    break;
+                }
+            }
+        }
 
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&fNotesBuffer, true);
@@ -819,6 +835,22 @@ public:
         checkForLatencyChanges(false, true);
         reportLatencyChangeIfNeeded();
        #endif
+    }
+
+    void reset()
+    {
+        if (fResetParameterIndex != UINT32_MAX)
+        {
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            fMidiEventCount = 0;
+           #endif
+            fPlugin.setParameterValue(fResetParameterIndex, 1.f);
+            fPlugin.setParameterValue(fResetParameterIndex, 0.f);
+        }
+        else
+        {
+            fHost->request_restart(fHost);
+        }
     }
 
     bool process(const clap_process_t* const process)
@@ -1114,14 +1146,19 @@ public:
     {
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
-        if (fPlugin.getParameterDesignation(index) == kParameterDesignationBypass)
+        switch (fPlugin.getParameterDesignation(index))
         {
+        case kParameterDesignationBypass:
             info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_BYPASS|CLAP_PARAM_IS_AUTOMATABLE;
             std::strcpy(info->name, "Bypass");
             std::strcpy(info->module, "dpf_bypass");
-        }
-        else
-        {
+            break;
+        case kParameterDesignationReset:
+            info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_READONLY;
+            std::strcpy(info->name, "Reset");
+            std::strcpy(info->module, "dpf_reset");
+            break;
+        default:
             const uint32_t hints = fPlugin.getParameterHints(index);
             const uint32_t groupId = fPlugin.getParameterGroupId(index);
 
@@ -1151,6 +1188,7 @@ public:
             }
 
             d_strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
+            break;
         }
 
         info->id = index;
@@ -1786,6 +1824,7 @@ private:
     const clap_host_t* const fHost;
     const clap_output_events_t* fOutputEvents;
 
+    uint32_t fResetParameterIndex;
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     const float* fAudioInputs[DISTRHO_PLUGIN_NUM_INPUTS];
    #endif
@@ -2284,23 +2323,33 @@ static bool CLAP_ABI clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
 {
     if (is_input)
     {
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+      #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         info->id = 0;
+       #if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
+        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI | CLAP_NOTE_DIALECT_MIDI_MPE;
+        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI_MPE;
+       #else
         info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
         info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+       #endif
         std::strcpy(info->name, "Event/MIDI Input");
         return true;
-       #endif
+      #endif
     }
     else
     {
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+      #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         info->id = 0;
+       #if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
+        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI | CLAP_NOTE_DIALECT_MIDI_MPE;
+        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI_MPE;
+       #else
         info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
         info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+       #endif
         std::strcpy(info->name, "Event/MIDI Output");
         return true;
-       #endif
+      #endif
     }
 
     return false;
@@ -2440,9 +2489,10 @@ static void CLAP_ABI clap_plugin_stop_processing(const clap_plugin_t*)
     // nothing to do
 }
 
-static void CLAP_ABI clap_plugin_reset(const clap_plugin_t*)
+static void CLAP_ABI clap_plugin_reset(const clap_plugin_t* const plugin)
 {
-    // nothing to do
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    instance->reset();
 }
 
 static clap_process_status CLAP_ABI clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)

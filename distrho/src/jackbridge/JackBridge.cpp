@@ -1,6 +1,6 @@
 /*
  * JackBridge for DPF
- * Copyright (C) 2013-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2013-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -68,6 +68,9 @@ typedef void* lib_t;
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #  pragma clang diagnostic ignored "-Wunused-but-set-variable"
+#  if __clang_major__ >= 17
+#   pragma clang diagnostic ignored "-Wvla-cxx-extension"
+#  endif
 # endif
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
@@ -467,28 +470,36 @@ struct JackBridge {
          #endif
     {
       #ifdef HAVE_JACK
-       #if defined(DISTRHO_OS_MAC)
-        const char* const filename = "libjack.dylib";
-       #elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
-        const char* const filename = "libjack64.dll";
-       #elif defined(DISTRHO_OS_WINDOWS)
-        const char* const filename = "libjack.dll";
-       #else
-        const char* const filename = "libjack.so.0";
-       #endif
+        static constexpr const char* const filenames[] = {
+           #if defined(DISTRHO_OS_MAC)
+            "libjack.0.dylib",
+            "/usr/local/lib/libjack.0.dylib",
+           #elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
+            "libjack64.dll",
+           #elif defined(DISTRHO_OS_WINDOWS)
+            "libjack.dll",
+           #else
+            "libjack.so.0",
+           #endif
+        };
 
         USE_NAMESPACE_DISTRHO
 
-        lib = lib_open(filename);
+        for (uint i = 0; i < ARRAY_SIZE(filenames); ++i)
+        {
+            lib = lib_open(filenames[i]);
+
+            if (lib != nullptr)
+            {
+                d_stdout("%s loaded successfully!", filenames[i]);
+                break;
+            }
+        }
 
         if (lib == nullptr)
         {
-            d_stderr("Failed to load JACK DLL, reason:\n%s", lib_error(filename));
+            d_stderr("Failed to load JACK DLL, reason:\n%s", lib_error(filenames[0]));
             return;
-        }
-        else
-        {
-            d_stdout("%s loaded successfully!", filename);
         }
 
         #define JOIN(a, b) a ## b
@@ -951,7 +962,7 @@ jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options,
         return kValidClient;
     delete nativeBridge;
    #endif
-    
+
    #if defined(HAVE_RTAUDIO) && defined(RTAUDIO_API_TYPE)
     nativeBridge = new RtAudioBridge;
     if (nativeBridge->open(client_name))

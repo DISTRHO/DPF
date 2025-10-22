@@ -1,0 +1,5 @@
+_mapi_create
+_mapi_process
+_mapi_set_parameter
+_mapi_set_state
+_mapi_destroy

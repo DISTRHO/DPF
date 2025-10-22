@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -54,6 +54,12 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
 #endif
 
+#ifdef DGL_USE_WEB_VIEW
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
+#endif
+
 #ifdef DGL_NO_SHARED_RESOURCES
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_no_shared_resources_on)
 #else
@@ -78,10 +84,26 @@ class DISTRHO_API Application
 {
 public:
    /**
-      Constructor.
+      Type of application to setup, either "classic" or "modern".
+
+      What this means depends on the OS.
     */
-    // NOTE: the default value is not yet passed, so we catch where we use this
-    Application(bool isStandalone = true);
+    enum Type {
+        kTypeAuto,
+        kTypeClassic,
+        kTypeModern,
+    };
+
+   /**
+      Constructor for standalone or plugin application.
+    */
+    Application(bool isStandalone = true, Type type = kTypeAuto);
+
+   /**
+      Constructor for a standalone application.
+      This specific constructor is required if using web views in standalone applications.
+    */
+    Application(int argc, char* argv[]);
 
    /**
       Destructor.
@@ -129,6 +151,12 @@ public:
       its absolute value has no meaning.
    */
     double getTime() const;
+
+   /**
+      Return the application type, either kTypeClassic or kTypeModern.
+      This function never return kTypeAuto.
+   */
+    Type getType() const noexcept;
 
    /**
       Add a callback function to be triggered on every idle cycle.

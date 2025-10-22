@@ -554,6 +554,12 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_LATENCY 1
 
 /**
+   Whether the plugin wants MPE for MIDI input and/or output.
+   @note Only AU and CLAP formats implement this at the moment
+*/
+#define DISTRHO_PLUGIN_WANT_MIDI_AS_MPE 0
+
+/**
    Whether the plugin wants MIDI input.@n
    This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.
  */
@@ -862,6 +868,24 @@ START_NAMESPACE_DISTRHO
    @note This macro is required when building CLAP plugins
 */
 #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.effect"
+
+/**
+   Plugin name abbreviation consisting of 2 or 3 characters in uppercase.
+   @note This macro is required when building plugins for the Darkglass Anagram unit.
+*/
+#define DISTRHO_PLUGIN_ABBREVIATION "DFX"
+
+/**
+   Path to a in-bundle/local 200x200 PNG image file to be used as the plugin's block image asset when OFF.
+   @note This macro is required when building plugins for the Darkglass Anagram unit.
+*/
+#define DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_OFF "anagram-block-off.png"
+
+/**
+   Path to a in-bundle/local 200x200 PNG image file to be used as the plugin's block image asset when ON.
+   @note This macro is required when building plugins for the Darkglass Anagram unit.
+*/
+#define DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_ON "anagram-block-on.png"
 
 /** @} */
 

@@ -537,7 +537,7 @@ public:
      * Commit all previous write operations to the ringbuffer.
      * If a write operation has previously failed, this will reset/invalidate the previous write attempts.
      */
-    bool commitWrite() noexcept
+    bool commitWrite(const char* const debugMsg = nullptr) noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, false);
 
@@ -549,7 +549,11 @@ public:
         }
 
         // nothing to commit?
-        DISTRHO_SAFE_ASSERT_RETURN(buffer->head != buffer->wrtn, false);
+        if (debugMsg != nullptr) {
+            DISTRHO_CUSTOM_SAFE_ASSERT_RETURN(debugMsg, buffer->head != buffer->wrtn, false);
+        } else {
+            DISTRHO_SAFE_ASSERT_RETURN(buffer->head != buffer->wrtn, false);
+        }
 
         // all ok
         buffer->head = buffer->wrtn;

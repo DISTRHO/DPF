@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,7 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Color.hpp"
+#ifdef _MSC_VER
+// instantiated template classes whose methods are defined elsewhere
+# pragma warning(disable:4661)
+#endif
+
+#include "../Color.hpp"
+#include "../ImageBaseWidgets.hpp"
+
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -23,10 +30,32 @@
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
+// Check for correct build config
+
+#ifdef DGL_CAIRO
+# error Build config error, Cairo requested while building Stub code
+#endif
+#ifdef DGL_OPENGL
+# error Build config error, OpenGL requested while building Stub code
+#endif
+#ifdef DGL_VULKAN
+# error Build config error, Vulkan requested while building Stub code
+#endif
+#ifdef DGL_USE_GLES2
+# error Build config error, GLESv2 requested while building Stub code
+#endif
+#ifdef DGL_USE_GLES3
+# error Build config error, GLESv3 requested while building Stub code
+#endif
+#ifdef DGL_USE_OPENGL3
+# error Build config error, OpenGL3 requested while building Stub code
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
 
 static void notImplemented(const char* const name)
 {
-    d_stderr2("stub function not implemented: %s", name);
+    d_stderr2("Stub function not implemented: %s", name);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -46,11 +75,13 @@ void Line<T>::draw(const GraphicsContext& context, T)
     notImplemented("Line::draw");
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Line<T>::draw()
 {
     notImplemented("Line::draw");
 }
+#endif
 
 template class Line<double>;
 template class Line<float>;
@@ -74,6 +105,7 @@ void Circle<T>::drawOutline(const GraphicsContext&, T)
     notImplemented("Circle::drawOutline");
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Circle<T>::draw()
 {
@@ -85,6 +117,7 @@ void Circle<T>::drawOutline()
 {
     notImplemented("Circle::drawOutline");
 }
+#endif
 
 template class Circle<double>;
 template class Circle<float>;
@@ -108,6 +141,7 @@ void Triangle<T>::drawOutline(const GraphicsContext&, T)
     notImplemented("Triangle::drawOutline");
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Triangle<T>::draw()
 {
@@ -119,6 +153,7 @@ void Triangle<T>::drawOutline()
 {
     notImplemented("Triangle::drawOutline");
 }
+#endif
 
 template class Triangle<double>;
 template class Triangle<float>;
@@ -142,6 +177,7 @@ void Rectangle<T>::drawOutline(const GraphicsContext&, T)
     notImplemented("Rectangle::drawOutline");
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Rectangle<T>::draw()
 {
@@ -153,6 +189,7 @@ void Rectangle<T>::drawOutline()
 {
     notImplemented("Rectangle::drawOutline");
 }
+#endif
 
 template class Rectangle<double>;
 template class Rectangle<float>;
@@ -182,10 +219,20 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
 
 // --------------------------------------------------------------------------------------------------------------------
 
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+void Window::PrivateData::createContextIfNeeded()
 {
-    GraphicsContext& context((GraphicsContext&)graphicsContext);
-    return context;
+}
+
+void Window::PrivateData::destroyContext()
+{
+}
+
+void Window::PrivateData::startContext()
+{
+}
+
+void Window::PrivateData::endContext()
+{
 }
 
 // --------------------------------------------------------------------------------------------------------------------

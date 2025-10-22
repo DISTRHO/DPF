@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -41,12 +41,16 @@
 # error typo detected use DGL_USE_FILE_BROWSER instead of DGL_USE_FILEBROWSER
 #endif
 
-#ifdef DGL_UI_USE_WEBVIEW
-# error typo detected use DGL_UI_USE_WEB_VIEW instead of DGL_UI_USE_WEBVIEW
+#ifdef DGL_USE_WEBVIEW
+# error typo detected use DGL_USE_WEB_VIEW instead of DGL_USE_WEBVIEW
 #endif
 
 #if defined(DGL_FILE_BROWSER_DISABLED)
 # error DGL_FILE_BROWSER_DISABLED has been replaced by DGL_USE_FILE_BROWSER (opt-in vs opt-out)
+#endif
+
+#ifndef DGL_ALLOW_DEPRECATED_METHODS
+# define DGL_ALLOW_DEPRECATED_METHODS 1
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

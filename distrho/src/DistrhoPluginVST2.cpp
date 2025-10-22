@@ -175,7 +175,8 @@ public:
               nullptr, // TODO file request
               d_nextBundlePath,
               plugin->getInstancePointer(),
-              scaleFactor),
+              scaleFactor,
+              DGL_NAMESPACE::Application::kTypeClassic),
           fKeyboardModifiers(0)
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fNotesRingBuffer()
@@ -398,8 +399,8 @@ public:
         {
             parameterValues = new float[parameterCount];
 
-            for (uint32_t i=0; i < parameterCount; ++i)
-                parameterValues[i] = NAN;
+            for (uint32_t i = 0; i < parameterCount; ++i)
+                parameterValues[i] = fPlugin.getParameterDefault(i);
         }
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -600,7 +601,7 @@ public:
                #else
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                                 fPlugin.getInstancePointer(), scaleFactor);
+                                 fPlugin.getInstancePointer(), scaleFactor, DGL_NAMESPACE::Application::kTypeClassic);
                 fVstRect.right = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 scaleFactor = tmpUI.getScaleFactor();
@@ -1709,7 +1710,7 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
     return effect;
 }
 
-#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS) || DISTRHO_UI_WEB_VIEW)
+#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS) || (defined(DISTRHO_OS_LINUX) && defined(DGL_USE_WEB_VIEW)))
 DISTRHO_PLUGIN_EXPORT
 const vst_effect* VSTPluginMainCompat(vst_host_callback) asm ("main");
 

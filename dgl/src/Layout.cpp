@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,9 +26,11 @@ typedef std::list<VerticalLayout*>::iterator VerticalLayoutIterator;
 // --------------------------------------------------------------------------------------------------------------------
 
 template<> // horizontal
-uint Layout<true>::setAbsolutePos(int x, const int y, const uint padding)
+uint Layout<true>::setAbsolutePos(int x, int y, const uint padding)
 {
     uint maxHeight = 0;
+    y += padding;
+    x += padding;
 
     for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
@@ -43,9 +45,11 @@ uint Layout<true>::setAbsolutePos(int x, const int y, const uint padding)
 }
 
 template<> // vertical
-uint Layout<false>::setAbsolutePos(const int x, int y, const uint padding)
+uint Layout<false>::setAbsolutePos(int x, int y, const uint padding)
 {
     uint maxWidth = 0;
+    y += padding;
+    x += padding;
 
     for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
@@ -63,10 +67,10 @@ template<> // horizontal
 void Layout<true>::setSize(const uint width, const uint padding)
 {
     uint maxHeight = 0;
-    uint nonFixedWidth = width;
+    uint nonFixedWidth = width - padding * 2;
     uint numDynamiclySizedWidgets = 0;
 
-    for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
+    for (SubWidgetWithSizeHintIterator it = widgets.begin(), end = widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
         maxHeight = std::max(maxHeight, s.widget->getHeight());
@@ -96,7 +100,7 @@ template<> // vertical
 void Layout<false>::setSize(const uint height, const uint padding)
 {
     uint biggestWidth = 0;
-    uint nonFixedHeight = height;
+    uint nonFixedHeight = height - padding * 2;
     uint numDynamiclySizedWidgets = 0;
 
     for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)

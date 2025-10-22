@@ -1,10 +1,11 @@
 // Copyright 2012-2022 David Robillard <d@drobilla.net>
-// Copyright 2021-2022 Filipe Coelho <falktx@falktx.com>
+// Copyright 2021-2025 Filipe Coelho <falktx@falktx.com>
 // SPDX-License-Identifier: ISC
 
 #include "wasm.h"
 
 #include "../pugl-upstream/src/internal.h"
+#include "../pugl-upstream/src/platform.h"
 
 #include <stdio.h>
 
@@ -80,6 +81,73 @@ puglInitViewInternals(PuglWorld* const world)
 #endif
 
   return impl;
+}
+
+PuglStatus
+puglApplySizeHint(PuglView* const view, const PuglSizeHint PUGL_UNUSED(hint))
+{
+  // No fine-grained updates, hints are always recalculated together
+  return puglUpdateSizeHints(view);
+}
+
+PuglStatus
+puglUpdateSizeHints(PuglView* const view)
+{
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
+
+  if (!view->hints[PUGL_RESIZABLE]) {
+    PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
+    if (!puglIsValidSize(size.width, size.height)) {
+      size = puglGetSizeHint(view, PUGL_DEFAULT_SIZE);
+    }
+    EM_ASM({
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      var width = parseInt($1 / window.devicePixelRatio);
+      var height = parseInt($2 / window.devicePixelRatio);
+      canvasWrapper.style.setProperty("min-width", width + 'px');
+      canvasWrapper.style.setProperty("max-width", width + 'px');
+      canvasWrapper.style.setProperty("min-height", height + 'px');
+      canvasWrapper.style.setProperty("max-height", height + 'px');
+    }, className, size.width, size.height);
+  } else {
+    const PuglArea minSize = view->sizeHints[PUGL_MIN_SIZE];
+    if (puglIsValidArea(minSize)) {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.setProperty("min-width", parseInt($1 / window.devicePixelRatio) + 'px');
+        canvasWrapper.style.setProperty("min-height", parseInt($2 / window.devicePixelRatio) + 'px');
+      }, className, minSize.width, minSize.height);
+    } else {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.removeProperty("min-width");
+        canvasWrapper.style.removeProperty("min-height");
+      }, className);
+    }
+
+    const PuglArea maxSize = view->sizeHints[PUGL_MAX_SIZE];
+    if (puglIsValidArea(maxSize)) {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.setProperty("max-width", parseInt($1 / window.devicePixelRatio) + 'px');
+        canvasWrapper.style.setProperty("max-height", parseInt($2 / window.devicePixelRatio) + 'px');
+      }, className, maxSize.width, maxSize.height);
+    } else {
+      EM_ASM({
+        var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+        canvasWrapper.style.removeProperty("max-width");
+        canvasWrapper.style.removeProperty("max-height");
+      }, className);
+    }
+
+    /* TODO
+     const PuglArea minAspect = view->sizeHints[PUGL_MIN_ASPECT];
+     const PuglArea maxAspect = view->sizeHints[PUGL_MAX_ASPECT];
+     const PuglArea fixedAspect = view->sizeHints[PUGL_FIXED_ASPECT];
+     */
+  }
+
+  return PUGL_SUCCESS;
 }
 
 static PuglStatus
@@ -729,7 +797,8 @@ puglRealize(PuglView* const view)
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
   d_stdout("className is %s", className);
 
-  PuglViewSize defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
+  const PuglPoint defaultPos = view->positionHints[PUGL_DEFAULT_POSITION];
+  const PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
   if (!defaultSize.width || !defaultSize.height) {
     return PUGL_BAD_CONFIGURATION;
   }
@@ -747,8 +816,8 @@ puglRealize(PuglView* const view)
   puglDispatchSimpleEvent(view, PUGL_REALIZE);
 
   PuglEvent event        = {{PUGL_CONFIGURE, 0}};
-  event.configure.x      = view->defaultX;
-  event.configure.y      = view->defaultY;
+  event.configure.x      = defaultPos.x;
+  event.configure.y      = defaultPos.y;
   event.configure.width  = defaultSize.width;
   event.configure.height = defaultSize.height;
   puglDispatchEvent(view, &event);
@@ -759,6 +828,8 @@ puglRealize(PuglView* const view)
    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
    canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
   }, className);
+
+  puglUpdateSizeHints(view);
 
   emscripten_set_canvas_element_size(className, defaultSize.width, defaultSize.height);
 #ifndef PUGL_WASM_NO_KEYBOARD_INPUT
@@ -794,7 +865,7 @@ puglShow(PuglView* const view, PuglShowCommand)
 {
   view->impl->visible = true;
   view->impl->needsRepaint = true;
-  return puglPostRedisplay(view);
+  return puglObscureView(view);
 }
 
 PuglStatus
@@ -884,15 +955,23 @@ puglUpdate(PuglWorld* const world, const double timeout)
 }
 
 PuglStatus
-puglPostRedisplay(PuglView* const view)
+puglObscureView(PuglView* const view)
 {
   view->impl->needsRepaint = true;
   return PUGL_SUCCESS;
 }
 
 PuglStatus
-puglPostRedisplayRect(PuglView* const view, const PuglRect rect)
+puglObscureRegion(PuglView*      view,
+                  const int      x,
+                  const int      y,
+                  const unsigned width,
+                  const unsigned height)
 {
+  if (!puglIsValidPosition(x, y) || !puglIsValidSize(width, height)) {
+    return PUGL_BAD_PARAMETER;
+  }
+
   view->impl->needsRepaint = true;
   return PUGL_FAILURE;
 }
@@ -918,13 +997,13 @@ puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const val
 }
 
 PuglStatus
-puglSetSizeHint(PuglView* const    view,
-                const PuglSizeHint hint,
-                const PuglSpan     width,
-                const PuglSpan     height)
+puglSetWindowSize(PuglView* const view, const unsigned width, const unsigned height)
 {
-  view->sizeHints[hint].width  = width;
-  view->sizeHints[hint].height = height;
+  if (view->impl->created) {
+    const char* const className = view->world->strings[PUGL_CLASS_NAME];
+    emscripten_set_canvas_element_size(className, width, height);
+  }
+
   return PUGL_SUCCESS;
 }
 
@@ -1151,25 +1230,4 @@ puglSetTransientParent(PuglView* const view, const PuglNativeView parent)
   printf("TODO: %s %d\n", __func__, __LINE__);
   view->transientParent = parent;
   return PUGL_FAILURE;
-}
-
-PuglStatus
-puglSetPosition(PuglView* const view, const int x, const int y)
-{
-  printf("TODO: %s %d\n", __func__, __LINE__);
-
-  if (x > INT16_MAX || y > INT16_MAX) {
-    return PUGL_BAD_PARAMETER;
-  }
-
-  if (!view->impl->created) {
-    // Set defaults to be used when realized
-    view->defaultX = x;
-    view->defaultY = y;
-    return PUGL_SUCCESS;
-  }
-
-  view->lastConfigure.x = (PuglCoord)x;
-  view->lastConfigure.y = (PuglCoord)y;
-  return puglPostRedisplay(view);
 }

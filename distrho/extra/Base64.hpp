@@ -86,15 +86,15 @@ bool isBase64Char(const char c)
 // --------------------------------------------------------------------------------------------------------------------
 
 static inline
-std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
+void d_getChunkFromBase64String_impl(std::vector<uint8_t>& vector, const char* const base64string)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(base64string != nullptr, std::vector<uint8_t>());
+    vector.clear();
+    DISTRHO_SAFE_ASSERT_RETURN(base64string != nullptr,);
 
     uint i=0, j=0;
     uint charArray3[3], charArray4[4];
 
-    std::vector<uint8_t> ret;
-    ret.reserve(std::strlen(base64string)*3/4 + 4);
+    vector.reserve(std::strlen(base64string)*3/4 + 4);
 
     for (std::size_t l=0, len=std::strlen(base64string); l<len; ++l)
     {
@@ -119,7 +119,7 @@ std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
             charArray3[2] = ((charArray4[2] & 0x3) << 6) +   charArray4[3];
 
             for (i=0; i<3; ++i)
-                ret.push_back(static_cast<uint8_t>(charArray3[i]));
+                vector.push_back(static_cast<uint8_t>(charArray3[i]));
 
             i = 0;
         }
@@ -138,9 +138,15 @@ std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
         charArray3[2] = ((charArray4[2] & 0x3) << 6) +   charArray4[3];
 
         for (j=0; i>0 && j<i-1; j++)
-            ret.push_back(static_cast<uint8_t>(charArray3[j]));
+            vector.push_back(static_cast<uint8_t>(charArray3[j]));
     }
+}
 
+static inline
+std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
+{
+    std::vector<uint8_t> ret;
+    d_getChunkFromBase64String_impl(ret, base64string);
     return ret;
 }
 

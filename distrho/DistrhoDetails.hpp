@@ -202,7 +202,7 @@ static constexpr const uint32_t kStateIsOnlyForUI = 0x20;
 
 /**
    Parameter designation.@n
-   Allows a parameter to be specially designated for a task, like bypass.
+   Allows a parameter to be specially designated for a task, like bypass and reset.
 
    Each designation is unique, there must be only one parameter that uses it.@n
    The use of designated parameters is completely optional.
@@ -214,13 +214,20 @@ enum ParameterDesignation {
    /**
      Null or unset designation.
     */
-    kParameterDesignationNull = 0,
+    kParameterDesignationNull,
 
    /**
      Bypass designation.@n
      When on (> 0.5f), it means the plugin must run in a bypassed state.
     */
-    kParameterDesignationBypass = 1
+    kParameterDesignationBypass,
+
+   /**
+     Reset designation.@n
+     When on (> 0.5f), it means the plugin should reset its internal processing state
+     (like filters, oscillators, envelopes, lfos, etc) and kill all voices.
+    */
+    kParameterDesignationReset,
 };
 
 /**
@@ -234,7 +241,12 @@ namespace ParameterDesignationSymbols {
    static constexpr const char bypass[] = "dpf_bypass";
 
    /**
-     Bypass designation symbol, inverted for LV2 so it becomes "enabled".
+     Reset designation symbol.
+    */
+   static constexpr const char reset[] = "dpf_reset";
+
+   /**
+     LV2 bypass designation symbol, inverted for LV2 so it becomes "enabled".
     */
    static constexpr const char bypass_lv2[] = "lv2_enabled";
 };
@@ -721,6 +733,18 @@ struct Parameter {
             name       = "Bypass";
             shortName  = "Bypass";
             symbol     = ParameterDesignationSymbols::bypass;
+            unit       = "";
+            midiCC     = 0;
+            groupId    = kPortGroupNone;
+            ranges.def = 0.0f;
+            ranges.min = 0.0f;
+            ranges.max = 1.0f;
+            break;
+        case kParameterDesignationReset:
+            hints      = kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger|kParameterIsTrigger;
+            name       = "Reset";
+            shortName  = "Reset";
+            symbol     = ParameterDesignationSymbols::reset;
             unit       = "";
             midiCC     = 0;
             groupId    = kPortGroupNone;

@@ -112,6 +112,11 @@ public:
     */
     GLuint getTextureHandle() const;
 
+   /**
+      Update the image data in-place.
+    */
+    void update(const uchar* data);
+
 private:
     Handle fHandle;
     Size<uint> fSize;

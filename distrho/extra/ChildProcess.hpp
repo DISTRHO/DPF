@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -30,21 +30,31 @@
 # include <sys/wait.h>
 #endif
 
+#if defined(DISTRHO_OS_LINUX)
+# include <sys/prctl.h>
+#elif defined(DISTRHO_OS_MAC)
+# include <dispatch/dispatch.h>
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
 
 class ChildProcess
 {
-   #ifdef _WIN32
+   #ifdef DISTRHO_OS_WINDOWS
     PROCESS_INFORMATION pinfo;
    #else
     pid_t pid;
    #endif
 
+   #ifdef DISTRHO_OS_MAC
+    static void _proc_exit_handler(void*) { ::kill(::getpid(), SIGTERM); }
+   #endif
+
 public:
     ChildProcess()
-       #ifdef _WIN32
+       #ifdef DISTRHO_OS_WINDOWS
         : pinfo(CPP_AGGREGATE_INIT(PROCESS_INFORMATION){ INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 })
        #else
         : pid(-1)
@@ -57,13 +67,13 @@ public:
         stop();
     }
 
-   #ifdef _WIN32
-    bool start(const char* const args[], const WCHAR* const envp)
+   #ifdef DISTRHO_OS_WINDOWS
+    bool start(const char* const args[], const WCHAR* const envp = nullptr)
    #else
     bool start(const char* const args[], char* const* const envp = nullptr)
    #endif
     {
-       #ifdef _WIN32
+       #ifdef DISTRHO_OS_WINDOWS
         std::string cmd;
 
         for (uint i = 0; args[i] != nullptr; ++i)
@@ -109,6 +119,19 @@ public:
         {
         // child process
         case 0:
+           #if defined(DISTRHO_OS_LINUX)
+            ::prctl(PR_SET_PDEATHSIG, SIGTERM);
+           #elif defined(DISTRHO_OS_MAC)
+            if (const dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_PROC,
+                                                                        ::getppid(),
+                                                                        DISPATCH_PROC_EXIT,
+                                                                        nullptr))
+            {
+                dispatch_source_set_event_handler_f(source, _proc_exit_handler);
+                dispatch_resume(source);
+            }
+           #endif
+
             if (envp != nullptr)
                 execve(args[0], const_cast<char* const*>(args), envp);
             else
@@ -133,7 +156,7 @@ public:
         const uint32_t timeout = d_gettime_ms() + timeoutInMilliseconds;
         bool sendTerminate = true;
 
-       #ifdef _WIN32
+       #ifdef DISTRHO_OS_WINDOWS
         if (pinfo.hProcess == INVALID_HANDLE_VALUE)
             return;
 
@@ -234,7 +257,7 @@ public:
 
     bool isRunning()
     {
-       #ifdef _WIN32
+       #ifdef DISTRHO_OS_WINDOWS
         if (pinfo.hProcess == INVALID_HANDLE_VALUE)
             return false;
 
@@ -267,7 +290,7 @@ public:
        #endif
     }
 
-   #ifndef _WIN32
+   #ifndef DISTRHO_OS_WINDOWS
     void signal(const int sig)
     {
         if (pid > 0)
@@ -277,7 +300,7 @@ public:
 
     void terminate()
     {
-       #ifdef _WIN32
+       #ifdef DISTRHO_OS_WINDOWS
         if (pinfo.hProcess != INVALID_HANDLE_VALUE)
             TerminateProcess(pinfo.hProcess, 15);
        #else

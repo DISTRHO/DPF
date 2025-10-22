@@ -15,8 +15,9 @@ CMakeFiles
 CMakeSettings.json
 cmake_install.cmake
 
-bin/
-build/
-docs/
-utils/lv2_ttl_generator
-utils/lv2_ttl_generator.dSYM/
+/bin/
+/build/
+/docs/
+/khronos/
+/utils/lv2_ttl_generator
+/utils/lv2_ttl_generator.dSYM/

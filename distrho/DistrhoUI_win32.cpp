@@ -22,6 +22,7 @@
 
 #if DISTRHO_UI_WEB_VIEW
 # define DISTRHO_WEB_VIEW_INCLUDE_IMPLEMENTATION
+# define WEB_VIEW_NAMESPACE DISTRHO_NAMESPACE
 # include "extra/WebView.hpp"
 # include "extra/WebViewWin32.hpp"
 #endif

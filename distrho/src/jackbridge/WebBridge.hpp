@@ -224,55 +224,58 @@ struct WebBridge : NativeBridge {
 
             var constraints = {};
             // we need to use this weird awkward way for objects, otherwise build fails
-            constraints['audio'] = true;
             constraints['video'] = false;
-            constraints['autoGainControl'] = {};
-            constraints['autoGainControl']['ideal'] = false;
-            constraints['echoCancellation'] = {};
-            constraints['echoCancellation']['ideal'] = false;
-            constraints['noiseSuppression'] = {};
-            constraints['noiseSuppression']['ideal'] = false;
-            constraints['channelCount'] = {};
-            constraints['channelCount']['min'] = 0;
-            constraints['channelCount']['ideal'] = numInputs;
-            constraints['latency'] = {};
-            constraints['latency']['min'] = 0;
-            constraints['latency']['ideal'] = 0;
-            constraints['sampleSize'] = {};
-            constraints['sampleSize']['min'] = 8;
-            constraints['sampleSize']['max'] = 32;
-            constraints['sampleSize']['ideal'] = 16;
-            // old property for chrome
-            constraints['googAutoGainControl'] = false;
+            constraints['audio'] = {};
+            constraints['audio']['autoGainControl'] = {};
+            constraints['audio']['autoGainControl']['ideal'] = false;
+            constraints['audio']['echoCancellation'] = {};
+            constraints['audio']['echoCancellation']['ideal'] = false;
+            constraints['audio']['noiseSuppression'] = {};
+            constraints['audio']['noiseSuppression']['ideal'] = false;
+            constraints['audio']['channelCount'] = {};
+            constraints['audio']['channelCount']['min'] = 0;
+            constraints['audio']['channelCount']['ideal'] = numInputs;
+            constraints['audio']['latency'] = {};
+            constraints['audio']['latency']['min'] = 0;
+            constraints['audio']['latency']['ideal'] = 0;
+            constraints['audio']['sampleSize'] = {};
+            constraints['audio']['sampleSize']['min'] = 8;
+            constraints['audio']['sampleSize']['max'] = 32;
+            constraints['audio']['sampleSize']['ideal'] = 16;
+            // old properties for chrome
+            constraints['audio']['googAudioMirroring'] = {};
+            constraints['audio']['googAudioMirroring']['ideal'] = false;
+            constraints['audio']['googAutoGainControl'] = {};
+            constraints['audio']['googAutoGainControl']['ideal'] = false;
+            constraints['audio']['googAutoGainControl2'] = {};
+            constraints['audio']['googAutoGainControl2']['ideal'] = false;
+            constraints['audio']['googDAEchoCancellation'] = {};
+            constraints['audio']['googDAEchoCancellation']['ideal'] = false;
+            constraints['audio']['googEchoCancellation'] = {};
+            constraints['audio']['googEchoCancellation']['ideal'] = false;
+            constraints['audio']['googEchoCancellation2'] = {};
+            constraints['audio']['googEchoCancellation2']['ideal'] = false;
+            constraints['audio']['googHighpassFilter'] = {};
+            constraints['audio']['googHighpassFilter']['ideal'] = false;
+            constraints['audio']['googNoiseSuppression'] = {};
+            constraints['audio']['googNoiseSuppression']['ideal'] = false;
+            constraints['audio']['googNoiseSuppression2'] = {};
+            constraints['audio']['googNoiseSuppression2']['ideal'] = false;
+            constraints['audio']['googTypingNoiseDetection'] = {};
+            constraints['audio']['googTypingNoiseDetection']['ideal'] = false;
+            constraints['audio']['intelligibilityEnhancer'] = {};
+            constraints['audio']['intelligibilityEnhancer']['ideal'] = false;
+            constraints['audio']['levelControl'] = {};
+            constraints['audio']['levelControl']['ideal'] = false;
+            constraints['audio']['levelControlInitialPeakLevelDBFS'] = {};
+            constraints['audio']['levelControlInitialPeakLevelDBFS']['ideal'] = false;
 
             var success = function(stream) {
-                var tracks = stream.getAudioTracks();
-
-                // try to force as much as we can
-                for (var i in tracks) {
-                    var track = tracks[i];
-
-                    track.applyConstraints({'autoGainControl': { 'exact': false } })
-                    .then(function(){console.log("Mic/Input auto-gain control has been disabled")})
-                    .catch(function(){console.log("Cannot disable Mic/Input auto-gain")});
-
-                    track.applyConstraints({'echoCancellation': { 'exact': false } })
-                    .then(function(){console.log("Mic/Input echo-cancellation has been disabled")})
-                    .catch(function(){console.log("Cannot disable Mic/Input echo-cancellation")});
-
-                    track.applyConstraints({'noiseSuppression': { 'exact': false } })
-                    .then(function(){console.log("Mic/Input noise-suppression has been disabled")})
-                    .catch(function(){console.log("Cannot disable Mic/Input noise-suppression")});
-
-                    track.applyConstraints({'googAutoGainControl': { 'exact': false } })
-                    .then(function(){})
-                    .catch(function(){});
-                }
-
                 WAB.captureStreamNode = WAB.audioContext['createMediaStreamSource'](stream);
                 WAB.captureStreamNode.connect(WAB.processor);
             };
-            var fail = function() {
+            var fail = function(err) {
+                console.error(err);
             };
 
             if (navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined) {
@@ -494,7 +497,7 @@ struct WebBridge : NativeBridge {
                     }, offset, bytes[0], bytes[1], bytes[2], bytes[3], timestamp);
                 }
 
-                self->midiOutBuffer.clearData();
+                self->midiOutBuffer.flush();
             }
            #endif
         }

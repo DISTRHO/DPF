@@ -89,6 +89,8 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 //#define STB_IMAGE_STATIC
 #if defined(DGL_USE_GLES2)
 # define NANOVG_GLES2_IMPLEMENTATION
+#elif defined(DGL_USE_GLES3)
+# define NANOVG_GLES3_IMPLEMENTATION
 #elif defined(DGL_USE_OPENGL3)
 # define NANOVG_GL3_IMPLEMENTATION
 #else
@@ -277,6 +279,14 @@ GLuint NanoImage::getTextureHandle() const
     DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0, 0);
 
     return nvglImageHandle(fHandle.context, fHandle.imageId);
+}
+
+void NanoImage::update(const uchar* const data)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+
+    nvgUpdateImage(fHandle.context, fHandle.imageId, data);
 }
 
 void NanoImage::_updateSize()

@@ -1,6 +1,6 @@
 /*
  * Native Bridge for DPF
- * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,6 +19,7 @@
 
 #include "JackBridge.hpp"
 
+#include "../../extra/Mutex.hpp"
 #include "../../extra/RingBuffer.hpp"
 
 #if DISTRHO_PLUGIN_NUM_INPUTS > 2
@@ -34,6 +35,8 @@
 #endif
 
 using DISTRHO_NAMESPACE::HeapRingBuffer;
+using DISTRHO_NAMESPACE::RecursiveMutex;
+using DISTRHO_NAMESPACE::RecursiveMutexLocker;
 
 struct NativeBridge {
     // Current status information
@@ -64,23 +67,25 @@ struct NativeBridge {
         kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
         kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
     };
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
     float* audioBufferStorage;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool midiAvailable;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    bool midiUsed;
+   #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static constexpr const uint32_t kMaxMIDIInputMessageSize = 3;
     static constexpr const uint32_t kRingBufferMessageSize = 1u /*+ sizeof(double)*/ + kMaxMIDIInputMessageSize;
     uint8_t midiDataStorage[kMaxMIDIInputMessageSize];
     HeapRingBuffer midiInBufferCurrent;
     HeapRingBuffer midiInBufferPending;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #endif
+    RecursiveMutex midiInLock;
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     HeapRingBuffer midiOutBuffer;
-#endif
+   #endif
 
     NativeBridge()
         : bufferSize(0),
@@ -101,6 +106,7 @@ struct NativeBridge {
        #endif
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
        , midiAvailable(false)
+       , midiUsed(false)
        #endif
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
@@ -132,8 +138,16 @@ struct NativeBridge {
        #endif
     }
 
+    virtual bool isMIDIEnabled() const
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        return midiUsed;
+       #else
+        return false;
+       #endif
+    }
+
     virtual bool supportsBufferSizeChanges() const { return false; }
-    virtual bool isMIDIEnabled() const { return false; }
     virtual bool requestAudioInput() { return false; }
     virtual bool requestBufferSizeChange(uint32_t) { return false; }
     virtual bool requestMIDI() { return false; }
@@ -158,7 +172,10 @@ struct NativeBridge {
         if (midiAvailable)
         {
             // NOTE: this function is only called once per run
-            midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
+            {
+                const RecursiveMutexLocker cml(midiInLock);
+                midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
+            }
             return midiInBufferCurrent.getReadableDataSize() / kRingBufferMessageSize;
         }
        #endif
@@ -212,10 +229,10 @@ struct NativeBridge {
                 case 2: fail |= !midiOutBuffer.writeByte(0);
                 }
                 fail |= !midiOutBuffer.writeUInt(time);
-                midiOutBuffer.commitWrite();
+                midiOutBuffer.commitWrite("NativeBridge::writeEvent (with data)");
                 return !fail;
             }
-            midiOutBuffer.commitWrite();
+            midiOutBuffer.commitWrite("NativeBridge::writeEvent (without data)");
         }
        #endif
 
@@ -231,7 +248,7 @@ struct NativeBridge {
 
         if (audio)
         {
-           #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+           #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
 
             for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
@@ -245,6 +262,9 @@ struct NativeBridge {
 
         if (midi)
         {
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            midiUsed = true;
+           #endif
            #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             midiInBufferCurrent.createBuffer(kMaxMIDIInputMessageSize * 512);
             midiInBufferPending.createBuffer(kMaxMIDIInputMessageSize * 512);
@@ -261,12 +281,18 @@ struct NativeBridge {
         delete[] audioBufferStorage;
         audioBufferStorage = nullptr;
        #endif
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        midiInBufferCurrent.deleteBuffer();
-        midiInBufferPending.deleteBuffer();
-       #endif
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        midiOutBuffer.deleteBuffer();
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (midiUsed)
+        {
+            midiUsed = false;
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            midiInBufferCurrent.deleteBuffer();
+            midiInBufferPending.deleteBuffer();
+           #endif
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            midiOutBuffer.deleteBuffer();
+           #endif
+        }
        #endif
     }
 

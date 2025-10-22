@@ -78,6 +78,8 @@ include(CMakeParseArguments)
 #       the user interface type, can be one of the following:
 #          - cairo
 #          - external
+#          - gles2
+#          - gles3
 #          - opengl (default)
 #          - opengl3
 #          - vulkan
@@ -102,6 +104,12 @@ include(CMakeParseArguments)
 #   `NO_SHARED_RESOURCES`
 #       do not build DPF shared resources (fonts, etc)
 #
+#   `FORCE_NATIVE_AUDIO_FALLBACK`
+#       force the JACK/Standalone format to use native audio fallback instead of JACK
+#
+#   `SKIP_NATIVE_AUDIO_FALLBACK`
+#       force the JACK/Standalone format to always use JACK, skipping native audio fallback
+#
 #   `USE_FILE_BROWSER`
 #       enable file browser dialog APIs
 #
@@ -109,7 +117,7 @@ include(CMakeParseArguments)
 #       enable web browser view APIs
 #
 function(dpf_add_plugin NAME)
-  set(options MONOLITHIC NO_SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  set(options MONOLITHIC NO_SHARED_RESOURCES FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK USE_FILE_BROWSER USE_WEB_VIEW)
   set(oneValueArgs MODGUI_CLASS_NAME UI_TYPE)
   set(multiValueArgs FILES_COMMON FILES_DSP FILES_UI TARGETS)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -121,23 +129,43 @@ function(dpf_add_plugin NAME)
   set(_dgl_library)
   if(_dpf_plugin_FILES_UI)
     if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
-      dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-cairo)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
-      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                            $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-external)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "gles2")
+      dpf__add_dgl_gles2($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+      set(_dgl_library dgl-gles2)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "gles3")
+      dpf__add_dgl_gles3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+      set(_dgl_library dgl-gles3)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
-      dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                          $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-opengl)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl3")
-      dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                           $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                           $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-opengl3)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
-      dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                          $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-vulkan)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
       set(_dpf_plugin_USE_WEB_VIEW TRUE)
-      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                            $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-external)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
@@ -172,6 +200,9 @@ function(dpf_add_plugin NAME)
   if(_dpf_plugin_MODGUI_CLASS_NAME)
     target_compile_definitions("${NAME}" PUBLIC "DISTRHO_PLUGIN_MODGUI_CLASS_NAME=\"${_dpf_plugin_MODGUI_CLASS_NAME}\"")
   endif()
+
+  find_package(Threads)
+  target_link_libraries("${NAME}" PUBLIC "${CMAKE_THREAD_LIBS_INIT}")
 
   if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
     target_link_libraries("${NAME}" PRIVATE "dl")
@@ -209,7 +240,11 @@ function(dpf_add_plugin NAME)
   ###
   foreach(_target ${_dpf_plugin_TARGETS})
     if(_target STREQUAL "jack")
-      dpf__build_jack("${NAME}" "${_dgl_has_ui}")
+      dpf__build_jack("${NAME}"
+                      "${_dgl_has_ui}"
+                      "${_dpf_plugin_FORCE_NATIVE_AUDIO_FALLBACK}"
+                      "${_dpf_plugin_SKIP_NATIVE_AUDIO_FALLBACK}"
+                      "${_dpf_plugin_USE_FILE_BROWSER}")
     elseif(_target STREQUAL "ladspa")
       dpf__build_ladspa("${NAME}")
     elseif(_target STREQUAL "dssi")
@@ -234,6 +269,138 @@ function(dpf_add_plugin NAME)
   endforeach()
 endfunction()
 
+# dpf_add_executable(target <args...>)
+# ------------------------------------------------------------------------------
+#
+# Add a simple executable built using the DISTRHO Plugin Framework.
+#
+# ------------------------------------------------------------------------------
+# Arguments:
+#
+#   `UI_TYPE` <type>
+#       the user interface type, can be one of the following:
+#          - cairo
+#          - external
+#          - gles2
+#          - gles3
+#          - opengl (default)
+#          - opengl3
+#          - vulkan
+#          - webview
+#
+#   `NO_SHARED_RESOURCES`
+#       do not build DPF shared resources (fonts, etc)
+#
+#   `USE_FILE_BROWSER`
+#       enable file browser dialog APIs
+#
+#   `USE_WEB_VIEW`
+#       enable web browser view APIs
+#
+function(dpf_add_executable NAME)
+  set(options NO_SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  set(oneValueArgs UI_TYPE)
+  cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if("${_dpf_plugin_UI_TYPE}" STREQUAL "")
+    set(_dpf_plugin_UI_TYPE "opengl")
+  endif()
+
+  set(_dgl_library)
+  if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
+    dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-cairo)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
+    dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-external)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "gles2")
+    dpf__add_dgl_gles2($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-gles2)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "gles3")
+    dpf__add_dgl_gles3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-gles3)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
+    dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                        $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                        $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-opengl)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl3")
+    dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-opengl3)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
+    dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                        $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                        $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-vulkan)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
+    set(_dpf_plugin_USE_WEB_VIEW TRUE)
+    dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-external)
+  else()
+    message(FATAL_ERROR "Unrecognized UI type for executable: ${_dpf_plugin_UI_TYPE}")
+  endif()
+
+  set(_dgl_has_ui OFF)
+  if(_dgl_library)
+    set(_dgl_has_ui ON)
+  endif()
+
+  dpf__create_dummy_source_list(_no_srcs)
+  dpf__add_executable("${NAME}" ${_no_srcs})
+  target_include_directories("${NAME}" PUBLIC "${DPF_ROOT_DIR}/distrho")
+  set_target_properties("${NAME}" PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    OUTPUT_NAME "${NAME}")
+
+  if(EMSCRIPTEN)
+    configure_file("${DPF_ROOT_DIR}/utils/emscripten.html.in"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.html" @ONLY)
+    target_link_options("${NAME}"
+      PRIVATE
+        -sEXPORTED_RUNTIME_METHODS=dynCall)
+  endif()
+
+  if(_dpf_plugin_USE_FILE_BROWSER)
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+    if(EMSCRIPTEN)
+      target_link_options("${NAME}" PRIVATE -sEXPORTED_RUNTIME_METHODS=FS,cwrap)
+    endif()
+  endif()
+
+  if(_dpf_plugin_USE_WEB_VIEW)
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
+  if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
+    target_link_libraries("${NAME}" PRIVATE "dl")
+  endif()
+
+  if(_dgl_library)
+    # make sure that all code will see DGL_* definitions
+    target_link_libraries("${NAME}" PUBLIC
+      "${_dgl_library}"
+      "${_dgl_library}-definitions"
+      dgl-system-libs-definitions
+      dgl-system-libs)
+    # extra linkage for linux web view
+    if(LINUX AND _dpf_plugin_USE_WEB_VIEW)
+      target_link_libraries("${NAME}" PRIVATE "rt")
+    endif()
+    # add the files containing C++17 or Objective-C classes
+    dpf__add_plugin_specific_ui_sources("${NAME}" "${_dpf_plugin_USE_WEB_VIEW}")
+  endif()
+endfunction()
+
 # ------------------------------------------------------------------------------
 # DPF private functions (prefixed with `dpf__`)
 # ------------------------------------------------------------------------------
@@ -247,7 +414,7 @@ endfunction()
 #
 # Add build rules for a JACK/Standalone program.
 #
-function(dpf__build_jack NAME HAS_UI)
+function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK USE_FILE_BROWSER)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
@@ -258,11 +425,30 @@ function(dpf__build_jack NAME HAS_UI)
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
 
-  target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
-  target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
+  if(EMSCRIPTEN)
+    configure_file("${DPF_ROOT_DIR}/utils/emscripten.html.in"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.html" @ONLY)
+    target_link_options("${NAME}-jack"
+      PRIVATE
+        -sEXPORTED_RUNTIME_METHODS=dynCall
+        $<$<BOOL:${USE_FILE_BROWSER}>:-sEXPORTED_RUNTIME_METHODS=FS,cwrap>)
+  endif()
 
-  find_package(PkgConfig)
-  pkg_check_modules(SDL2 "sdl2")
+  if(NOT FORCE_NATIVE_AUDIO_FALLBACK)
+    target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
+    target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
+  endif()
+
+  if(SKIP_NATIVE_AUDIO_FALLBACK)
+    return()
+  endif()
+
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(SDL2 "sdl2")
+  else()
+    set(SDL2_FOUND FALSE)
+  endif()
   if(SDL2_FOUND)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_SDL2")
     target_include_directories("${NAME}-jack" PRIVATE ${SDL2_STATIC_INCLUDE_DIRS})
@@ -272,20 +458,20 @@ function(dpf__build_jack NAME HAS_UI)
 
   if(APPLE OR WIN32)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_RTAUDIO")
+  elseif(EMSCRIPTEN)
   else()
-    find_package(Threads)
     pkg_check_modules(ALSA "alsa")
     pkg_check_modules(PULSEAUDIO "libpulse-simple")
     if(ALSA_FOUND)
       target_compile_definitions("${NAME}" PUBLIC "HAVE_ALSA")
       target_include_directories("${NAME}-jack" PRIVATE ${ALSA_INCLUDE_DIRS})
-      target_link_libraries("${NAME}-jack" PRIVATE ${ALSA_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+      target_link_libraries("${NAME}-jack" PRIVATE ${ALSA_LIBRARIES})
       dpf__target_link_directories("${NAME}-jack" "${ALSA_LIBRARY_DIRS}")
     endif()
     if(PULSEAUDIO_FOUND)
       target_compile_definitions("${NAME}" PUBLIC "HAVE_PULSEAUDIO")
       target_include_directories("${NAME}-jack" PRIVATE ${PULSEAUDIO_INCLUDE_DIRS})
-      target_link_libraries("${NAME}-jack" PRIVATE ${PULSEAUDIO_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+      target_link_libraries("${NAME}-jack" PRIVATE ${PULSEAUDIO_LIBRARIES})
       dpf__target_link_directories("${NAME}-jack" "${PULSEAUDIO_LIBRARY_DIRS}")
     endif()
     if(ALSA_FOUND OR PULSEAUDIO_FOUND)
@@ -335,8 +521,12 @@ endfunction()
 # Add build rules for a DSSI plugin.
 #
 function(dpf__build_dssi NAME HAS_UI)
-  find_package(PkgConfig)
-  pkg_check_modules(LIBLO "liblo")
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(LIBLO "liblo")
+  else()
+    set(LIBLO_FOUND FALSE)
+  endif()
   if(NOT LIBLO_FOUND)
     dpf__warn_once_only(missing_liblo
       "liblo is not found, skipping the `dssi` plugin targets")
@@ -392,6 +582,10 @@ function(dpf__build_lv2 NAME HAS_UI MONOLITHIC EXTRA_UI_LINK_OPTS)
     OUTPUT_NAME "${NAME}_dsp"
     PREFIX "")
 
+  # helper property for custom outside handling
+  set_target_properties("${NAME}" PROPERTIES
+    LV2_BUNDLE "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2")
+
   if(HAS_UI)
     if(MONOLITHIC)
       dpf__add_ui_main("${NAME}-lv2" "lv2" "${HAS_UI}")
@@ -423,8 +617,7 @@ function(dpf__build_lv2 NAME HAS_UI MONOLITHIC EXTRA_UI_LINK_OPTS)
     ${CMAKE_CROSSCOMPILING_EMULATOR}
     "$<TARGET_FILE:lv2_ttl_generator>"
     "$<TARGET_FILE:${NAME}-lv2>"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2"
-    DEPENDS lv2_ttl_generator)
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2")
 endfunction()
 
 # dpf__build_vst2
@@ -485,8 +678,15 @@ function(dpf__determine_vst3_package_architecture OUTPUT_VARIABLE)
   endif()
 
   # transform the processor name to a format that VST3 recognizes
+  # see https://steinbergmedia.github.io/vst3_dev_portal/pages/Technical+Documentation/Locations+Format/Plugin+Format.html
   if(vst3_system_arch MATCHES "^(x86_64|amd64|AMD64|x64|X64)$")
     set(vst3_package_arch "x86_64")
+  elseif(vst3_system_arch MATCHES "^(ARM)$")
+    set(vst3_package_arch "arm")
+  elseif(vst3_system_arch MATCHES "^(ARM64)$")
+    set(vst3_package_arch "arm64")
+  elseif(vst3_system_arch MATCHES "^(ARM64EC)$")
+    set(vst3_package_arch "arm64x")
   elseif(vst3_system_arch MATCHES "^(i.86|x86|X86)$")
     if(WIN32)
       set(vst3_package_arch "x86")
@@ -619,8 +819,7 @@ function(dpf__build_au NAME HAS_UI)
 
   add_custom_command(TARGET "${NAME}-au" POST_BUILD
     COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} "$<TARGET_FILE:${NAME}-export>" "${NAME}"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents"
-    DEPENDS "${NAME}-export")
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents")
 
   add_dependencies("${NAME}-au" "${NAME}-export")
 
@@ -661,12 +860,12 @@ endfunction()
 #
 # Add the Cairo variant of DGL, if not already available.
 #
-function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-cairo)
     return()
   endif()
 
-  find_package(PkgConfig)
+  find_package(PkgConfig REQUIRED)
   pkg_check_modules(CAIRO "cairo" REQUIRED)
 
   link_directories(${CAIRO_LIBRARY_DIRS})
@@ -710,6 +909,21 @@ function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-cairo PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-cairo PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-cairo PRIVATE dgl-system-libs)
 
@@ -730,7 +944,7 @@ endfunction()
 #
 # Add the external variant of DGL, if not already available.
 #
-function(dpf__add_dgl_external USE_FILE_BROWSER)
+function(dpf__add_dgl_external USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-external)
     return()
   endif()
@@ -770,6 +984,21 @@ function(dpf__add_dgl_external USE_FILE_BROWSER)
     target_compile_definitions(dgl-external PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-external PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-external PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-external PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
   dpf__add_dgl_system_libs()
   target_compile_definitions(dgl-external PUBLIC "DGL_NO_SHARED_RESOURCES")
   target_link_libraries(dgl-external PRIVATE dgl-system-libs)
@@ -781,12 +1010,210 @@ function(dpf__add_dgl_external USE_FILE_BROWSER)
   target_link_libraries(dgl-external PRIVATE dgl-external-definitions "${OPENGL_gl_LIBRARY}")
 endfunction()
 
+# dpf__add_dgl_gles2
+# ------------------------------------------------------------------------------
+#
+# Add the GLESv2 variant of DGL, if not already available.
+#
+function(dpf__add_dgl_gles2 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  if(TARGET dgl-gles2)
+    return()
+  endif()
+
+  if(NOT OpenGL_GL_PREFERENCE)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+  endif()
+
+  find_package(OpenGL REQUIRED)
+
+  dpf__add_static_library(dgl-gles2 STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(SHARED_RESOURCES)
+    target_sources(dgl-gles2 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-gles2 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-gles2 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-gles2 PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-gles2 PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-gles2 PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-gles2 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-gles2 PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-gles2 PRIVATE dgl-system-libs)
+  target_link_options(dgl-gles2
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sMIN_WEBGL_VERSION=2>
+      $<$<BOOL:${EMSCRIPTEN}>:-sMAX_WEBGL_VERSION=2>
+  )
+
+  add_library(dgl-gles2-definitions INTERFACE)
+  target_compile_definitions(dgl-gles2-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_USE_GLES
+      DGL_USE_GLES2
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
+
+  target_include_directories(dgl-gles2 PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-gles2 PRIVATE dgl-gles2-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_dgl_gles3
+# ------------------------------------------------------------------------------
+#
+# Add the GLESv3 variant of DGL, if not already available.
+#
+function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  if(TARGET dgl-gles3)
+    return()
+  endif()
+
+  if(NOT OpenGL_GL_PREFERENCE)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+  endif()
+
+  find_package(OpenGL REQUIRED)
+
+  dpf__add_static_library(dgl-gles3 STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(SHARED_RESOURCES)
+    target_sources(dgl-gles3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-gles3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-gles3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-gles3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-gles3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-gles3 PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-gles3 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-gles3 PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-gles3 PRIVATE dgl-system-libs)
+  target_link_options(dgl-gles3
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sMIN_WEBGL_VERSION=3>
+      $<$<BOOL:${EMSCRIPTEN}>:-sMAX_WEBGL_VERSION=3>
+  )
+
+  add_library(dgl-gles3-definitions INTERFACE)
+  target_compile_definitions(dgl-gles3-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_USE_GLES
+      DGL_USE_GLES3
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
+
+  target_include_directories(dgl-gles3 PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-gles3 PRIVATE dgl-gles3-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
 # dpf__add_dgl_opengl
 # ------------------------------------------------------------------------------
 #
 # Add the OpenGL variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-opengl)
     return()
   endif()
@@ -815,6 +1242,7 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL2.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-opengl PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
@@ -841,11 +1269,36 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-opengl PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-opengl PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
+  target_link_options(dgl-opengl
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sLEGACY_GL_EMULATION>
+      $<$<BOOL:${EMSCRIPTEN}>:-sGL_UNSAFE_OPTS=0>
+  )
 
   add_library(dgl-opengl-definitions INTERFACE)
-  target_compile_definitions(dgl-opengl-definitions INTERFACE "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
+  target_compile_definitions(dgl-opengl-definitions
+    INTERFACE
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
@@ -856,7 +1309,7 @@ endfunction()
 #
 # Add the OpenGL3 variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-opengl3)
     return()
   endif()
@@ -885,6 +1338,7 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-opengl3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
@@ -911,11 +1365,32 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-opengl3 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-opengl3 PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl3 PRIVATE dgl-system-libs)
 
   add_library(dgl-opengl3-definitions INTERFACE)
-  target_compile_definitions(dgl-opengl3-definitions INTERFACE "DGL_USE_OPENGL3" "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
+  target_compile_definitions(dgl-opengl3-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
 
   target_include_directories(dgl-opengl3 PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl3 PRIVATE dgl-opengl3-definitions "${OPENGL_gl_LIBRARY}")
@@ -926,7 +1401,7 @@ endfunction()
 #
 # Add the Vulkan variant of DGL, if not already available.
 #
-function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-vulkan)
     return()
   endif()
@@ -976,6 +1451,21 @@ function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-vulkan PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-vulkan PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-vulkan PRIVATE dgl-system-libs)
 
@@ -1002,13 +1492,10 @@ function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
   elseif(WIN32 AND USE_WEB_VIEW)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp")
-    if (MSVC)
-      set_source_files_properties("${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp"
-        PROPERTIES COMPILE_FLAGS /std:c++17)
-    else()
-      set_source_files_properties("${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp"
-        PROPERTIES COMPILE_FLAGS -std=gnu++17)
-    endif()
+    set_source_files_properties("${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp"
+      PROPERTIES
+        COMPILE_FLAGS
+          $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
     target_link_libraries("${NAME}" PRIVATE "ole32" "uuid")
   endif()
 endfunction()
@@ -1034,7 +1521,7 @@ function(dpf__add_dgl_system_libs)
   elseif(WIN32)
     target_link_libraries(dgl-system-libs INTERFACE "comdlg32" "dwmapi" "gdi32")
   else()
-    find_package(PkgConfig)
+    find_package(PkgConfig REQUIRED)
     pkg_check_modules(DBUS "dbus-1")
     if(DBUS_FOUND)
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_DBUS")
@@ -1161,7 +1648,7 @@ function(dpf__set_target_defaults NAME)
   if (CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options("${NAME}" PUBLIC "-fno-gnu-unique")
   endif()
-  if ((NOT APPLE) AND (NOT MSVC))
+  if ((NOT APPLE) AND (NOT EMSCRIPTEN) AND (NOT MSVC))
     target_link_options("${NAME}" PUBLIC "-Wl,--no-undefined")
   endif()
 endfunction()

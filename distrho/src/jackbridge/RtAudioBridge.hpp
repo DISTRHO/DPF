@@ -1,6 +1,6 @@
 /*
  * RtAudio Bridge for DPF
- * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,7 +19,7 @@
 
 #include "NativeBridge.hpp"
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+#if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) == 0
 # error RtAudio without audio does not make sense
 #endif
 
@@ -33,7 +33,7 @@
 # define RTAUDIO_API_TYPE WINDOWS_WASAPI
 # define RTMIDI_API_TYPE WINDOWS_MM
 #else
-# if defined(HAVE_PULSEAUDIO)
+# if defined(HAVE_PULSEAUDIO) && !defined(DPF_JACK_STANDALONE_SKIP_PULSEAUDIO_FALLBACK)
 #  define __LINUX_PULSE__
 #  define RTAUDIO_API_TYPE LINUX_PULSE
 # elif defined(HAVE_ALSA)
@@ -392,6 +392,28 @@ struct RtAudioBridge : NativeBridge {
         const ScopedDenormalDisable sdd;
         self->jackProcessCallback(numFrames, self->jackProcessArg);
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (self->midiOutBuffer.isDataAvailableForReading())
+        {
+            static_assert(kMaxMIDIInputMessageSize + 1u == 4, "change code if bumping this value");
+            uint8_t data[4] = {};
+
+            while (self->midiOutBuffer.isDataAvailableForReading() &&
+                    self->midiOutBuffer.readCustomData(data, ARRAY_SIZE(data)))
+            {
+                // offset not used in RtMidiOut
+                self->midiOutBuffer.readUInt();
+
+                for (std::vector<RtMidiOut>::iterator it = self->midiOuts.begin(), end = self->midiOuts.end(); it != end; ++it)
+                {
+                    static_cast<RtMidiOut&>(*it).sendMessage(data + 1, data[0]);
+                }
+            }
+
+            self->midiOutBuffer.flush();
+        }
+       #endif
+
         return 0;
     }
 
@@ -403,13 +425,15 @@ struct RtAudioBridge : NativeBridge {
 
         RtAudioBridge* const self = static_cast<RtAudioBridge*>(userData);
 
+        const RecursiveMutexLocker rml(self->midiInLock);
+
         self->midiInBufferPending.writeByte(static_cast<uint8_t>(len));
         // TODO timestamp
         // self->midiInBufferPending.writeDouble(timestamp);
         self->midiInBufferPending.writeCustomData(message->data(), len);
-        for (uint8_t i=len; i<kMaxMIDIInputMessageSize; ++i)
+        for (uint8_t i = len; i < kMaxMIDIInputMessageSize; ++i)
             self->midiInBufferPending.writeByte(0);
-        self->midiInBufferPending.commitWrite();
+        self->midiInBufferPending.commitWrite("RtMidiCallback");
     }
    #endif
 };

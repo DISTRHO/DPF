@@ -66,6 +66,10 @@
 # define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE 2048
 #endif
 
+#ifndef DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
+# define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#endif
+
 #ifndef DISTRHO_PLUGIN_USES_MODGUI
 # define DISTRHO_PLUGIN_USES_MODGUI 0
 #endif
@@ -260,14 +264,14 @@ void lv2_generate_ttl(const char* const basename)
     const String pluginDLL(basename);
     const String pluginTTL(pluginDLL + ".ttl");
 
-#if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     String pluginUI(pluginDLL);
-# if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+   #if ! DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
     pluginUI.truncate(pluginDLL.rfind("_dsp"));
     pluginUI += "_ui";
     const String uiTTL(pluginUI + ".ttl");
-# endif
-#endif
+   #endif
+  #endif
 
     // ---------------------------------------------
 
@@ -278,7 +282,7 @@ void lv2_generate_ttl(const char* const basename)
         String manifestString;
         manifestString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
         manifestString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
-#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
 #endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -304,14 +308,14 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "<" DISTRHO_UI_URI ">\n";
         manifestString += "    a ui:" DISTRHO_LV2_UI_TYPE " ;\n";
         manifestString += "    ui:binary <" + pluginUI + "." DISTRHO_DLL_EXTENSION "> ;\n";
-# if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# if DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         addAttribute(manifestString, "lv2:extensionData", lv2ManifestUiExtensionData, 4);
         addAttribute(manifestString, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures, 4);
         addAttribute(manifestString, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures, 4);
         addAttribute(manifestString, "opts:supportedOption", lv2ManifestUiSupportedOptions, 4, true);
-# else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# else // DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
-# endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# endif // DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "\n";
 #endif
 
@@ -363,6 +367,7 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
         pluginString += "@prefix atom:  <" LV2_ATOM_PREFIX "> .\n";
 #endif
+        pluginString += "@prefix dg:    <http://www.darkglass.com/lv2/ns#> .\n";
         pluginString += "@prefix doap:  <http://usefulinc.com/ns/doap#> .\n";
         pluginString += "@prefix foaf:  <http://xmlns.com/foaf/0.1/> .\n";
         pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
@@ -758,6 +763,16 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty lv2:toggled , lv2:integer ;\n";
                         pluginString += "        lv2:designation lv2:enabled ;\n";
                         break;
+                    case kParameterDesignationReset:
+                        designated = true;
+                        pluginString += "        lv2:name \"Reset\" ;\n";
+                        pluginString += "        lv2:symbol \"" + String(ParameterDesignationSymbols::reset) + "\" ;\n";
+                        pluginString += "        lv2:default 0 ;\n";
+                        pluginString += "        lv2:minimum 0 ;\n";
+                        pluginString += "        lv2:maximum 1 ;\n";
+                        pluginString += "        lv2:portProperty lv2:toggled , lv2:integer , <" LV2_PORT_PROPS__trigger "> ;\n";
+                        pluginString += "        lv2:designation <" LV2_KXSTUDIO_PROPERTIES__Reset "> ;\n";
+                        break;
                     }
                 }
 
@@ -982,6 +997,22 @@ void lv2_generate_ttl(const char* const basename)
                     pluginString += "    rdfs:comment \"" + comment + "\" ;\n\n";
             }
         }
+
+        // Darkglass Anagram
+       #ifdef DISTRHO_PLUGIN_ABBREVIATION
+        pluginString += "    dg:abbreviation \"" DISTRHO_PLUGIN_ABBREVIATION "\" ;\n";
+       #endif
+       #ifdef DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_OFF
+        pluginString += "    dg:blockImageOff <" DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_OFF "> ;\n";
+       #endif
+       #ifdef DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_ON
+        pluginString += "    dg:blockImageOn <" DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_ON "> ;\n";
+       #endif
+       #if defined(DISTRHO_PLUGIN_ABBREVIATION) || \
+           defined(DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_OFF) || \
+           defined(DISTRHO_PLUGIN_ANAGRAM_BLOCK_IMAGE_ON)
+        pluginString += "\n";
+       #endif
 
        #ifdef DISTRHO_PLUGIN_BRAND
         // MOD
@@ -1554,7 +1585,7 @@ void lv2_generate_ttl(const char* const basename)
 
     // ---------------------------------------------
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
     {
         std::cout << "Writing " << uiTTL << "..."; std::cout.flush();
         std::fstream uiFile(uiTTL, std::ios::out);
