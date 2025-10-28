@@ -159,11 +159,21 @@ productbuild \
   ${MACOS_PKG_SNAME}-macOS.pkg
 
 if [ -n "${MACOS_NOTARIZATION_USER}" ] && [ -n "${MACOS_NOTARIZATION_PASS}" ] && [ -n "${MACOS_NOTARIZATION_TEAM}" ]; then
+  # Notarize using credentials
   xcrun notarytool submit ${MACOS_PKG_SNAME}-macOS.pkg \
     --apple-id ${MACOS_NOTARIZATION_USER} \
     --password ${MACOS_NOTARIZATION_PASS} \
     --team-id ${MACOS_NOTARIZATION_TEAM} \
     --wait
-
+  xcrun stapler staple ${MACOS_PKG_SNAME}-macOS.pkg
+elif [ -n "${MACOS_KEYCHAIN_PROFILE}" ]; then
+  # Notarize using keychain profile
+  xcrun notarytool submit ${MACOS_PKG_SNAME}-macOS.pkg \
+    --keychain-profile ${MACOS_KEYCHAIN_PROFILE} \
+    --wait
   xcrun stapler staple ${MACOS_PKG_SNAME}-macOS.pkg
 fi
+
+# To get logs of your notarization note the notarization id (of the form `00000000-0000-0000-0000-000000000000`) 
+# and use either your credentials or keychain profile:
+# xcrun notarytool log --keychain-profile ${MACOS_KEYCHAIN_PROFILE} ${NOTARIZATION_ID}
