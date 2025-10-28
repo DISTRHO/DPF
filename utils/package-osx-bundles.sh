@@ -159,11 +159,11 @@ productbuild \
   ${MACOS_PKG_SNAME}-macOS.pkg
 
 if [ -n "${MACOS_NOTARIZATION_USER}" ] && [ -n "${MACOS_NOTARIZATION_PASS}" ] && [ -n "${MACOS_NOTARIZATION_TEAM}" ]; then
-  xcrun notarytool submit ${MACOS_PKG_NAME}-macOS.pkg \
+  xcrun notarytool submit ${MACOS_PKG_SNAME}-macOS.pkg \
     --apple-id ${MACOS_NOTARIZATION_USER} \
     --password ${MACOS_NOTARIZATION_PASS} \
     --team-id ${MACOS_NOTARIZATION_TEAM} \
     --wait
 
-  xcrun stapler staple ${MACOS_PKG_NAME}-macOS.pkg
+  xcrun stapler staple ${MACOS_PKG_SNAME}-macOS.pkg
 fi
