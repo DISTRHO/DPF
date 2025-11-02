@@ -16,6 +16,8 @@
 
 #include "DistrhoPluginInternal.hpp"
 
+#include <cmath>
+
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 # error Cannot use parameter value change request with LADSPA or DSSI
 #endif
@@ -646,9 +648,21 @@ static const struct DescriptorInitializer
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_MAXIMUM;
                 else
                 {
-                    const float middleValue =  ranges.min/2.0f + ranges.max/2.0f;
-                    const float middleLow   = (ranges.min/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
-                    const float middleHigh  = (ranges.max/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
+                    float middleValue;
+                    float middleLow;
+                    float middleHigh;
+                    if (hints & kParameterIsLogarithmic)
+                    {
+                        middleValue = std::sqrt(ranges.min * ranges.max);
+                        middleLow   = std::sqrt(std::sqrt(ranges.min * middleValue) * middleValue);
+                        middleHigh  = std::sqrt(std::sqrt(ranges.max * middleValue) * middleValue);
+                    }
+                    else
+                    {
+                        middleValue =  ranges.min/2.0f + ranges.max/2.0f;
+                        middleLow   = (ranges.min/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
+                        middleHigh  = (ranges.max/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
+                    }
 
                     /**/ if (defValue < middleLow)
                         portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_LOW;
