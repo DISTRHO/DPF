@@ -43,13 +43,17 @@ TARGETS += clap
 TARGETS += au
 
 ifeq ($(MACOS_APP_BUNDLE),true)
+aufiles   += $(TARGET_DIR)/$(NAME).component/Contents/Resources/index.html
+clapfiles += $(TARGET_DIR)/$(NAME).clap/Contents/Resources/index.html
 jackfiles += $(TARGET_DIR)/$(NAME).app/Contents/Resources/index.html
+vst2files += $(TARGET_DIR)/$(NAME).vst/Contents/Resources/index.html
 else
+clapfiles += $(TARGET_DIR)/$(NAME).clap/resources/index.html
 jackfiles += $(TARGET_DIR)/resources/index.html
+lv2files += $(TARGET_DIR)/$(NAME).lv2/resources/index.html
+vst2files += $(TARGET_DIR)/$(NAME).vst/resources/index.html
 endif
 
-clapfiles += $(TARGET_DIR)/$(NAME).clap/resources/index.html
-vst2files += $(TARGET_DIR)/$(NAME).vst/resources/index.html
 vst3files += $(TARGET_DIR)/$(NAME).vst3/Contents/Resources/index.html
 
 all: $(TARGETS) $(jackfiles) $(clapfiles) $(vst2files) $(vst3files)
