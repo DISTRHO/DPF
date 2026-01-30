@@ -20,6 +20,20 @@ else
   exit
 fi
 
+if [ -n "${MACOS_APP_CERTIFICATE}" ] && [ -n "${MACOS_INSTALLER_CERTIFICATE}" ] && [ -n "${MACOS_CERTIFICATE_PASSWORD}" ]; then
+    security create-keychain -p "" $(pwd)/keychain.db
+    security unlock-keychain -p "" $(pwd)/keychain.db
+    echo -n "${MACOS_APP_CERTIFICATE}" | base64 --decode -o cert.p12
+    security import cert.p12 -P "${MACOS_CERTIFICATE_PASSWORD}" -A -t cert -f pkcs12 -k $(pwd)/keychain.db
+    echo -n "${MACOS_INSTALLER_CERTIFICATE}" | base64 --decode -o cert.p12
+    security import cert.p12 -P "${MACOS_CERTIFICATE_PASSWORD}" -A -t cert -f pkcs12 -k $(pwd)/keychain.db
+    rm cert.p12
+    # security set-key-partition-list -S apple-tool:,apple: -k "" $(pwd)/keychain.db
+    security list-keychain -d user -s $(pwd)/keychain.db
+    export MACOS_APP_DEV_ID="$(security find-identity -v $(pwd)/keychain.db | grep 'Developer ID Application:' | head -n 1 | cut -d' ' -f 5-99 | sed 's/\"//g')"
+    export MACOS_INSTALLER_DEV_ID="$(security find-identity -v $(pwd)/keychain.db | grep 'Developer ID Installer:' | head -n 1 | cut -d' ' -f 5-99 | sed 's/\"//g')"
+fi
+
 # can be overridden by environment variables
 MACOS_PKG_LICENSE_FILE=${MACOS_PKG_LICENSE_FILE:=""}
 MACOS_PKG_NAME=${MACOS_PKG_NAME:="$(basename $(git rev-parse --show-toplevel))"}
