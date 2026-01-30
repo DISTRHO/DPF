@@ -53,6 +53,9 @@ jobs:
           MACOS_APP_CERTIFICATE: ${{ secrets.MACOS_APP_CERTIFICATE }}
           MACOS_INSTALLER_CERTIFICATE: ${{ secrets.MACOS_INSTALLER_CERTIFICATE }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_NOTARIZATION_USER: ${{ secrets.MACOS_NOTARIZATION_USER }}
+          MACOS_NOTARIZATION_PASS: ${{ secrets.MACOS_NOTARIZATION_PASS }}
+          MACOS_NOTARIZATION_TEAM: ${{ secrets.MACOS_NOTARIZATION_TEAM }}
         with:
           dpf_path: .
           suffix: _14
@@ -72,6 +75,9 @@ jobs:
           MACOS_APP_CERTIFICATE: ${{ secrets.MACOS_APP_CERTIFICATE }}
           MACOS_INSTALLER_CERTIFICATE: ${{ secrets.MACOS_INSTALLER_CERTIFICATE }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_NOTARIZATION_USER: ${{ secrets.MACOS_NOTARIZATION_USER }}
+          MACOS_NOTARIZATION_PASS: ${{ secrets.MACOS_NOTARIZATION_PASS }}
+          MACOS_NOTARIZATION_TEAM: ${{ secrets.MACOS_NOTARIZATION_TEAM }}
         with:
           dpf_path: .
           suffix: _15
