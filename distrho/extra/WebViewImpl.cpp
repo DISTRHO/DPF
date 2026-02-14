@@ -411,30 +411,30 @@ WebViewHandle webViewCreate(const char* const url,
                             const WebViewOptions& options)
 {
 #if WEB_VIEW_USING_CHOC
-    WebView* const webview = webview_choc_create(options);
+    WebView* const webview = webview_choc_create(url, options);
     if (webview == nullptr)
         return nullptr;
 
     const HWND hwnd = static_cast<HWND>(webview_choc_handle(webview));
+    ShowWindow(hwnd, SW_HIDE);
 
     LONG_PTR flags = GetWindowLongPtr(hwnd, -16);
     flags = (flags & ~WS_POPUP) | WS_CHILD;
     SetWindowLongPtr(hwnd, -16, flags);
 
     SetParent(hwnd, reinterpret_cast<HWND>(windowId));
-    SetWindowPos(hwnd, nullptr,
+    SetWindowPos(hwnd,
+                 nullptr,
                  options.offset.x,
                  options.offset.y,
-                 initialWidth - options.offset.x,
-                 initialHeight - options.offset.y,
+                 initialWidth + options.offset.x,
+                 initialHeight + options.offset.y,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     ShowWindow(hwnd, SW_SHOW);
 
     WebViewData* const whandle = new WebViewData;
     whandle->webview = webview;
     whandle->url = url;
-
-    webview_choc_navigate(webview, url);
 
     return whandle;
 #elif WEB_VIEW_USING_MACOS_WEBKIT
@@ -835,7 +835,7 @@ void webViewResize(const WebViewHandle handle, const uint width, const uint heig
 {
    #if WEB_VIEW_USING_CHOC
     const HWND hwnd = static_cast<HWND>(webview_choc_handle(handle->webview));
-    SetWindowPos(hwnd, nullptr, 0, 0, width, height, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
+    SetWindowPos(hwnd, nullptr, 0, 0, width, height, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
    #elif WEB_VIEW_USING_X11_IPC

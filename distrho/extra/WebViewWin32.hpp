@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -35,7 +35,7 @@ using DISTRHO_NAMESPACE::WebView;
 START_NAMESPACE_DISTRHO
 #endif
 
-WebView* webview_choc_create(const WEB_VIEW_NAMESPACE::WebViewOptions& opts);
+WebView* webview_choc_create(const char* url, const WEB_VIEW_NAMESPACE::WebViewOptions& opts);
 void webview_choc_destroy(WebView*);
 void* webview_choc_handle(WebView*);
 void webview_choc_eval(WebView*, const char* js);
@@ -60,33 +60,32 @@ START_NAMESPACE_DGL
 START_NAMESPACE_DISTRHO
 #endif
 
-WebView* webview_choc_create(const WEB_VIEW_NAMESPACE::WebViewOptions& opts)
+WebView* webview_choc_create(const char* const url, const WEB_VIEW_NAMESPACE::WebViewOptions& opts)
 {
     WebView::Options wopts;
-    wopts.acceptsFirstMouseClick = true;
     wopts.enableDebugMode = true;
+    wopts.transparentBackground = true;
+    wopts.webviewIsReady = [url, opts](WebView& webview){
+        if (const WEB_VIEW_NAMESPACE::WebViewMessageCallback callback = opts.callback)
+        {
+            webview.addInitScript("function postMessage(m){window.chrome.webview.postMessage(m);}");
+            webview.bind([opts](std::string& value) {
+                opts.callback(opts.callbackPtr, value.data());
+            });
+        }
+        else
+        {
+            webview.addInitScript("function postMessage(m){}");
+        }
+
+        if (opts.initialJS != nullptr)
+            webview.addInitScript(opts.initialJS);
+
+        webview.navigate(url);
+    };
 
     std::unique_ptr<WebView> webview = std::make_unique<WebView>(wopts);
     DISTRHO_SAFE_ASSERT_RETURN(webview->loadedOK(), nullptr);
-
-    if (const WEB_VIEW_NAMESPACE::WebViewMessageCallback callback = opts.callback)
-    {
-        webview->addInitScript("function postMessage(m){window.chrome.webview.postMessage(m);}");
-
-        void* const callbackPtr = opts.callbackPtr;
-        webview->bind([callback, callbackPtr](const std::string& value) {
-            char* const data = strdup(value.data());
-            callback(callbackPtr, data);
-            std::free(data);
-        });
-    }
-    else
-    {
-        webview->addInitScript("function postMessage(m){}");
-    }
-
-    if (opts.initialJS != nullptr)
-        webview->addInitScript(opts.initialJS);
 
     return webview.release();
 }

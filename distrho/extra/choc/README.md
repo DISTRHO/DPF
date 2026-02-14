@@ -1,11 +1,11 @@
 Taken from https://github.com/Tracktion/choc
 
 ```
-commit 2512542b2d65f3e92df7f2f1f7eeb712fa41a0de (HEAD -> main, origin/main, origin/HEAD)
-Author: Cesare Ferrari <cesare.ferrari@gmail.com>
-Date:   Sun Apr 28 12:53:17 2024 +0100
+commit ae4c54d22b53a599222c1dfaa4b4007d0ec310c7 (HEAD -> main, origin/main, origin/HEAD)
+Author: Julian Storer <julianstorer@gmail.com>
+Date:   Thu Jan 15 08:56:50 2026 +0000
 
-    Disable additional gcc warnin
+    Added a zip file creation class, ZipWriter
 ```
 
 With the big [choc.patch](./choc.patch) patch applied to top for:
@@ -16,7 +16,3 @@ With the big [choc.patch](./choc.patch) patch applied to top for:
 - remove even more stuff (json no longer needed)
 - convert choc asserts into distrho ones
 - put everything inside distrho namespace
-
-And then backported:
-
-- https://github.com/Tracktion/choc/commit/792e4bd9bedf38b9a28f12be0535c90649d5616b

@@ -19,7 +19,11 @@
 #ifndef CHOC_DESKTOPWINDOW_HEADER_INCLUDED
 #define CHOC_DESKTOPWINDOW_HEADER_INCLUDED
 
+#include <memory>
+#include <string>
+#include <functional>
 #include "choc_Platform.h"
+
 
 //==============================================================================
 //        _        _           _  _

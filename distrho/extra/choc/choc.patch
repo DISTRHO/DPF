@@ -1,12 +1,13 @@
 diff --git a/choc_DesktopWindow.h b/choc_DesktopWindow.h
-index b948042..55e7305 100644
+index 3900a07..849f847 100644
 --- a/choc_DesktopWindow.h
 +++ b/choc_DesktopWindow.h
-@@ -19,100 +19,7 @@
- #ifndef CHOC_DESKTOPWINDOW_HEADER_INCLUDED
- #define CHOC_DESKTOPWINDOW_HEADER_INCLUDED
- 
+@@ -22,119 +22,7 @@
+ #include <memory>
+ #include <string>
+ #include <functional>
 -#include "../platform/choc_Platform.h"
+-#include "../platform/choc_Assert.h"
 -
 -
 -//==============================================================================
@@ -59,6 +60,9 @@ index b948042..55e7305 100644
 -    /// Changes the window's position
 -    void setBounds (Bounds);
 -
+-    /// Returns the window's current position and size.
+-    Bounds getBounds();
+-
 -    /// Enables/disables user resizing of the window
 -    void setResizable (bool);
 -
@@ -86,6 +90,22 @@ index b948042..55e7305 100644
 -    /// An optional callback that will be called when the parent window is closed
 -    std::function<void()> windowClosed;
 -
+-    /// Information about a file drop event - see setFileDropCallback()
+-    struct FileDropEvent
+-    {
+-        std::vector<std::string> filePaths;
+-        float x, y;
+-    };
+-
+-    /// This callback should return true if the operation was handled, or false
+-    /// to allow it to be passed on to other handlers.
+-    using FileDropCallback = std::function<bool(const FileDropEvent&)>;
+-
+-    /// Call this to enable file drag-and-drop support, and to set a callback
+-    /// that will be called when files are dropped onto the window. Pass an
+-    /// empty function to disable drag-and-drop.
+-    void setFileDropCallback (FileDropCallback);
+-
 -private:
 -    struct Pimpl;
 -    std::unique_ptr<Pimpl> pimpl;
@@ -99,12 +119,11 @@ index b948042..55e7305 100644
 -
 -
 -} // namespace choc::ui
--
 +#include "choc_Platform.h"
  
+ 
  //==============================================================================
- //        _        _           _  _
-@@ -125,326 +32,6 @@ void setWindowsDPIAwareness();
+@@ -148,480 +36,6 @@ void setWindowsDPIAwareness();
  //
  //==============================================================================
  
@@ -215,10 +234,71 @@ index b948042..55e7305 100644
 -        gtk_window_activate_default (GTK_WINDOW (window));
 -    }
 -
+-    Bounds getBounds()
+-    {
+-        int x = 0, y = 0, w = 0, h = 0;
+-        gtk_window_get_position (GTK_WINDOW (window), &x, &y);
+-        gtk_window_get_size (GTK_WINDOW (window), &w, &h);
+-        return { x, y, w, h };
+-    }
+-
+-    void setFileDropCallback (FileDropCallback handler)
+-    {
+-        if (handler)
+-        {
+-            fileDropCallback = std::move (handler);
+-
+-            gtk_drag_dest_set (window, GTK_DEST_DEFAULT_ALL, nullptr, 0, GDK_ACTION_COPY);
+-            gtk_drag_dest_add_uri_targets (window);
+-
+-            g_signal_connect (window, "drag-data-received",
+-                              G_CALLBACK (+[](GtkWidget*, GdkDragContext* context,
+-                                              gint x, gint y, GtkSelectionData* selectionData,
+-                                              guint /*info*/, guint time, gpointer userData)
+-                                          {
+-                                              static_cast<Pimpl*> (userData)
+-                                                ->onDragDataReceived (context, x, y, time, selectionData);
+-                                          }), this);
+-        }
+-        else
+-        {
+-            fileDropCallback = {};
+-            gtk_drag_dest_unset (window);
+-        }
+-    }
+-
+-    void onDragDataReceived (GdkDragContext* context, gint x, gint y,
+-                             guint time, GtkSelectionData* selectionData)
+-    {
+-        FileDropEvent e;
+-        e.x = static_cast<float> (x);
+-        e.y = static_cast<float> (y);
+-
+-        if (const auto uris = gtk_selection_data_get_uris (selectionData))
+-        {
+-            for (auto uri = uris; *uri != nullptr; ++uri)
+-            {
+-                if (auto filename = g_filename_from_uri (*uri, nullptr, nullptr))
+-                {
+-                    e.filePaths.push_back (filename);
+-                    g_free (filename);
+-                }
+-            }
+-
+-            g_strfreev (uris);
+-        }
+-
+-        if (fileDropCallback)
+-            fileDropCallback (e);
+-
+-        gtk_drag_finish (context, TRUE, FALSE, time);
+-    }
+-
 -    DesktopWindow& owner;
 -    GtkWidget* window = {};
 -    GtkWidget* content = {};
 -    unsigned long destroyHandlerID = 0;
+-    FileDropCallback fileDropCallback;
 -};
 -
 -inline void choc::ui::setWindowsDPIAwareness() {}
@@ -231,33 +311,6 @@ index b948042..55e7305 100644
 -namespace choc::ui
 -{
 -
--namespace macos_ui_helpers
--{
--    // Including CodeGraphics.h can create all kinds of messy C/C++ symbol clashes
--    // with other headers, but all we actually need are these coordinate structs:
--   #if defined (__LP64__) && __LP64__
--    using CGFloat = double;
--   #else
--    using CGFloat = float;
--   #endif
--
--    struct CGPoint { CGFloat x = 0, y = 0; };
--    struct CGSize  { CGFloat width = 0, height = 0; };
--    struct CGRect  { CGPoint origin; CGSize size; };
--
--    inline CGSize createCGSize (double w, double h)  { return { (CGFloat) w, (CGFloat) h }; }
--    inline CGRect createCGRect (choc::ui::Bounds b)  { return { { (CGFloat) b.x, (CGFloat) b.y }, { (CGFloat) b.width, (CGFloat) b.height } }; }
--
--    static constexpr long NSWindowStyleMaskTitled = 1;
--    static constexpr long NSWindowStyleMaskMiniaturizable = 4;
--    static constexpr long NSWindowStyleMaskResizable = 8;
--    static constexpr long NSWindowStyleMaskClosable = 2;
--    static constexpr long NSBackingStoreBuffered = 2;
--    static constexpr long NSApplicationActivationPolicyRegular = 0;
--}
--
--using namespace macos_ui_helpers;
--
 -inline void setWindowsDPIAwareness() {}
 -
 -struct DesktopWindow::Pimpl
@@ -268,7 +321,7 @@ index b948042..55e7305 100644
 -        CHOC_AUTORELEASE_BEGIN
 -        call<void> (getSharedNSApplication(), "setActivationPolicy:", NSApplicationActivationPolicyRegular);
 -
--        window = call<id> (call<id> (getClass ("NSWindow"), "alloc"),
+-        window = call<id> (callClass<id> ("NSWindow", "alloc"),
 -                           "initWithContentRect:styleMask:backing:defer:",
 -                           createCGRect (bounds),
 -                           NSWindowStyleMaskTitled, NSBackingStoreBuffered, (int) 0);
@@ -276,6 +329,11 @@ index b948042..55e7305 100644
 -        delegate = createDelegate();
 -        setStyleBit (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable, true);
 -        objc_setAssociatedObject (delegate, "choc_window", (CHOC_OBJC_CAST_BRIDGED id) this, OBJC_ASSOCIATION_ASSIGN);
+-
+-        intermediateView = objc::call<id> (objc::callClass<id> ("NSView", "alloc"), "init");
+-        objc::call<void> (intermediateView, "setAutoresizingMask:", 18); // NSViewWidthSizable | NSViewHeightSizable
+-        objc::call<void> (window, "setContentView:", intermediateView);
+-
 -        call<void> (window, "setDelegate:", delegate);
 -        CHOC_AUTORELEASE_END
 -    }
@@ -286,6 +344,7 @@ index b948042..55e7305 100644
 -        objc::call<void> (window, "setDelegate:", nullptr);
 -        objc::call<void> (window, "close");
 -        objc::call<void> (delegate, "release");
+-        objc::call<void> (intermediateView, "release");
 -        CHOC_AUTORELEASE_END
 -    }
 -
@@ -301,7 +360,17 @@ index b948042..55e7305 100644
 -    void setContent (void* view)
 -    {
 -        CHOC_AUTORELEASE_BEGIN
--        objc::call<void> (window, "setContentView:", (CHOC_OBJC_CAST_BRIDGED id) view);
+-
+-        auto subviews = objc::call<id> (intermediateView, "subviews");
+-        auto count = objc::call<int> (subviews, "count");
+-
+-        for (int i = 0; i < count; ++i)
+-            objc::call<void> (objc::call<id> (subviews, "objectAtIndex:", 0), "removeFromSuperview");
+-
+-        auto newView = (CHOC_OBJC_CAST_BRIDGED id) view;
+-        objc::call<void> (newView, "setAutoresizingMask:", 18); // NSViewWidthSizable | NSViewHeightSizable
+-        objc::call<void> (newView, "setFrame:", objc::call<objc::CGRect> (intermediateView, "bounds"));
+-        objc::call<void> (intermediateView, "addSubview:", newView);
 -        CHOC_AUTORELEASE_END
 -    }
 -
@@ -327,9 +396,9 @@ index b948042..55e7305 100644
 -    void setMinimumSize (int w, int h) { CHOC_AUTORELEASE_BEGIN objc::call<void> (window, "setContentMinSize:", createCGSize (w, h)); CHOC_AUTORELEASE_END }
 -    void setMaximumSize (int w, int h) { CHOC_AUTORELEASE_BEGIN objc::call<void> (window, "setContentMaxSize:", createCGSize (w, h)); CHOC_AUTORELEASE_END }
 -
--    CGRect getFrameRectForContent (Bounds b)
+-    objc::CGRect getFrameRectForContent (Bounds b)
 -    {
--        return objc::call<CGRect> (window, "frameRectForContentRect:", createCGRect (b));
+-        return objc::call<objc::CGRect> (window, "frameRectForContentRect:", createCGRect (b));
 -    }
 -
 -    void centreWithSize (int w, int h)
@@ -355,9 +424,83 @@ index b948042..55e7305 100644
 -        CHOC_AUTORELEASE_END
 -    }
 -
+-    Bounds getBounds()
+-    {
+-        auto frame = objc::call<objc::CGRect> (window, "frame");
+-        auto contentRect = objc::call<objc::CGRect> (window, "contentRectForFrameRect:", frame);
+-
+-        return Bounds { (int) contentRect.origin.x,
+-                        (int) contentRect.origin.y,
+-                        (int) contentRect.size.width,
+-                        (int) contentRect.size.height };
+-    }
+-
+-    void setFileDropCallback (FileDropCallback handler)
+-    {
+-        CHOC_AUTORELEASE_BEGIN
+-
+-        if (handler)
+-        {
+-            fileDropCallback = std::move (handler);
+-            auto types = objc::callClass<id> ("NSArray", "arrayWithObject:", objc::getNSString ("NSFilenamesPboardType"));
+-            objc::call<void> (window, "registerForDraggedTypes:", types);
+-        }
+-        else
+-        {
+-            fileDropCallback = {};
+-            objc::call<void> (window, "unregisterDraggedTypes");
+-        }
+-
+-        CHOC_AUTORELEASE_END
+-    }
+-
+-    long draggingEntered()
+-    {
+-        return fileDropCallback ? NSDragOperationCopy : NSDragOperationNone;
+-    }
+-
+-    BOOL performDragOperation (id sender)
+-    {
+-        if (fileDropCallback == nullptr)
+-            return NO;
+-
+-        FileDropEvent e;
+-
+-        {
+-            CHOC_AUTORELEASE_BEGIN
+-            auto pboard = objc::call<id> (sender, "draggingPasteboard");
+-            auto files = objc::call<id> (pboard, "propertyListForType:", objc::getNSString ("NSFilenamesPboardType"));
+-
+-            auto count = objc::call<long> (files, "count");
+-
+-            for (long i = 0; i < count; ++i)
+-            {
+-                auto nsPath = objc::call<id>(files, "objectAtIndex:", i);
+-                auto utf8Path = objc::call<const char*>(nsPath, "UTF8String");
+-                e.filePaths.push_back (utf8Path);
+-            }
+-
+-            struct NSPoint { double x = 0, y = 0; };
+-            auto point = objc::call<NSPoint> (sender, "draggingLocation");
+-            e.x = static_cast<float> (point.x);
+-            e.y = static_cast<float> (point.y);
+-
+-            CHOC_AUTORELEASE_END
+-        }
+-
+-        return fileDropCallback (e) ? YES : NO;
+-    }
+-
 -    static Pimpl& getPimplFromContext (id self)
 -    {
+-       #if defined(__clang__)
+-        #pragma clang diagnostic push
+-        #pragma clang diagnostic ignored "-Wcast-align"
+-       #endif
 -        auto view = (CHOC_OBJC_CAST_BRIDGED Pimpl*) objc_getAssociatedObject (self, "choc_window");
+-       #if defined(__clang__)
+-        #pragma clang diagnostic pop
+-       #endif
 -        CHOC_ASSERT (view != nullptr);
 -        return *view;
 -    }
@@ -369,7 +512,8 @@ index b948042..55e7305 100644
 -    }
 -
 -    DesktopWindow& owner;
--    id window = {}, delegate = {};
+-    id window = {}, delegate = {}, intermediateView = {};
+-    FileDropCallback fileDropCallback;
 -
 -    struct DelegateClass
 -    {
@@ -380,36 +524,53 @@ index b948042..55e7305 100644
 -            if (auto* p = objc_getProtocol ("NSWindowDelegate"))
 -                class_addProtocol (delegateClass, p);
 -
+-            if (auto* p = objc_getProtocol ("NSDraggingDestination"))
+-                class_addProtocol (delegateClass, p);
+-
 -            class_addMethod (delegateClass, sel_registerName ("windowShouldClose:"),
--                            (IMP) (+[](id self, SEL, id) -> BOOL
--                            {
--                                CHOC_AUTORELEASE_BEGIN
--                                auto& p = getPimplFromContext (self);
--                                p.window = {};
+-                             (IMP) (+[](id self, SEL, id) -> BOOL
+-                             {
+-                                 CHOC_AUTORELEASE_BEGIN
+-                                 auto& p = getPimplFromContext (self);
+-                                 p.window = {};
 -
--                                if (auto callback = p.owner.windowClosed)
--                                    choc::messageloop::postMessage ([callback] { callback(); });
+-                                 if (auto callback = p.owner.windowClosed)
+-                                     choc::messageloop::postMessage ([callback] { callback(); });
 -
--                                CHOC_AUTORELEASE_END
--                                return TRUE;
--                            }),
--                            "c@:@");
+-                                 CHOC_AUTORELEASE_END
+-                                 return TRUE;
+-                             }),
+-                             "c@:@");
 -
 -            class_addMethod (delegateClass, sel_registerName ("windowDidResize:"),
--                            (IMP) (+[](id self, SEL, id)
--                            {
--                                CHOC_AUTORELEASE_BEGIN
+-                             (IMP) (+[](id self, SEL, id)
+-                             {
+-                                 CHOC_AUTORELEASE_BEGIN
 -
--                                if (auto callback = getPimplFromContext (self).owner.windowResized)
--                                    callback();
+-                                 if (auto callback = getPimplFromContext (self).owner.windowResized)
+-                                     callback();
 -
--                                CHOC_AUTORELEASE_END
--                            }),
--                            "v@:@");
+-                                 CHOC_AUTORELEASE_END
+-                             }),
+-                             "v@:@");
 -
 -            class_addMethod (delegateClass, sel_registerName ("applicationShouldTerminateAfterLastWindowClosed:"),
--                            (IMP) (+[](id, SEL, id) -> BOOL { return 0; }),
--                            "c@:@");
+-                             (IMP) (+[](id, SEL, id) -> BOOL { return 0; }),
+-                             "c@:@");
+-
+-            class_addMethod (delegateClass, sel_registerName ("draggingEntered:"),
+-                             (IMP) (+[](id self, SEL, id) -> long
+-                             {
+-                                 return getPimplFromContext (self).draggingEntered();
+-                             }),
+-                             "l@:@");
+-
+-            class_addMethod (delegateClass, sel_registerName ("performDragOperation:"),
+-                             (IMP) (+[](id self, SEL, id sender) -> BOOL
+-                             {
+-                                 return getPimplFromContext (self).performDragOperation (sender);
+-                             }),
+-                             "B@:@");
 -
 -            objc_registerClassPair (delegateClass);
 -        }
@@ -421,6 +582,18 @@ index b948042..55e7305 100644
 -
 -        Class delegateClass = {};
 -    };
+-
+-    static constexpr long NSWindowStyleMaskTitled = 1;
+-    static constexpr long NSWindowStyleMaskMiniaturizable = 4;
+-    static constexpr long NSWindowStyleMaskResizable = 8;
+-    static constexpr long NSWindowStyleMaskClosable = 2;
+-    static constexpr long NSBackingStoreBuffered = 2;
+-    static constexpr long NSApplicationActivationPolicyRegular = 0;
+-    static constexpr long NSDragOperationNone = 0;
+-    static constexpr long NSDragOperationCopy = 1;
+-
+-    static objc::CGSize createCGSize (double w, double h)  { return { (objc::CGFloat) w, (objc::CGFloat) h }; }
+-    static objc::CGRect createCGRect (choc::ui::Bounds b)  { return { { (objc::CGFloat) b.x, (objc::CGFloat) b.y }, { (objc::CGFloat) b.width, (objc::CGFloat) b.height } }; }
 -};
 -
 -} // namespace choc::ui
@@ -431,10 +604,12 @@ index b948042..55e7305 100644
  #undef  WIN32_LEAN_AND_MEAN
  #define WIN32_LEAN_AND_MEAN
  #undef  NOMINMAX
-@@ -453,27 +40,7 @@ struct DesktopWindow::Pimpl
+@@ -630,29 +44,7 @@ struct DesktopWindow::Pimpl
  #include <windows.h>
  #undef Rectangle
  
+-#include "../platform/choc_DynamicLibrary.h"
+-
 -namespace choc::ui
 -{
 -
@@ -460,7 +635,7 @@ index b948042..55e7305 100644
  
  struct HWNDHolder
  {
-@@ -516,7 +83,7 @@ struct WindowClass
+@@ -695,7 +87,7 @@ struct WindowClass
          wc.lpfnWndProc = wndProc;
  
          classAtom = (LPCWSTR) (uintptr_t) RegisterClassExW (&wc);
@@ -469,7 +644,7 @@ index b948042..55e7305 100644
      }
  
      ~WindowClass()
-@@ -582,250 +149,6 @@ static std::wstring createUTF16StringFromUTF8 (std::string_view utf8)
+@@ -761,312 +153,6 @@ static std::wstring createUTF16StringFromUTF8 (std::string_view utf8)
      return {};
  }
  
@@ -604,11 +779,31 @@ index b948042..55e7305 100644
 -        BringWindowToTop (hwnd);
 -    }
 -
+-    Bounds getBounds()
+-    {
+-        RECT r;
+-        GetWindowRect (hwnd, &r);
+-        auto scale = 96.0 / getWindowDPI();
+-        return scaleBounds ({ r.left, r.top, r.right - r.left, r.bottom - r.top }, scale);
+-    }
+-
+-    void setFileDropCallback (FileDropCallback handler)
+-    {
+-        if (auto shell32 = choc::file::DynamicLibrary ("shell32.dll"))
+-        {
+-            typedef UINT (WINAPI *DragAcceptFilesFunc)(HWND, BOOL);
+-            auto dragAcceptFiles = reinterpret_cast<DragAcceptFilesFunc> (shell32.findFunction ("DragAcceptFiles"));
+-            dragAcceptFiles (hwnd, handler ? TRUE : FALSE);
+-            fileDropCallback = std::move (handler);
+-        }
+-    }
+-
 -private:
 -    DesktopWindow& owner;
 -    HWNDHolder hwnd;
 -    POINT minimumSize = {}, maximumSize = {};
 -    WindowClass windowClass { L"CHOCWindow", (WNDPROC) wndProc };
+-    FileDropCallback fileDropCallback;
 -
 -    Bounds scaleBounds (Bounds b, double scale)
 -    {
@@ -625,15 +820,15 @@ index b948042..55e7305 100644
 -        HWND result = {};
 -
 -        if (IsWindow (hwnd))
--        {
--            EnumChildWindows (hwnd, +[](HWND w, LPARAM context)
--            {
--                *reinterpret_cast<HWND*> (context) = w;
--                return FALSE;
--            }, (LPARAM) &result);
--        }
+-            EnumChildWindows (hwnd, findFirstWindowCallback, (LPARAM) &result);
 -
 -        return result;
+-    }
+-
+-    static BOOL WINAPI findFirstWindowCallback (HWND w, LPARAM context)
+-    {
+-        *reinterpret_cast<HWND*> (context) = w;
+-        return FALSE;
 -    }
 -
 -    void resizeContentToFit()
@@ -661,6 +856,45 @@ index b948042..55e7305 100644
 -            owner.windowResized();
 -    }
 -
+-    bool handleFileDrop (HANDLE hdrop)
+-    {
+-        typedef UINT (WINAPI *DragQueryFileWFunc)(HANDLE, UINT, LPWSTR, UINT);
+-        typedef BOOL (WINAPI *DragQueryPointFunc)(HANDLE, LPPOINT);
+-        typedef BOOL (WINAPI *DragFinishFunc)(HANDLE);
+-
+-        if (fileDropCallback)
+-        {
+-            if (auto shell32 = choc::file::DynamicLibrary ("shell32.dll"))
+-            {
+-                auto dragQueryFileW = reinterpret_cast<DragQueryFileWFunc> (shell32.findFunction ("DragQueryFileW"));
+-                auto dragQueryPoint = reinterpret_cast<DragQueryPointFunc> (shell32.findFunction ("DragQueryPoint"));
+-                auto dragFinish = reinterpret_cast<DragFinishFunc> (shell32.findFunction ("DragFinish"));
+-
+-                POINT pt;
+-                dragQueryPoint (hdrop, &pt);
+-                FileDropEvent e;
+-                e.x = static_cast<float> (pt.x);
+-                e.y = static_cast<float> (pt.y);
+-
+-                auto numFiles = dragQueryFileW (hdrop, 0xffffffff, nullptr, 0);
+-
+-                for (UINT i = 0; i < numFiles; ++i)
+-                {
+-                    auto size = dragQueryFileW (hdrop, i, nullptr, 0);
+-                    std::wstring path;
+-                    path.resize (size + 2);
+-                    dragQueryFileW (hdrop, i, path.data(), size + 1);
+-                    e.filePaths.push_back (createUTF8FromUTF16 (path));
+-                }
+-
+-                dragFinish (hdrop);
+-                return fileDropCallback (e);
+-            }
+-        }
+-
+-        return false;
+-    }
+-
 -    static void enableNonClientDPIScaling (HWND h)
 -    {
 -        if (auto fn = getUser32Function<BOOL(__stdcall*)(HWND)> ("EnableNonClientDpiScaling"))
@@ -685,6 +919,7 @@ index b948042..55e7305 100644
 -            case WM_SIZE:            if (auto w = getPimpl (h)) w->handleSizeChange(); break;
 -            case WM_CLOSE:           if (auto w = getPimpl (h)) w->handleClose(); return 0;
 -            case WM_GETMINMAXINFO:   if (auto w = getPimpl (h)) w->getMinMaxInfo (*(LPMINMAXINFO) lp); return 0;
+-            case WM_DROPFILES:       if (auto w = getPimpl (h)) if (w->handleFileDrop ((HANDLE) wp)) return 0; break;
 -            default:                 break;
 -        }
 -
@@ -714,8 +949,10 @@ index b948042..55e7305 100644
 -inline void DesktopWindow::setResizable (bool b)                           { pimpl->setResizable (b); }
 -inline void DesktopWindow::setClosable (bool b)                            { pimpl->setClosable (b); }
 -inline void DesktopWindow::setBounds (Bounds b)                            { pimpl->setBounds (b); }
+-inline Bounds DesktopWindow::getBounds()                                   { return pimpl->getBounds(); }
 -inline void DesktopWindow::centreWithSize (int w, int h)                   { pimpl->centreWithSize (w, h); }
 -inline void DesktopWindow::toFront()                                       { pimpl->toFront(); }
+-inline void DesktopWindow::setFileDropCallback (FileDropCallback h)         { pimpl->setFileDropCallback (std::move (h)); }
 -
 -} // namespace choc::ui
 +END_NAMESPACE_DISTRHO
@@ -807,32 +1044,6 @@ index 85b2cfd..ef8c282 100644
 +END_NAMESPACE_DISTRHO
  
  #endif  // CHOC_DYNAMIC_LIBRARY_HEADER_INCLUDED
-diff --git a/choc_FloatToString.h b/choc_FloatToString.h
-index bf89933..586ecca 100644
---- a/choc_FloatToString.h
-+++ b/choc_FloatToString.h
-@@ -21,7 +21,7 @@
- 
- #include <cstring>
- #include <string>
--#include "../math/choc_MathHelpers.h"
-+#include "choc_MathHelpers.h"
- 
- namespace choc::text
- {
-diff --git a/choc_JSON.h b/choc_JSON.h
-index dbea379..617e2af 100644
---- a/choc_JSON.h
-+++ b/choc_JSON.h
-@@ -26,7 +26,7 @@
- 
- #include "choc_UTF8.h"
- #include "choc_FloatToString.h"
--#include "../containers/choc_Value.h"
-+#include "choc_Value.h"
- 
- #undef max   // It's never a smart idea to include any C headers before your C++ ones, as it
- #undef min   // risks polluting your namespace with all kinds of dangerous macros like these ones.
 diff --git a/choc_MemoryDLL.h b/choc_MemoryDLL.h
 index 00c3caa..f60eea1 100644
 --- a/choc_MemoryDLL.h
@@ -905,10 +1116,10 @@ index 00c3caa..f60eea1 100644
  
  #endif // CHOC_MEMORYDLL_HEADER_INCLUDED
 diff --git a/choc_StringUtilities.h b/choc_StringUtilities.h
-index 3122f83..4cd54c6 100644
+index 6633f68..4cd54c6 100644
 --- a/choc_StringUtilities.h
 +++ b/choc_StringUtilities.h
-@@ -27,125 +27,14 @@
+@@ -27,128 +27,14 @@
  #include <memory>
  #include <algorithm>
  #include <cwctype>
@@ -926,77 +1137,80 @@ index 3122f83..4cd54c6 100644
 -/// The arguments must be a sequence of pairs of strings, where the first of each pair is the string to
 -/// look for, followed by its replacement.
 -template <typename StringType, typename... OtherReplacements>
--std::string replace (StringType textToSearch,
--                     std::string_view firstSubstringToReplace, std::string_view firstReplacement,
--                     OtherReplacements&&... otherPairsOfStringsToReplace);
+-[[nodiscard]] std::string replace (StringType textToSearch,
+-                                   std::string_view firstSubstringToReplace, std::string_view firstReplacement,
+-                                   OtherReplacements&&... otherPairsOfStringsToReplace);
 -
 -/// Returns a string with any whitespace trimmed from its start and end.
--std::string trim (std::string textToTrim);
+-[[nodiscard]] std::string trim (std::string textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its start and end.
--std::string_view trim (std::string_view textToTrim);
+-[[nodiscard]] std::string_view trim (std::string_view textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its start and end.
--std::string_view trim (const char* textToTrim);
+-[[nodiscard]] std::string_view trim (const char* textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its start.
--std::string trimStart (std::string textToTrim);
+-[[nodiscard]] std::string trimStart (std::string textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its start.
--std::string_view trimStart (std::string_view textToTrim);
+-[[nodiscard]] std::string_view trimStart (std::string_view textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its start.
--std::string_view trimStart (const char* textToTrim);
+-[[nodiscard]] std::string_view trimStart (const char* textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its end.
--std::string trimEnd (std::string textToTrim);
+-[[nodiscard]] std::string trimEnd (std::string textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its end.
--std::string_view trimEnd (std::string_view textToTrim);
+-[[nodiscard]] std::string_view trimEnd (std::string_view textToTrim);
 -
 -/// Returns a string with any whitespace trimmed from its end.
--std::string_view trimEnd (const char* textToTrim);
+-[[nodiscard]] std::string_view trimEnd (const char* textToTrim);
 -
 -/// If the string begins with one or more instances of the given character, this
 -/// skips past them, returning the remainder of the string.
--std::string_view trimCharacterAtStart (std::string_view textToTrim, char characterToSkip);
+-[[nodiscard]] std::string_view trimCharacterAtStart (std::string_view textToTrim, char characterToSkip);
 -
 -/// If the given character is at the start and end of the string, it trims it away.
--std::string removeOuterCharacter (std::string text, char outerChar);
+-[[nodiscard]] std::string removeOuterCharacter (std::string text, char outerChar);
 -
--inline std::string removeDoubleQuotes (std::string text)       { return removeOuterCharacter (std::move (text), '"'); }
--inline std::string removeSingleQuotes (std::string text)       { return removeOuterCharacter (std::move (text), '\''); }
+-[[nodiscard]] inline std::string removeDoubleQuotes (std::string text)       { return removeOuterCharacter (std::move (text), '"'); }
+-[[nodiscard]] inline std::string removeSingleQuotes (std::string text)       { return removeOuterCharacter (std::move (text), '\''); }
 -
--inline std::string addDoubleQuotes (std::string text)          { return "\"" + std::move (text) + "\""; }
--inline std::string addSingleQuotes (std::string text)          { return "'" + std::move (text) + "'"; }
+-[[nodiscard]] inline std::string addDoubleQuotes (std::string text)          { return "\"" + std::move (text) + "\""; }
+-[[nodiscard]] inline std::string addSingleQuotes (std::string text)          { return "'" + std::move (text) + "'"; }
 -
--std::string toLowerCase (std::string);
--std::string toUpperCase (std::string);
+-[[nodiscard]] std::string toLowerCase (std::string);
+-[[nodiscard]] std::string toUpperCase (std::string);
 -
 -template <typename IsDelimiterChar>
--std::vector<std::string> splitString (std::string_view textToSplit,
--                                      IsDelimiterChar&& isDelimiterChar,
--                                      bool includeDelimitersInResult);
+-[[nodiscard]] std::vector<std::string> splitString (std::string_view textToSplit,
+-                                                    IsDelimiterChar&& isDelimiterChar,
+-                                                    bool includeDelimitersInResult);
 -
 -template <typename CharStartsDelimiter, typename CharIsInDelimiterBody>
--std::vector<std::string> splitString (std::string_view textToSplit,
--                                      CharStartsDelimiter&& isDelimiterStart,
--                                      CharIsInDelimiterBody&& isDelimiterBody,
--                                      bool includeDelimitersInResult);
+-[[nodiscard]] std::vector<std::string> splitString (std::string_view textToSplit,
+-                                                    CharStartsDelimiter&& isDelimiterStart,
+-                                                    CharIsInDelimiterBody&& isDelimiterBody,
+-                                                    bool includeDelimitersInResult);
 -
--std::vector<std::string> splitString (std::string_view textToSplit,
--                                      char delimiterCharacter,
--                                      bool includeDelimitersInResult);
+-[[nodiscard]] std::vector<std::string> splitString (std::string_view textToSplit,
+-                                                    char delimiterCharacter,
+-                                                    bool includeDelimitersInResult);
 -
--std::vector<std::string> splitAtWhitespace (std::string_view text, bool keepDelimiters = false);
+-[[nodiscard]] std::vector<std::string> splitAtWhitespace (std::string_view text,
+-                                                          bool keepDelimiters = false);
 -
 -/// Splits a string at newline characters, returning an array of strings.
--std::vector<std::string> splitIntoLines (std::string_view text, bool includeNewLinesInResult);
+-[[nodiscard]] std::vector<std::string> splitIntoLines (std::string_view text,
+-                                                       bool includeNewLinesInResult);
 -
 -/// Joins some kind of array of strings into a single string, adding the given separator
 -/// between them (but not adding it at the start or end)
 -template <typename ArrayOfStrings>
--std::string joinStrings (const ArrayOfStrings& strings, std::string_view separator);
+-[[nodiscard]] std::string joinStrings (const ArrayOfStrings& strings,
+-                                       std::string_view separator);
 -
 -/// Returns true if this text contains the given sub-string.
 -bool contains (std::string_view text, std::string_view possibleSubstring);
@@ -1036,7 +1250,7 @@ index 3122f83..4cd54c6 100644
  
  
  //==============================================================================
-@@ -159,20 +48,11 @@ std::string percentEncodeURI (std::string_view text);
+@@ -162,20 +48,11 @@ std::string percentEncodeURI (std::string_view text);
  //
  //==============================================================================
  
@@ -1058,7 +1272,7 @@ index 3122f83..4cd54c6 100644
  
      char hex[40];
      const auto end = hex + sizeof (hex) - 1;
-@@ -183,415 +63,12 @@ std::string createHexString (IntegerType v, int minNumDigits)
+@@ -186,415 +63,12 @@ std::string createHexString (IntegerType v, int minNumDigits)
      {
          *--d = "0123456789abcdef"[static_cast<uint32_t> (value) & 15u];
          value = static_cast<decltype (value)> (value >> 4);
@@ -1476,35 +1690,20 @@ index 3122f83..4cd54c6 100644
 +END_NAMESPACE_DISTRHO
  
  #endif
-diff --git a/choc_Value.h b/choc_Value.h
-index bd27f7a..5df22c4 100644
---- a/choc_Value.h
-+++ b/choc_Value.h
-@@ -25,7 +25,7 @@
- #include <algorithm>
- #include <memory>
- #include <exception>
--#include "../platform/choc_Assert.h"
-+#include "choc_Assert.h"
- 
- namespace choc::value
- {
 diff --git a/choc_WebView.h b/choc_WebView.h
-index 3ddf610..935dce1 100644
+index fcfdf42..d2deb10 100644
 --- a/choc_WebView.h
 +++ b/choc_WebView.h
-@@ -23,46 +23,18 @@
+@@ -23,46 +23,17 @@
  #include <unordered_map>
  #include <vector>
  #include <functional>
 -#include "../platform/choc_Platform.h"
 -#include "../text/choc_JSON.h"
-+#include <memory>
-+#include <string>
 +#include "choc_Platform.h"
 +#include "choc_StringUtilities.h"
  
--//==============================================================================
+ //==============================================================================
 -namespace choc::ui
 -{
 +START_NAMESPACE_DISTRHO
@@ -1523,8 +1722,8 @@ index 3ddf610..935dce1 100644
 -    - On OSX, you'll need to add the `WebKit` framework to your project
 -
 -    - On Linux, you'll need to:
--       1. Install the libgtk-3-dev and libwebkit2gtk-4.0-dev packages.
--       2. Link the gtk+3.0 and webkit2gtk-4.0 libraries in your build.
+-       1. Install the libgtk-3-dev and libwebkit2gtk-4.1-dev packages.
+-       2. Link the gtk+3.0 and webkit2gtk-4.1 libraries in your build.
 -          You might want to have a look inside choc/tests/CMakeLists.txt for
 -          an example of how to add those packages to your build without too
 -          much fuss.
@@ -1546,10 +1745,24 @@ index 3ddf610..935dce1 100644
  */
  class WebView
  {
-@@ -82,34 +54,6 @@ public:
+@@ -76,11 +47,6 @@ public:
+         /// If supported, this pops up a separate debug inspector window
+         bool enableDebugInspector = false;
+ 
+-        /// On OSX, setting this to true will allow the first click on a non-focused
+-        /// webview to be used as input, rather than the default behaviour, which is
+-        /// for the first click to give the webview focus but not trigger any action.
+-        bool acceptsFirstMouseClick = false;
+-
+         /// Optional user-agent string which can be used to override the default. Leave
          // this empty for default behaviour.
          std::string customUserAgent;
- 
+@@ -91,52 +57,12 @@ public:
+         /// On some platforms, this may be called synchronously during WebView
+         /// construction, on others it may happen later on the message thread, so
+         /// be sure to take account of this when you first use your WebView.
+-        std::function<void(choc::ui::WebView&)> webviewIsReady;
+-
 -        /// If you provide a fetchResource function, it is expected to return this
 -        /// object, which is simply the raw content of the resource, and its MIME type.
 -        struct Resource
@@ -1578,12 +1791,29 @@ index 3ddf610..935dce1 100644
 -        /// with the requested path as their argument.
 -        FetchResource fetchResource;
 -
-         /// If fetchResource is being used to serve custom data, you can choose to
-         /// override the default URI scheme by providing a home URI here, e.g. if
-         /// you wanted a scheme called `foo:`, you might set this to `foo://myname.com`
-@@ -132,31 +76,18 @@ public:
-     /// fail on some systems if the OS doesn't provide a suitable component.
-     bool loadedOK() const;
+-        /// If fetchResource is being used to serve custom data, you can choose to
+-        /// override the default URI scheme by providing a home URI here, e.g. if
+-        /// you wanted a scheme called `foo:`, you might set this to `foo://myname.com`
+-        /// and the view will navigate to that address when launched.
+-        /// Leave blank for a default.
+-        std::string customSchemeURI;
++        std::function<void(WebView&)> webviewIsReady;
+ 
+         /// Where supported, this property gives the webview a transparent background
+         /// by default, so you can avoid a flash of white while it's loading the
+         /// content.
+         bool transparentBackground = false;
+-
+-        /// On OSX there's some custom code to intercept copy/paste keys, which
+-        /// otherwise wouldn't work by default. This lets you turn that off if you
+-        /// need to.
+-        bool enableDefaultClipboardKeyShortcutsInSafari = true;
+     };
+ 
+     /// Creates a WebView with default options.
+@@ -163,31 +89,18 @@ public:
+     /// the message loop has been allowed to run for a while.
+     bool isReady() const;
  
 -    /// Directly sets the HTML content of the browser
 -    bool setHTML (const std::string& html);
@@ -1617,7 +1847,7 @@ index 3ddf610..935dce1 100644
  
      /// Adds a script to run when the browser loads a page
      bool addInitScript (const std::string& script);
-@@ -169,14 +100,11 @@ private:
+@@ -200,22 +113,13 @@ private:
      struct Pimpl;
      std::unique_ptr<Pimpl> pimpl;
  
@@ -1626,15 +1856,23 @@ index 3ddf610..935dce1 100644
      void invokeBinding (const std::string&);
 -    static std::string getURIScheme (const Options&);
 -    static std::string getURIHome (const Options&);
--    struct DeletionChecker { bool deleted = false; };
+     struct DeletionChecker { bool deleted = false; };
  };
  
+ 
+-#ifdef JUCE_GUI_EXTRA_H_INCLUDED
+-// This function will create a JUCE Component that contains and manages the given WebView.
+-// (Obviously it's only available if you've already included the juce_gui_extra module
+-// headers before this file).
+-inline std::unique_ptr<juce::Component> createJUCEWebViewHolder (choc::ui::WebView&);
+-#endif
+-
 -} // namespace choc::ui
 +END_NAMESPACE_DISTRHO
  
  
  //==============================================================================
-@@ -190,737 +118,14 @@ private:
+@@ -229,758 +133,13 @@ inline std::unique_ptr<juce::Component> createJUCEWebViewHolder (choc::ui::WebVi
  //
  //==============================================================================
  
@@ -1643,20 +1881,34 @@ index 3ddf610..935dce1 100644
 -#include "../platform/choc_DisableAllWarnings.h"
 -#include <JavaScriptCore/JavaScript.h>
 -#include <webkit2/webkit2.h>
+-#include <gtk/gtk.h>
+-#include <gtk/gtkx.h>
+-#include <gtk/gtksocket.h>
+-#include <gtk/gtkplug.h>
 -#include "../platform/choc_ReenableAllWarnings.h"
+-#undef KeyPress
+-#undef Status
 -
 -struct choc::ui::WebView::Pimpl
 -{
--    Pimpl (WebView& v, const Options& options)
--        : owner (v), fetchResource (options.fetchResource)
+-    Pimpl (WebView& v, const Options& opts)
+-        : owner (v), options (opts), fetchResource (options.fetchResource)
+-    {
+-    }
+-
+-    bool initialise()
 -    {
 -        if (! gtk_init_check (nullptr, nullptr))
--            return;
+-            return false;
 -
 -        defaultURI = getURIHome (options);
 -        webviewContext = webkit_web_context_new();
 -        g_object_ref_sink (G_OBJECT (webviewContext));
 -        webview = webkit_web_view_new_with_context (webviewContext);
+-
+-        if (! webview)
+-            return false;
+-
 -        g_object_ref_sink (G_OBJECT (webview));
 -        manager = webkit_web_view_get_user_content_manager (WEBKIT_WEB_VIEW (webview));
 -
@@ -1676,10 +1928,11 @@ index 3ddf610..935dce1 100644
 -        {
 -            webkit_settings_set_enable_write_console_messages_to_stdout (settings, true);
 -            webkit_settings_set_enable_developer_extras (settings, true);
+-        }
 -
+-        if (options.enableDebugInspector)
 -            if (auto inspector = WEBKIT_WEB_INSPECTOR (webkit_web_view_get_inspector (WEBKIT_WEB_VIEW (webview))))
 -                webkit_web_inspector_show (inspector);
--        }
 -
 -        if (! options.customUserAgent.empty())
 -            webkit_settings_set_user_agent (settings, options.customUserAgent.c_str());
@@ -1739,6 +1992,11 @@ index 3ddf610..935dce1 100644
 -        }
 -
 -        gtk_widget_show_all (webview);
+-
+-        if (options.webviewIsReady)
+-            options.webviewIsReady (owner);
+-
+-        return true;
 -    }
 -
 -    ~Pimpl()
@@ -1754,7 +2012,7 @@ index 3ddf610..935dce1 100644
 -
 -    static constexpr const char* postMessageFn = "window.webkit.messageHandlers.external.postMessage";
 -
--    bool loadedOK() const           { return getViewHandle() != nullptr; }
+-    bool stillInitialising() const  { return false; }
 -    void* getViewHandle() const     { return (void*) webview; }
 -
 -    std::shared_ptr<DeletionChecker> deletionChecker { std::make_shared<DeletionChecker>() };
@@ -1821,11 +2079,6 @@ index 3ddf610..935dce1 100644
 -
 -                    g_free (json);
 -                }
--                else
--                {
--                    if (errorMessage.empty())
--                        errorMessage = "Failed to convert result to JSON";
--                }
 -
 -               #if WEBKIT_CHECK_VERSION (2, 40, 0)
 -                g_object_unref (js_value);
@@ -1886,6 +2139,7 @@ index 3ddf610..935dce1 100644
 -    }
 -
 -    WebView& owner;
+-    const Options options;
 -    Options::FetchResource fetchResource;
 -    WebKitWebContext* webviewContext = {};
 -    GtkWidget* webview = {};
@@ -1897,19 +2151,23 @@ index 3ddf610..935dce1 100644
 -//==============================================================================
 -#elif CHOC_APPLE
 -
--#include "choc_MessageLoop.h"
+-#include "../platform/choc_ObjectiveCHelpers.h"
 -
 -struct choc::ui::WebView::Pimpl
 -{
 -    Pimpl (WebView& v, const Options& optionsToUse)
 -        : owner (v), options (std::make_unique<Options> (optionsToUse))
 -    {
+-    }
+-
+-    bool initialise()
+-    {
 -        using namespace choc::objc;
 -        CHOC_AUTORELEASE_BEGIN
 -
 -        defaultURI = getURIHome (*options);
 -
--        id config = call<id> (getClass ("WKWebViewConfiguration"), "new");
+-        id config = callClass<id> ("WKWebViewConfiguration", "new");
 -
 -        id prefs = call<id> (config, "preferences");
 -        call<void> (prefs, "setValue:forKey:", getNSNumberBool (true), getNSString ("fullScreenEnabled"));
@@ -1929,7 +2187,11 @@ index 3ddf610..935dce1 100644
 -        if (options->fetchResource)
 -            call<void> (config, "setURLSchemeHandler:forURLScheme:", delegate, getNSString (getURIScheme (*options)));
 -
--        webview = call<id> (allocateWebview(), "initWithFrame:configuration:", CGRect(), config);
+-        webview = call<id> (allocateWebview(), "initWithFrame:configuration:", objc::CGRect(), config);
+-
+-        if (! webview)
+-            return false;
+-
 -        objc_setAssociatedObject (webview, "choc_webview", (CHOC_OBJC_CAST_BRIDGED id) this, OBJC_ASSOCIATION_ASSIGN);
 -
 -        if (! options->customUserAgent.empty())
@@ -1938,12 +2200,20 @@ index 3ddf610..935dce1 100644
 -        call<void> (webview, "setUIDelegate:", delegate);
 -        call<void> (webview, "setNavigationDelegate:", delegate);
 -
+-        if (options->transparentBackground)
+-            call<void> (webview, "setValue:forKey:", getNSNumberBool (false), getNSString ("drawsBackground"));
+-
 -        call<void> (config, "release");
 -
 -        if (options->fetchResource)
 -            navigate ({});
 -
 -        CHOC_AUTORELEASE_END
+-
+-        if (options->webviewIsReady)
+-            options->webviewIsReady (owner);
+-
+-        return true;
 -    }
 -
 -    ~Pimpl()
@@ -1964,21 +2234,21 @@ index 3ddf610..935dce1 100644
 -
 -    static constexpr const char* postMessageFn = "window.webkit.messageHandlers.external.postMessage";
 -
--    bool loadedOK() const           { return getViewHandle() != nullptr; }
+-    bool stillInitialising() const  { return false; }
 -    void* getViewHandle() const     { return (CHOC_OBJC_CAST_BRIDGED void*) webview; }
 -
 -    std::shared_ptr<DeletionChecker> deletionChecker { std::make_shared<DeletionChecker>() };
 -
 -    bool addInitScript (const std::string& script)
 -    {
--        using namespace choc::objc;
 -        CHOC_AUTORELEASE_BEGIN
 -
--        if (id s = call<id> (call<id> (getClass ("WKUserScript"), "alloc"), "initWithSource:injectionTime:forMainFrameOnly:",
--                                       getNSString (script), WKUserScriptInjectionTimeAtDocumentStart, (BOOL) 1))
+-        if (id s = objc::call<id> (objc::callClass<id> ("WKUserScript", "alloc"),
+-                                   "initWithSource:injectionTime:forMainFrameOnly:",
+-                                   objc::getNSString (script), WKUserScriptInjectionTimeAtDocumentStart, (BOOL) 1))
 -        {
--            call<void> (manager, "addUserScript:", s);
--            call<void> (s, "release");
+-            objc::call<void> (manager, "addUserScript:", s);
+-            objc::call<void> (s, "release");
 -            return true;
 -        }
 -
@@ -1991,11 +2261,10 @@ index 3ddf610..935dce1 100644
 -        if (url.empty())
 -            return navigate (defaultURI);
 -
--        using namespace choc::objc;
 -        CHOC_AUTORELEASE_BEGIN
 -
--        if (id nsURL = call<id> (getClass ("NSURL"), "URLWithString:", getNSString (url)))
--            return call<id> (webview, "loadRequest:", call<id> (getClass ("NSURLRequest"), "requestWithURL:", nsURL)) != nullptr;
+-        if (id nsURL = objc::callClass<id> ("NSURL", "URLWithString:", objc::getNSString (url)))
+-            return objc::call<id> (webview, "loadRequest:", objc::callClass<id> ("NSURLRequest", "requestWithURL:", nsURL)) != nullptr;
 -
 -        CHOC_AUTORELEASE_END
 -        return false;
@@ -2011,7 +2280,7 @@ index 3ddf610..935dce1 100644
 -    bool evaluateJavascript (const std::string& script, CompletionHandler completionHandler)
 -    {
 -        CHOC_AUTORELEASE_BEGIN
--        auto s = objc::getNSString (script);
+-        id s = objc::getNSString (script);
 -
 -        if (completionHandler)
 -        {
@@ -2050,8 +2319,8 @@ index 3ddf610..935dce1 100644
 -    {
 -        if (value)
 -        {
--            if (id nsData = objc::call<id> (objc::getClass ("NSJSONSerialization"), "dataWithJSONObject:options:error:",
--                                            value, 12, (id) nullptr))
+-            if (id nsData = objc::callClass<id> ("NSJSONSerialization", "dataWithJSONObject:options:error:",
+-                                                 value, 12, (id) nullptr))
 -            {
 -                auto data = objc::call<void*> (nsData, "bytes");
 -                auto length = objc::call<unsigned long> (nsData, "length");
@@ -2101,7 +2370,7 @@ index 3ddf610..935dce1 100644
 -
 -            auto makeResponse = [&] (auto responseCode, id headerFields)
 -            {
--                return call<id> (call<id> (call<id> (getClass ("NSHTTPURLResponse"), "alloc"),
+-                return call<id> (call<id> (callClass<id> ("NSHTTPURLResponse", "alloc"),
 -                                           "initWithURL:statusCode:HTTPVersion:headerFields:",
 -                                           requestUrl,
 -                                           responseCode,
@@ -2120,12 +2389,12 @@ index 3ddf610..935dce1 100644
 -                id headerKeys[]    = { getNSString ("Content-Length"), getNSString ("Content-Type"), getNSString ("Cache-Control"), getNSString ("Access-Control-Allow-Origin") };
 -                id headerObjects[] = { getNSString (contentLength),    getNSString (mimeType),       getNSString ("no-store") ,     getNSString ("*") };
 -
--                id headerFields = call<id> (getClass ("NSDictionary"), "dictionaryWithObjects:forKeys:count:",
--                                            headerObjects, headerKeys, sizeof (headerObjects) / sizeof (id));
+-                id headerFields = callClass<id> ("NSDictionary", "dictionaryWithObjects:forKeys:count:",
+-                                                 headerObjects, headerKeys, sizeof (headerObjects) / sizeof (id));
 -
 -                call<void> (task, "didReceiveResponse:", makeResponse (200, headerFields));
 -
--                id data = call<id> (getClass ("NSData"), "dataWithBytes:length:", bytes.data(), bytes.size());
+-                id data = callClass<id> ("NSData", "dataWithBytes:length:", bytes.data(), bytes.size());
 -                call<void> (task, "didReceiveData:", data);
 -            }
 -            else
@@ -2137,8 +2406,8 @@ index 3ddf610..935dce1 100644
 -        }
 -        catch (...)
 -        {
--            id error = call<id> (getClass ("NSError"), "errorWithDomain:code:userInfo:",
--                                 getNSString ("NSURLErrorDomain"), -1, nullptr);
+-            id error = callClass<id> ("NSError", "errorWithDomain:code:userInfo:",
+-                                      getNSString ("NSURLErrorDomain"), -1, nullptr);
 -
 -            call<void> (task, "didFailWithError:", error);
 -        }
@@ -2155,6 +2424,9 @@ index 3ddf610..935dce1 100644
 -
 -    BOOL performKeyEquivalent (id self, id e)
 -    {
+-        if (! options->enableDefaultClipboardKeyShortcutsInSafari)
+-            return false;
+-
 -        enum
 -        {
 -            NSEventTypeKeyDown = 10,
@@ -2231,9 +2503,10 @@ index 3ddf610..935dce1 100644
 -                            (IMP) (+[](id self, SEL, id e) -> BOOL
 -                            {
 -                                if (auto p = getPimpl (self))
--                                    return p->performKeyEquivalent (self, e);
+-                                    if (p->performKeyEquivalent (self, e))
+-                                        return true;
 -
--                                return false;
+-                                return choc::objc::callSuper<BOOL> (self, "performKeyEquivalent:", e);
 -                            }), "B@:@");
 -
 -            objc_registerClassPair (webviewClass);
@@ -2253,14 +2526,13 @@ index 3ddf610..935dce1 100644
 -    {
 -        DelegateClass()
 -        {
--            using namespace choc::objc;
--            delegateClass = createDelegateClass ("NSObject", "CHOCWebViewDelegate_");
+-            delegateClass = objc::createDelegateClass ("NSObject", "CHOCWebViewDelegate_");
 -
 -            class_addMethod (delegateClass, sel_registerName ("userContentController:didReceiveScriptMessage:"),
 -                             (IMP) (+[](id self, SEL, id, id msg)
 -                             {
 -                                 if (auto p = getPimpl (self))
--                                     p->owner.invokeBinding (objc::getString (call<id> (msg, "body")));
+-                                     p->owner.invokeBinding (objc::getString (objc::call<id> (msg, "body")));
 -                             }),
 -                             "v@:@@");
 -
@@ -2294,25 +2566,25 @@ index 3ddf610..935dce1 100644
 -                             (IMP) (+[](id, SEL, id wkwebview, id params, id /*frame*/, void (^completionHandler)(id))
 -                             {
 -                                CHOC_AUTORELEASE_BEGIN
--                                id panel = call<id> (getClass ("NSOpenPanel"), "openPanel");
+-                                id panel = objc::callClass<id> ("NSOpenPanel", "openPanel");
 -
--                                auto allowsMultipleSelection = call<BOOL> (params, "allowsMultipleSelection");
--                                id allowedFileExtensions = call<id> (params, "_allowedFileExtensions");
--                                id window = call<id> (wkwebview, "window");
+-                                auto allowsMultipleSelection = objc::call<BOOL> (params, "allowsMultipleSelection");
+-                                id allowedFileExtensions = objc::call<id> (params, "_allowedFileExtensions");
+-                                id window = objc::call<id> (wkwebview, "window");
 -
--                                call<void> (panel, "setAllowsMultipleSelection:", allowsMultipleSelection);
--                                call<void> (panel, "setAllowedFileTypes:", allowedFileExtensions);
+-                                objc::call<void> (panel, "setAllowsMultipleSelection:", allowsMultipleSelection);
+-                                objc::call<void> (panel, "setAllowedFileTypes:", allowedFileExtensions);
 -
--                                call<void> (panel, "beginSheetModalForWindow:completionHandler:", window,
--                                            ^(long result)
--                                            {
--                                                CHOC_AUTORELEASE_BEGIN
--                                                if (result == 1) // NSModalResponseOK
--                                                    completionHandler (call<id> (panel, "URLs"));
--                                                else
--                                                    completionHandler (nil);
--                                                CHOC_AUTORELEASE_END
--                                            });
+-                                objc::call<void> (panel, "beginSheetModalForWindow:completionHandler:", window,
+-                                                  ^(long result)
+-                                                  {
+-                                                      CHOC_AUTORELEASE_BEGIN
+-                                                      if (result == 1) // NSModalResponseOK
+-                                                          completionHandler (objc::call<id> (panel, "URLs"));
+-                                                      else
+-                                                          completionHandler (nil);
+-                                                      CHOC_AUTORELEASE_END
+-                                                  });
 -                                CHOC_AUTORELEASE_END
 -                             }), "v@:@@@@");
 -
@@ -2328,18 +2600,6 @@ index 3ddf610..935dce1 100644
 -    };
 -
 -    static constexpr long WKUserScriptInjectionTimeAtDocumentStart = 0;
--
--    // Including CodeGraphics.h can create all kinds of messy C/C++ symbol clashes
--    // with other headers, but all we actually need are these coordinate structs:
--   #if defined (__LP64__) && __LP64__
--    using CGFloat = double;
--   #else
--    using CGFloat = float;
--   #endif
--
--    struct CGPoint { CGFloat x = 0, y = 0; };
--    struct CGSize  { CGFloat width = 0, height = 0; };
--    struct CGRect  { CGPoint origin; CGSize size; };
 -};
 -
 -//==============================================================================
@@ -2367,18 +2627,17 @@ index 3ddf610..935dce1 100644
 - }
 -#endif
 -
+ #include "choc_DesktopWindow.h"
 +#include "choc_DynamicLibrary.h"
 +#include "choc_MemoryDLL.h"
- #include "choc_DesktopWindow.h"
- 
++
 +START_NAMESPACE_DISTRHO
 +static MemoryDLL getWebview2LoaderDLL();
 +END_NAMESPACE_DISTRHO
-+
+ 
  #ifndef __webview2_h__
  #define __webview2_h__
- 
-@@ -1268,8 +473,7 @@ public:
+@@ -1344,8 +503,7 @@ public:
  
  #endif // __webview2_h__
  
@@ -2388,70 +2647,48 @@ index 3ddf610..935dce1 100644
  
  //==============================================================================
  struct WebView::Pimpl
-@@ -1277,10 +481,7 @@ struct WebView::Pimpl
-     Pimpl (WebView& v, const Options& opts)
-         : owner (v), options (opts)
+@@ -1358,10 +516,7 @@ struct WebView::Pimpl
      {
+         CoInitialize (nullptr);
+ 
 -        // You cam define this macro to provide a custom way of getting a
 -        // choc::file::DynamicLibrary that contains the redistributable
 -        // Microsoft WebView2Loader.dll
 -        webviewDLL = CHOC_FIND_WEBVIEW2LOADER_DLL;
 +        webviewDLL = getWebview2LoaderDLL();
  
-         if (! webviewDLL)
-             return;
-@@ -1290,9 +491,6 @@ struct WebView::Pimpl
-         if (hwnd.hwnd == nullptr)
-             return;
- 
--        defaultURI = getURIHome (options);
--        setHTMLURI = defaultURI + "getHTMLInternal";
--
-         SetWindowLongPtr (hwnd, GWLP_USERDATA, (LONG_PTR) this);
- 
-         if (createEmbeddedWebView())
-@@ -1304,8 +502,6 @@ struct WebView::Pimpl
- 
-     ~Pimpl()
-     {
--        deletionChecker->deleted = true;
--
-         if (coreWebView != nullptr)
+         if (webviewDLL)
          {
-             coreWebView->Release();
-@@ -1327,52 +523,30 @@ struct WebView::Pimpl
-         hwnd.reset();
-     }
+@@ -1369,9 +524,6 @@ struct WebView::Pimpl
  
--    static constexpr const char* postMessageFn = "window.chrome.webview.postMessage";
+             if (hwnd.hwnd != nullptr)
+             {
+-                defaultURI = getURIHome (options);
+-                setHTMLURI = defaultURI + "getHTMLInternal";
 -
-     bool loadedOK() const           { return coreWebView != nullptr; }
-     void* getViewHandle() const     { return (void*) hwnd.hwnd; }
+                 SetWindowLongPtr (hwnd, GWLP_USERDATA, (LONG_PTR) this);
  
--    std::shared_ptr<DeletionChecker> deletionChecker { std::make_shared<DeletionChecker>() };
--
-     bool navigate (const std::string& url)
-     {
+                 if (auto userDataFolder = getUserDataFolder(); ! userDataFolder.empty())
+@@ -1413,9 +565,6 @@ struct WebView::Pimpl
+         if (! coreWebView)
+             return false;
+ 
 -        if (url.empty())
 -            return navigate (defaultURI);
 -
--        CHOC_ASSERT (coreWebView != nullptr);
-+        DISTRHO_SAFE_ASSERT_RETURN (coreWebView != nullptr, false);
          return coreWebView->Navigate (createUTF16StringFromUTF8 (url).c_str()) == S_OK;
      }
  
-     bool addInitScript (const std::string& script)
-     {
--        CHOC_ASSERT (coreWebView != nullptr);
-+        DISTRHO_SAFE_ASSERT_RETURN (coreWebView != nullptr, false);
+@@ -1427,32 +576,17 @@ struct WebView::Pimpl
          return coreWebView->AddScriptToExecuteOnDocumentCreated (createUTF16StringFromUTF8 (script).c_str(), nullptr) == S_OK;
      }
  
 -    bool evaluateJavascript (const std::string& script, CompletionHandler&& ch)
--    {
--        if (coreWebView == nullptr)
--            return false;
--
++    bool evaluateJavascript (const std::string& script)
+     {
+         if (! coreWebView)
+             return false;
+ 
 -        COMPtr<ExecuteScriptCompletedCallback> callback (ch ? new ExecuteScriptCompletedCallback (std::move (ch))
 -                                                            : nullptr);
 -
@@ -2459,13 +2696,13 @@ index 3ddf610..935dce1 100644
 -    }
 -
 -    bool setHTML (const std::string& html)
-+    bool evaluateJavascript (const std::string& script)
-     {
--        CHOC_ASSERT (coreWebView != nullptr);
+-    {
+-        if (! coreWebView)
+-            return false;
+-
 -        pageHTML = { html, "text/html" };
 -        navigate (setHTMLURI);
 -        return true;
-+        DISTRHO_SAFE_ASSERT_RETURN (coreWebView != nullptr, false);
 +        return coreWebView->ExecuteScript (createUTF16StringFromUTF8 (script).c_str(), nullptr) == S_OK;
      }
  
@@ -2475,9 +2712,25 @@ index 3ddf610..935dce1 100644
 -    std::string defaultURI, setHTMLURI;
 -    WebView::Options::Resource pageHTML;
  
-     //==============================================================================
-     template <typename Type>
-@@ -1404,7 +578,7 @@ private:
+     void webviewControllerCreationComplete (ICoreWebView2Controller* controller, ICoreWebView2* view)
+     {
+@@ -1473,15 +607,9 @@ private:
+             }
+         }
+ 
+-        auto wildcardFilter = createUTF16StringFromUTF8 (defaultURI + "*");
+-        coreWebView->AddWebResourceRequestedFilter (wildcardFilter.c_str(), COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
+-
+         EventRegistrationToken token;
+         coreWebView->add_WebResourceRequested (eventHandler, std::addressof (token));
+ 
+-        if (options.fetchResource)
+-            navigate ({});
+-
+         COMPtr<ICoreWebView2Settings> settings;
+ 
+         if (coreWebView->get_Settings (settings.getAddress()) == S_OK
+@@ -1553,7 +681,7 @@ private:
              return message;
          }
  
@@ -2486,24 +2739,8 @@ index 3ddf610..935dce1 100644
      }
  
      static Pimpl* getPimpl (HWND h)     { return (Pimpl*) GetWindowLongPtr (h, GWLP_USERDATA); }
-@@ -1463,15 +637,9 @@ private:
-                     if (coreWebView == nullptr)
-                         return false;
- 
--                    const auto wildcardFilter = createUTF16StringFromUTF8 (defaultURI + "*");
--                    coreWebView->AddWebResourceRequestedFilter (wildcardFilter.c_str(), COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
--
-                     EventRegistrationToken token;
-                     coreWebView->add_WebResourceRequested (handler, std::addressof (token));
- 
--                    if (options.fetchResource)
--                        navigate ({});
--
-                     ICoreWebView2Settings* settings = nullptr;
- 
-                     if (coreWebView->get_Settings (std::addressof (settings)) == S_OK
-@@ -1526,14 +694,6 @@ private:
-         webviewInitialising.clear();
+@@ -1589,14 +717,6 @@ private:
+         }
      }
  
 -    std::optional<WebView::Options::Resource> fetchResourceOrPageHTML (const std::string& uri)
@@ -2516,28 +2753,26 @@ index 3ddf610..935dce1 100644
 -
      HRESULT onResourceRequested (ICoreWebView2WebResourceRequestedEventArgs* args)
      {
-         struct ScopedExit
-@@ -1579,42 +739,8 @@ private:
-             ICoreWebView2WebResourceResponse* response = {};
-             ScopedExit cleanupResponse (makeCleanupIUnknown (response));
+         try
+@@ -1627,40 +747,8 @@ private:
  
--            if (const auto resource = fetchResourceOrPageHTML (createUTF8FromUTF16 (uri)))
+             COMPtr<ICoreWebView2WebResourceResponse> response;
+ 
+-            if (auto resource = fetchResourceOrPageHTML (createUTF8FromUTF16 (uri.uri)))
 -            {
--                const auto makeMemoryStream = [](const auto* data, auto length) -> IStream*
+-                COMPtr<IStream> stream;
+-
 -                {
 -                    choc::file::DynamicLibrary lib ("shlwapi.dll");
 -                    using SHCreateMemStreamFn = IStream*(__stdcall *)(const BYTE*, UINT);
--                    auto fn = reinterpret_cast<SHCreateMemStreamFn> (lib.findFunction ("SHCreateMemStream"));
--                    return fn ? fn (data, length) : nullptr;
+-
+-                    if (auto fn = reinterpret_cast<SHCreateMemStreamFn> (lib.findFunction ("SHCreateMemStream")))
+-                        stream.object = fn (reinterpret_cast<const BYTE*> (resource->data.data()),
+-                                            static_cast<UINT> (resource->data.size()));
 -                };
 -
--                auto* stream = makeMemoryStream (reinterpret_cast<const BYTE*> (resource->data.data()),
--                                                 static_cast<UINT> (resource->data.size()));
--
--                if (stream == nullptr)
+-                if (! stream)
 -                    return E_FAIL;
--
--                ScopedExit cleanupStream (makeCleanupIUnknown (stream));
 -
 -                std::vector<std::string> headers;
 -                headers.emplace_back ("Content-Type: " + resource->mimeType);
@@ -2549,21 +2784,21 @@ index 3ddf610..935dce1 100644
 -
 -                const auto headerString = createUTF16StringFromUTF8 (choc::text::joinStrings (headers, "\n"));
 -
--                if (coreWebViewEnvironment->CreateWebResourceResponse (stream, 200, L"OK", headerString.c_str(), std::addressof (response)) != S_OK)
+-                if (coreWebViewEnvironment->CreateWebResourceResponse (stream, 200, L"OK", headerString.c_str(), response.getAddress()) != S_OK)
 -                    return E_FAIL;
 -            }
 -            else
 -            {
--                if (coreWebViewEnvironment->CreateWebResourceResponse (nullptr, 404, L"Not Found", nullptr, std::addressof (response)) != S_OK)
+-                if (coreWebViewEnvironment->CreateWebResourceResponse (nullptr, 404, L"Not Found", nullptr, response.getAddress()) != S_OK)
 -                    return E_FAIL;
 -            }
-+            if (coreWebViewEnvironment->CreateWebResourceResponse (nullptr, 404, L"Not Found", nullptr, std::addressof (response)) != S_OK)
++            if (coreWebViewEnvironment->CreateWebResourceResponse (nullptr, 404, L"Not Found", nullptr, response.getAddress()) != S_OK)
 +                return E_FAIL;
  
-             if (args->put_Response (response) != S_OK)
-                 return E_FAIL;
-@@ -1708,58 +834,9 @@ private:
-         std::atomic<ULONG> refCount { 0 };
+             if (args->put_Response (response) == S_OK)
+                 return S_OK;
+@@ -1755,58 +843,9 @@ private:
+         std::shared_ptr<DeletionChecker> deletionCheckerRef;
      };
  
 -    //==============================================================================
@@ -2620,9 +2855,9 @@ index 3ddf610..935dce1 100644
 -    WebViewDLL webviewDLL;
 +    MemoryDLL webviewDLL;
      Options options;
-     ICoreWebView2Environment* coreWebViewEnvironment = nullptr;
-     ICoreWebView2* coreWebView = nullptr;
-@@ -1793,15 +870,6 @@ private:
+     COMPtr<EventHandler> eventHandler;
+     COMPtr<ICoreWebView2Environment> coreWebViewEnvironment;
+@@ -1840,15 +879,6 @@ private:
      }
  };
  
@@ -2638,9 +2873,9 @@ index 3ddf610..935dce1 100644
  //==============================================================================
  inline WebView::WebView() : WebView (Options()) {}
  
-@@ -1820,137 +888,30 @@ inline WebView::~WebView()
- 
+@@ -1884,195 +914,31 @@ inline WebView::~WebView()
  inline bool WebView::loadedOK() const                                { return pimpl != nullptr; }
+ inline bool WebView::isReady() const                                 { return pimpl != nullptr && ! pimpl->stillInitialising(); }
  inline bool WebView::navigate (const std::string& url)               { return pimpl != nullptr && pimpl->navigate (url); }
 -inline bool WebView::setHTML (const std::string& html)               { return pimpl != nullptr && pimpl->setHTML (html); }
  inline bool WebView::addInitScript (const std::string& script)       { return pimpl != nullptr && pimpl->addInitScript (script); }
@@ -2738,8 +2973,9 @@ index 3ddf610..935dce1 100644
 -    }
 -    catch (const std::exception&)
 -    {}
--}
--
++    binding(msg);
+ }
+ 
 -inline std::string WebView::getURIHome (const Options& options)
 -{
 -    if (! options.customSchemeURI.empty())
@@ -2756,7 +2992,7 @@ index 3ddf610..935dce1 100644
 -    return "choc://choc.choc/";
 -   #endif
 -}
--
+ 
 -inline std::string WebView::getURIScheme (const Options& options)
 -{
 -    auto uri = getURIHome (options);
@@ -2769,21 +3005,87 @@ index 3ddf610..935dce1 100644
 -{
 -    if (! content.empty())
 -    {
--        auto src = content.data();
--        data.insert (data.end(), src, src + content.length());
+-        // NB: not using vector::insert() because it triggers some stupid glib bug in MINGW
+-        data.resize (content.length());
+-        std::memcpy (data.data(), content.data(), content.length());
 -    }
 -
 -    mimeType = std::move (mime);
-+    binding(msg);
- }
- 
--} // namespace choc::ui
+-}
 -
+-//==============================================================================
+-#ifdef JUCE_GUI_EXTRA_H_INCLUDED
+-inline std::unique_ptr<juce::Component> createJUCEWebViewHolder (choc::ui::WebView& view)
+-{
+-   #if JUCE_MAC
+-    using NativeUIBase = juce::NSViewComponent;
+-   #elif JUCE_IOS
+-    using NativeUIBase = juce::UIViewComponent;
+-   #elif JUCE_WINDOWS
+-    using NativeUIBase = juce::HWNDComponent;
+-   #else
+-    using NativeUIBase = juce::XEmbedComponent;
+-   #endif
+-
+-    struct Holder  : public NativeUIBase
+-    {
+-        Holder (choc::ui::WebView& view)
+-           #if JUCE_LINUX
+-            : juce::XEmbedComponent (getWindowID (view), true, false)
+-           #endif
+-        {
+-           #if JUCE_MAC || JUCE_IOS
+-            setView (view.getViewHandle());
+-           #elif JUCE_WINDOWS
+-            setHWND (view.getViewHandle());
+-           #endif
+-        }
+-
+-        ~Holder() override
+-        {
+-           #if JUCE_MAC || JUCE_IOS
+-            setView ({});
+-           #elif JUCE_WINDOWS
+-            setHWND ({});
+-           #elif JUCE_LINUX
+-            removeClient();
+-           #endif
+-        }
+-
+-       #if JUCE_LINUX
+-        static unsigned long getWindowID (choc::ui::WebView& v)
+-        {
+-            auto childWidget = GTK_WIDGET (v.getViewHandle());
+-            auto plug = gtk_plug_new (0);
+-            gtk_container_add (GTK_CONTAINER (plug), childWidget);
+-            gtk_widget_show_all (plug);
+-            return gtk_plug_get_id (GTK_PLUG (plug));
+-        }
+-       #endif
+-
+-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Holder)
+-    };
+-
+-    return std::make_unique<Holder> (view);
+-}
+-#endif
+-
+-
+-} // namespace choc::ui
 +END_NAMESPACE_DISTRHO
  
+ 
  //==============================================================================
- //==============================================================================
-@@ -2035,7 +996,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@@ -2121,8 +987,6 @@ inline std::unique_ptr<juce::Component> createJUCEWebViewHolder (choc::ui::WebVi
+ 
+ */
+ 
+-#if CHOC_USE_INTERNAL_WEBVIEW_DLL
+-
+ #ifdef CHOC_REGISTER_OPEN_SOURCE_LICENCE
+  CHOC_REGISTER_OPEN_SOURCE_LICENCE (WebView2Loader, R"(
+ ==============================================================================
+@@ -2158,7 +1022,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  )")
  #endif
  
@@ -2792,7 +3094,7 @@ index 3ddf610..935dce1 100644
  {
      // This is version 1.0.2365.46
  
-@@ -5798,7 +4759,7 @@ inline choc::ui::WebViewDLL choc::ui::getWebview2LoaderDLL()
+@@ -5921,9 +4785,7 @@ inline choc::ui::WebViewDLL choc::ui::getWebview2LoaderDLL()
      };
     #endif
  
@@ -2800,4 +3102,6 @@ index 3ddf610..935dce1 100644
 +    return DISTRHO_NAMESPACE::MemoryDLL (dllData, sizeof (dllData));
  }
  
- #endif
+-#endif // CHOC_USE_INTERNAL_WEBVIEW_DLL
+-
+ #endif // CHOC_WEBVIEW_HEADER_INCLUDED
