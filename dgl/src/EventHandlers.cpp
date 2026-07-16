@@ -492,7 +492,8 @@ struct KnobEventHandler::PrivateData {
             return true;
 
         const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-        valueTmp += (maximum - minimum) / divisor * static_cast<float>(movDiff);
+        valueTmp = (usingLog ? invlogscale(valueTmp) : valueTmp)
+                 + (maximum - minimum) / divisor * static_cast<float>(movDiff);
 
         if (usingLog)
             valueTmp = logscale(valueTmp);
