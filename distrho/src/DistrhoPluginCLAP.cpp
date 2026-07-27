@@ -1021,7 +1021,7 @@ public:
                     case CLAP_EVENT_PARAM_VALUE:
                         DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
                                                         event->size, sizeof(clap_event_param_value_t));
-                        if (event->space_id == 0)
+                        if (event->space_id == CLAP_CORE_EVENT_SPACE_ID)
                             setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
                         break;
                     case CLAP_EVENT_PARAM_MOD:
@@ -1284,7 +1284,7 @@ public:
 
                 if (event->type != CLAP_EVENT_PARAM_VALUE)
                     continue;
-                if (event->space_id != 0)
+                if (event->space_id != CLAP_CORE_EVENT_SPACE_ID)
                     continue;
 
                 DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
@@ -1611,10 +1611,15 @@ public:
         ClapUI* const ui = fUI.get();
        #endif
         String key, value;
-        bool empty = true;
         bool hasValue = false;
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
+        const uint32_t paramCount = fPlugin.getParameterCount();
+       #if DISTRHO_PLUGIN_WANT_STATE
+        const uint32_t stateCount = fPlugin.getStateCount();
+       #else
+        const uint32_t stateCount = 0;
+       #endif
 
         char buffer[512], orig;
         buffer[sizeof(buffer)-1] = '\xff';
@@ -1625,14 +1630,25 @@ public:
             DISTRHO_SAFE_ASSERT_INT_RETURN(read >= 0, read, false);
 
             if (read == 0)
-                return !empty;
+                return false;
 
-            empty = false;
             for (int32_t i = 0; i < read; ++i)
             {
                 // found terminator, stop here
                 if (buffer[i] == '\xfe')
                 {
+                    const bool validTerminalState =
+                        paramCount != 0
+                            ? queryingType == 'x'
+                            : stateCount != 0
+                                ? queryingType == 'n'
+                                : queryingType == 'i';
+                    if (! validTerminalState
+                        || ! fillingKey
+                        || hasValue
+                        || ! key.isEmpty()
+                        || ! value.isEmpty())
+                        return false;
                     terminated = 1;
                     break;
                 }

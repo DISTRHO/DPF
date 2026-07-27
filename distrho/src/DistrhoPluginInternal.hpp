@@ -1048,7 +1048,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, false);
-        DISTRHO_SAFE_ASSERT(bufferSize >= 2);
+        DISTRHO_SAFE_ASSERT_RETURN(bufferSize != 0, false);
 
         if (fData->bufferSize == bufferSize)
             return false;

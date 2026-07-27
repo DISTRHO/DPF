@@ -1074,6 +1074,8 @@ public:
             {
                 std::memcpy(outData, &fUserPresetData, sizeof(AUPreset));
             }
+            if (static_cast<AUPreset*>(outData)->presetName != nullptr)
+                CFRetain(static_cast<AUPreset*>(outData)->presetName);
             return noErr;
 
        #if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
@@ -1497,7 +1499,9 @@ public:
                 std::memcpy(&fHostCallbackInfo, inData, usableDataSize);
 
                 if (sizeof(HostCallbackInfo) > usableDataSize)
-                    std::memset(&fHostCallbackInfo + usableDataSize, 0, sizeof(HostCallbackInfo) - usableDataSize);
+                    std::memset(reinterpret_cast<uint8_t*>(&fHostCallbackInfo) + usableDataSize,
+                                0,
+                                sizeof(HostCallbackInfo) - usableDataSize);
 
                 if (changed)
                     notifyPropertyListeners(inProp, inScope, inElement);
@@ -1526,19 +1530,33 @@ public:
                         fCurrentProgram = presetNumber;
                         fLastFactoryProgram = presetNumber;
                         fPlugin.loadProgram(fLastFactoryProgram);
+                        for (uint32_t i=0; i<fParameterCount; ++i)
+                            fLastParameterValues[i] = fPlugin.getParameterValue(i);
                         notifyPropertyListeners('DPFo', kAudioUnitScope_Global, 0);
                     }
                 }
                 else
                 {
                     fCurrentProgram = presetNumber;
+                    const CFStringRef presetName =
+                        static_cast<const AUPreset*>(inData)->presetName;
+                    if (presetName != nullptr)
+                        CFRetain(presetName);
                     CFRelease(fUserPresetData.presetName);
-                    std::memcpy(&fUserPresetData, inData, sizeof(AUPreset));
+                    fUserPresetData.presetNumber = presetNumber;
+                    fUserPresetData.presetName =
+                        presetName != nullptr ? presetName : CFSTR("");
                 }
                #else
                 DISTRHO_SAFE_ASSERT_INT_RETURN(presetNumber < 0, presetNumber, kAudioUnitErr_InvalidPropertyValue);
+                const CFStringRef presetName =
+                    static_cast<const AUPreset*>(inData)->presetName;
+                if (presetName != nullptr)
+                    CFRetain(presetName);
                 CFRelease(fUserPresetData.presetName);
-                std::memcpy(&fUserPresetData, inData, sizeof(AUPreset));
+                fUserPresetData.presetNumber = presetNumber;
+                fUserPresetData.presetName =
+                    presetName != nullptr ? presetName : CFSTR("");
                #endif
             }
             return noErr;
@@ -2663,6 +2681,8 @@ private:
                 {
                     fLastFactoryProgram = program;
                     fPlugin.loadProgram(fLastFactoryProgram);
+                    for (uint32_t i=0; i<fParameterCount; ++i)
+                        fLastParameterValues[i] = fPlugin.getParameterValue(i);
                     notifyPropertyListeners('DPFo', kAudioUnitScope_Global, 0);
                 }
 
