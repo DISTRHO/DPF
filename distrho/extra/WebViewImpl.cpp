@@ -1069,6 +1069,7 @@ struct QEvent {
     uint8_t _[SIZEOF_QEvent];
     enum Type {
         Close = 19,
+        DragEnter = 60,
         ContextMenu = 82,
         User = 1000,
     };
@@ -1848,6 +1849,17 @@ protected:
             }
 
             return true;
+        }
+
+        if (type == QEvent::DragEnter) {
+            if (_winId != 0)
+            {
+                XWindowAttributes attrs;
+                XGetWindowAttributes(_display, _winId, &attrs);
+                XMoveWindow(_display, _winId, attrs.x + 1, attrs.y);
+                XMoveWindow(_display, _winId, attrs.x, attrs.y);
+                XFlush(_display);
+            }
         }
 
         if (type == QEvent::Close && watched != nullptr && watched == reinterpret_cast<QObject*>(_devToolsView))
