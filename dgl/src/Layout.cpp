@@ -25,6 +25,20 @@ typedef std::list<VerticalLayout*>::iterator VerticalLayoutIterator;
 
 // --------------------------------------------------------------------------------------------------------------------
 
+void HorizontalLayout::align(const int x,
+                             const int y,
+                             const uint width,
+                             const uint height,
+                             const uint padding,
+                             const uint margin)
+{
+    for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
+        it->widget->setHeight(height);
+
+    setWidth(width, padding, margin);
+    setAbsolutePos(x, y, padding, margin);
+}
+
 uint HorizontalLayout::setAbsolutePos(int x, int y, const uint padding, uint margin)
 {
     if (margin == UINT_MAX)
@@ -44,27 +58,6 @@ uint HorizontalLayout::setAbsolutePos(int x, int y, const uint padding, uint mar
     }
 
     return maxHeight;
-}
-
-uint VerticalLayout::setAbsolutePos(int x, int y, const uint padding, uint margin)
-{
-    if (margin == UINT_MAX)
-        margin = padding;
-
-    uint maxWidth = 0;
-    y += margin;
-    x += margin;
-
-    for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
-    {
-        SubWidgetWithSizeHint& s(*it);
-        maxWidth = std::max(maxWidth, s.widget->getWidth());
-        s.widget->setAbsolutePos(x, y);
-        y += static_cast<int>(s.widget->getHeight());
-        y += static_cast<int>(padding);
-    }
-
-    return maxWidth;
 }
 
 void HorizontalLayout::setWidth(const uint width, const uint padding, uint margin)
@@ -105,6 +98,43 @@ void HorizontalLayout::setWidth(const uint width, const uint padding, uint margi
         else
             s.widget->setHeight(maxHeight);
     }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+void VerticalLayout::align(const int x,
+                           const int y,
+                           const uint width,
+                           const uint height,
+                           const uint padding,
+                           const uint margin)
+{
+    for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
+        it->widget->setWidth(width);
+
+    setHeight(height, padding, margin);
+    setAbsolutePos(x, y, padding, margin);
+}
+
+uint VerticalLayout::setAbsolutePos(int x, int y, const uint padding, uint margin)
+{
+    if (margin == UINT_MAX)
+        margin = padding;
+
+    uint maxWidth = 0;
+    y += margin;
+    x += margin;
+
+    for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
+    {
+        SubWidgetWithSizeHint& s(*it);
+        maxWidth = std::max(maxWidth, s.widget->getWidth());
+        s.widget->setAbsolutePos(x, y);
+        y += static_cast<int>(s.widget->getHeight());
+        y += static_cast<int>(padding);
+    }
+
+    return maxWidth;
 }
 
 void VerticalLayout::setHeight(const uint height, const uint padding, uint margin)

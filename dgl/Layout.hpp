@@ -43,8 +43,9 @@ struct SubWidgetWithSizeHint {
 struct HorizontalLayout
 {
     std::list<SubWidgetWithSizeHint> widgets;
+    void align(int x, int y, uint width, uint height, uint padding, uint margin);
     uint setAbsolutePos(int x, int y, uint padding, uint margin = UINT_MAX);
-    void setWidth(uint size, uint padding, uint margin = UINT_MAX);
+    void setWidth(uint width, uint padding, uint margin = UINT_MAX);
 
     DISTRHO_DEPRECATED
     inline void setSize(const uint size, const uint padding)
@@ -56,8 +57,9 @@ struct HorizontalLayout
 struct VerticalLayout
 {
     std::list<SubWidgetWithSizeHint> widgets;
+    void align(int x, int y, uint width, uint height, uint padding, uint margin);
     uint setAbsolutePos(int x, int y, uint padding, uint margin = UINT_MAX);
-    void setHeight(uint size, uint padding, uint margin = UINT_MAX);
+    void setHeight(uint height, uint padding, uint margin = UINT_MAX);
 
     DISTRHO_DEPRECATED
     inline void setSize(const uint size, const uint padding)
