@@ -964,6 +964,7 @@ typedef int (*GSourceFunc)(void*);
 #define WEBKIT_WEB_VIEW(p) reinterpret_cast<WebKitWebView*>(p)
 
 #define G_CONNECT_DEFAULT 0
+#define GTK_STATE_FLAG_NORMAL 0
 #define WEBKIT_CACHE_MODEL_DOCUMENT_VIEWER 0
 #define WEBKIT_HARDWARE_ACCELERATION_POLICY_NEVER 2
 #define WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES 0
@@ -1311,6 +1312,7 @@ static bool gtk3(Display* const display, const WebViewInitOptions& options, WebV
     typedef void (*gtk_main_quit_t)();
     typedef Window (*gtk_plug_get_id_t)(GtkPlug*);
     typedef GtkWidget* (*gtk_plug_new_t)(Window);
+    typedef void (*gtk_widget_override_background_color_t)(GtkWidget*, int, const GdkRGBA*);
     typedef void (*gtk_widget_show_all_t)(GtkWidget*);
     typedef void (*gtk_window_move_t)(GtkWindow*, int, int);
     typedef void (*gtk_window_set_default_size_t)(GtkWindow*, int, int);
@@ -1344,6 +1346,7 @@ static bool gtk3(Display* const display, const WebViewInitOptions& options, WebV
     CSYM(gtk_main_quit)
     CSYM(gtk_plug_get_id)
     CSYM(gtk_plug_new)
+    CSYM(gtk_widget_override_background_color)
     CSYM(gtk_widget_show_all)
     CSYM(gtk_window_move)
     CSYM(gtk_window_set_default_size)
@@ -1476,6 +1479,7 @@ static bool gtk3(Display* const display, const WebViewInitOptions& options, WebV
             static_cast<double>((options.backgroundColor >> 8) & 0xff) / 0xff,
             static_cast<double>(options.backgroundColor & 0xff) / 0xff,
         };
+        gtk_widget_override_background_color(window, GTK_STATE_FLAG_NORMAL, reinterpret_cast<const GdkRGBA*>(color));
         webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(webview), reinterpret_cast<const GdkRGBA*>(color));
     }
 
