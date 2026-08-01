@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -41,18 +41,9 @@ static void fixRange(float& value)
         value = 1.0f;
 }
 
-static float getFixedRange(const float& value)
-{
-    if (value <= 0.0f)
-        return 0.0f;
-    if (value >= 1.0f)
-        return 1.0f;
-    return value;
-}
-
 static uchar getFixedRange2(const float& value)
 {
-    const float value2(getFixedRange(value)*255.0f);
+    const float value2 = getFixedColorRange(value) * 255.0f;
     if (value2 <= 0.0f)
         return 0;
     if (value2 >= 255.0f)
@@ -61,30 +52,6 @@ static uchar getFixedRange2(const float& value)
 }
 
 // -----------------------------------------------------------------------
-
-Color::Color() noexcept
-    : red(0.0f),
-      green(0.0f),
-      blue(0.0f),
-      alpha(1.0f) {}
-
-Color::Color(const int r, const int g, const int b, const float a) noexcept
-    : red(static_cast<float>(r)/255.0f),
-      green(static_cast<float>(g)/255.0f),
-      blue(static_cast<float>(b)/255.0f),
-      alpha(a)
-{
-    fixBounds();
-}
-
-Color::Color(const float r, const float g, const float b, const float a) noexcept
-    : red(r),
-      green(g),
-      blue(b),
-      alpha(a)
-{
-    fixBounds();
-}
 
 Color::Color(const Color& color) noexcept
     : red(color.red),
