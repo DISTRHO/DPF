@@ -78,7 +78,21 @@ struct Color {
    /**
       Create a color by copying another color.
     */
-    Color(const Color& color) noexcept;
+    constexpr Color(const Color& color) noexcept
+        : red(getFixedColorRange(color.red)),
+          green(getFixedColorRange(color.green)),
+          blue(getFixedColorRange(color.blue)),
+          alpha(getFixedColorRange(color.alpha)) {}
+
+   /**
+      Create a color by copying another color but with a different alpha value.
+    */
+    constexpr Color(const Color& color, const float a) noexcept
+        : red(getFixedColorRange(color.red)),
+          green(getFixedColorRange(color.green)),
+          blue(getFixedColorRange(color.blue)),
+          alpha(getFixedColorRange(a)) {}
+
     Color& operator=(const Color& color) noexcept;
 
    /**

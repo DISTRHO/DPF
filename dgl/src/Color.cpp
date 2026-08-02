@@ -53,15 +53,6 @@ static uchar getFixedRange2(const float& value)
 
 // -----------------------------------------------------------------------
 
-Color::Color(const Color& color) noexcept
-    : red(color.red),
-      green(color.green),
-      blue(color.blue),
-      alpha(color.alpha)
-{
-    fixBounds();
-}
-
 Color& Color::operator=(const Color& color) noexcept
 {
     red   = color.red;
