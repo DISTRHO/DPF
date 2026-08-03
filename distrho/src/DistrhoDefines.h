@@ -221,6 +221,12 @@ private:                                         \
 #define CPP_AGGREGATE_INIT(ClassName) (ClassName)
 #endif
 
+#if __cplusplus >= 201703L
+#define CPP_INLINE_CONSTEXPR inline constexpr
+#else
+#define CPP_INLINE_CONSTEXPR static inline constexpr
+#endif
+
 #define _PRAGMA_HELPER(x) _Pragma(#x)
 #if defined(_MSC_VER)
 #define WARNING(msg) _PRAGMA_HELPER(message(__FILE__ ": warning: " msg))
