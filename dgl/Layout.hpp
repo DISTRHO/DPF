@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,6 +19,7 @@
 
 #include "Geometry.hpp"
 
+#include <climits>
 #include <list>
 
 START_NAMESPACE_DGL
@@ -39,16 +40,33 @@ struct SubWidgetWithSizeHint {
     SizeHint sizeHint;
 };
 
-template<bool horizontal>
-struct Layout
+struct HorizontalLayout
 {
     std::list<SubWidgetWithSizeHint> widgets;
-    uint setAbsolutePos(int x, int y, uint padding);
-    void setSize(uint size, uint padding);
+    void align(int x, int y, uint width, uint height, uint padding, uint margin);
+    uint setAbsolutePos(int x, int y, uint padding, uint margin = UINT_MAX);
+    void setWidth(uint width, uint padding, uint margin = UINT_MAX);
+
+    DISTRHO_DEPRECATED
+    inline void setSize(const uint size, const uint padding)
+    {
+        setWidth(size, padding);
+    }
 };
 
-typedef Layout<true> HorizontalLayout;
-typedef Layout<false> VerticalLayout;
+struct VerticalLayout
+{
+    std::list<SubWidgetWithSizeHint> widgets;
+    void align(int x, int y, uint width, uint height, uint padding, uint margin);
+    uint setAbsolutePos(int x, int y, uint padding, uint margin = UINT_MAX);
+    void setHeight(uint height, uint padding, uint margin = UINT_MAX);
+
+    DISTRHO_DEPRECATED
+    inline void setSize(const uint size, const uint padding)
+    {
+        setHeight(size, padding);
+    }
+};
 
 struct HorizontallyStackedVerticalLayout
 {

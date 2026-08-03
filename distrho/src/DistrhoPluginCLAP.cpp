@@ -101,7 +101,7 @@ struct ClapEventQueue
 
         ~Queue()
         {
-            delete[] events;
+            std::free(events);
         }
 
         void addEventFromUI(const Event& event)
@@ -845,7 +845,6 @@ public:
             fMidiEventCount = 0;
            #endif
             fPlugin.setParameterValue(fResetParameterIndex, 1.f);
-            fPlugin.setParameterValue(fResetParameterIndex, 0.f);
         }
         else
         {
@@ -1139,14 +1138,16 @@ public:
 
     uint32_t getParameterCount() const
     {
-        return fPlugin.getParameterCount();
+        return fPlugin.getParameterCount() - (fResetParameterIndex != UINT32_MAX ? 1 : 0);
     }
 
     bool getParameterInfo(const uint32_t index, clap_param_info_t* const info) const
     {
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        const clap_id paramId = index + (index >= fResetParameterIndex ? 1 : 0);
 
-        switch (fPlugin.getParameterDesignation(index))
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(paramId));
+
+        switch (fPlugin.getParameterDesignation(paramId))
         {
         case kParameterDesignationBypass:
             info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_BYPASS|CLAP_PARAM_IS_AUTOMATABLE;
@@ -1154,13 +1155,14 @@ public:
             std::strcpy(info->module, "dpf_bypass");
             break;
         case kParameterDesignationReset:
+            // NOTE should never happen!
             info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_READONLY;
             std::strcpy(info->name, "Reset");
             std::strcpy(info->module, "dpf_reset");
             break;
         default:
-            const uint32_t hints = fPlugin.getParameterHints(index);
-            const uint32_t groupId = fPlugin.getParameterGroupId(index);
+            const uint32_t hints = fPlugin.getParameterHints(paramId);
+            const uint32_t groupId = fPlugin.getParameterGroupId(paramId);
 
             info->flags = 0;
             if (hints & kParameterIsOutput)
@@ -1171,14 +1173,15 @@ public:
             if (hints & (kParameterIsBoolean|kParameterIsInteger))
                 info->flags |= CLAP_PARAM_IS_STEPPED;
 
-            d_strncpy(info->name, fPlugin.getParameterName(index), CLAP_NAME_SIZE);
+            d_strncpy(info->name, fPlugin.getParameterName(paramId), CLAP_NAME_SIZE);
 
             uint wrtn;
             if (groupId != kPortGroupNone)
             {
                 const PortGroupWithId& portGroup(fPlugin.getPortGroupById(groupId));
-                strncpy(info->module, portGroup.symbol, CLAP_PATH_SIZE / 2);
-                info->module[CLAP_PATH_SIZE / 2] = '\0';
+                d_strncpy(info->module, portGroup.name, CLAP_PATH_SIZE / 2);
+                for (char* sep = std::strchr(info->module, '/'); sep != nullptr; sep = std::strchr(sep, '/'))
+                    *sep++ = '\\';
                 wrtn = std::strlen(info->module);
                 info->module[wrtn++] = '/';
             }
@@ -1187,11 +1190,11 @@ public:
                 wrtn = 0;
             }
 
-            d_strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
+            d_strncpy(info->module + wrtn, fPlugin.getParameterSymbol(paramId), CLAP_PATH_SIZE - wrtn);
             break;
         }
 
-        info->id = index;
+        info->id = paramId;
         info->cookie = nullptr;
         info->min_value = ranges.min;
         info->max_value = ranges.max;
@@ -1199,17 +1202,17 @@ public:
         return true;
     }
 
-    bool getParameterValue(const clap_id param_id, double* const value) const
+    bool getParameterValue(const clap_id paramId, double* const value) const
     {
-        *value = fPlugin.getParameterValue(param_id);
+        *value = fPlugin.getParameterValue(paramId);
         return true;
     }
 
-    bool getParameterStringForValue(const clap_id param_id, double value, char* const display, const uint32_t size) const
+    bool getParameterStringForValue(const clap_id paramId, double value, char* const display, const uint32_t size) const
     {
-        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(param_id));
-        const uint32_t hints = fPlugin.getParameterHints(param_id);
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(paramId));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(paramId));
+        const uint32_t hints = fPlugin.getParameterHints(paramId);
 
         if (hints & kParameterIsBoolean)
         {
@@ -1230,18 +1233,21 @@ public:
             }
         }
 
-        if (hints & kParameterIsInteger)
-            snprintf_i32(display, value, size);
-        else
-            snprintf_f32(display, value, size);
+        const String& unit = fPlugin.getParameterUnit(paramId);
+        const char spacer = unit.isNotEmpty() ? ' ' : '\0';
 
+        if (hints & kParameterIsInteger)
+            std::snprintf(display, size - 1, "%d%c%s", static_cast<int>(value), spacer, unit.buffer());
+        else
+            std::snprintf(display, size - 1, "%f%c%s", value, spacer, unit.buffer());
+
+        display[size - 1] = '\0';
         return true;
     }
 
-    bool getParameterValueForString(const clap_id param_id, const char* const display, double* const value) const
+    bool getParameterValueForString(const clap_id paramId, const char* const display, double* const value) const
     {
-        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
-        const bool isInteger = fPlugin.isParameterInteger(param_id);
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(paramId));
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
@@ -1252,7 +1258,7 @@ public:
             }
         }
 
-        if (isInteger)
+        if (fPlugin.isParameterInteger(paramId))
             *value = std::atoi(display);
         else
             *value = std::atof(display);
@@ -1264,6 +1270,9 @@ public:
                          const clap_output_events_t* const out,
                          const uint32_t frameOffset)
     {
+        if (fResetParameterIndex != UINT32_MAX && d_isNotZero(fPlugin.getParameterValue(fResetParameterIndex)))
+            fPlugin.setParameterValue(fResetParameterIndex, 0.f);
+
         if (const uint32_t len = in != nullptr ? in->size(in) : 0)
         {
             for (uint32_t i=0; i<len; ++i)
@@ -2560,19 +2569,24 @@ static const clap_plugin_descriptor_t* CLAP_ABI clap_get_plugin_descriptor(const
         nullptr
     };
 
+    const uint32_t version = sPlugin->getVersion();
+    static char versionStr[64];
+    std::snprintf(versionStr,
+                  sizeof(versionStr),
+                  "%d.%d.%d",
+                  (version >> 16) & 0xff,
+                  (version >> 8) & 0xff,
+                  version & 0xff);
+
     static const clap_plugin_descriptor_t descriptor = {
         CLAP_VERSION,
         DISTRHO_PLUGIN_CLAP_ID,
         sPlugin->getName(),
         sPlugin->getMaker(),
-        // TODO url
-        "",
-        // TODO manual url
-        "",
-        // TODO support url
-        "",
-        // TODO version string
-        "",
+        sPlugin->getHomePage(),
+        "", // TODO manual url
+        "", // TODO support url
+        versionStr,
         sPlugin->getDescription(),
         features
     };

@@ -79,7 +79,7 @@ inline float round(float __x)
    Return a 32-bit number from 4 8-bit numbers.@n
    The return type is a int64_t for better compatibility with plugin formats that use such numbers.
  */
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept
 {
     return (a << 24) | (b << 16) | (c << 8) | (d << 0);
@@ -88,7 +88,7 @@ int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_
 /**
    Return a 32-bit number from 4 ASCII characters.
  */
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 uint32_t d_cconst(const char str[4])
 {
     return (str[0] << 24) | (str[1] << 16) | (str[2] << 8) | str[3];
@@ -97,7 +97,7 @@ uint32_t d_cconst(const char str[4])
 /**
    Return an hexadecimal representation of a MAJ.MIN.MICRO version number.
  */
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept
 {
     return uint32_t(major << 16) | uint32_t(minor << 8) | (micro << 0);
@@ -334,14 +334,44 @@ void d_safe_exception(const char* const exception, const char* const file, const
  */
 
 /**
+   constexpr compatible version of std::abs.
+ */
+template<typename T>
+CPP_INLINE_CONSTEXPR
+T d_abs(const T value)
+{
+    return value < 0 ? -value : value;
+}
+
+/**
+   constexpr compatible version of std::max.
+ */
+template<typename T>
+CPP_INLINE_CONSTEXPR
+T d_max(const T a, const T b)
+{
+    return a > b ? a : b;
+}
+
+/**
+   constexpr compatible version of std::min.
+ */
+template<typename T>
+CPP_INLINE_CONSTEXPR
+T d_min(const T a, const T b)
+{
+    return a < b ? a : b;
+}
+
+/**
    Safely compare two floating point numbers.
    Returns true if they match.
  */
 template<typename T>
-static inline constexpr
-bool d_isEqual(const T& v1, const T& v2)
+CPP_INLINE_CONSTEXPR
+bool d_isEqual(const T v1, const T v2)
 {
-    return std::abs(v1-v2) < std::numeric_limits<T>::epsilon();
+    return d_abs(v1 - v2) < std::numeric_limits<T>::epsilon();
 }
 
 /**
@@ -349,30 +379,30 @@ bool d_isEqual(const T& v1, const T& v2)
    Returns true if they don't match.
  */
 template<typename T>
-static inline constexpr
-bool d_isNotEqual(const T& v1, const T& v2)
+CPP_INLINE_CONSTEXPR
+bool d_isNotEqual(const T v1, const T v2)
 {
-    return std::abs(v1-v2) >= std::numeric_limits<T>::epsilon();
+    return d_abs(v1 - v2) >= std::numeric_limits<T>::epsilon();
 }
 
 /**
    Safely check if a floating point number is zero.
  */
 template<typename T>
-static inline constexpr
-bool d_isZero(const T& value)
+CPP_INLINE_CONSTEXPR
+bool d_isZero(const T value)
 {
-    return std::abs(value) < std::numeric_limits<T>::epsilon();
+    return d_abs(value) < std::numeric_limits<T>::epsilon();
 }
 
 /**
    Safely check if a floating point number is not zero.
  */
 template<typename T>
-static inline constexpr
-bool d_isNotZero(const T& value)
+CPP_INLINE_CONSTEXPR
+bool d_isNotZero(const T value)
 {
-    return std::abs(value) >= std::numeric_limits<T>::epsilon();
+    return d_abs(value) >= std::numeric_limits<T>::epsilon();
 }
 
 /**
@@ -398,7 +428,7 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
    Fast operation for values known to be 0 or positive.
  */
 template<typename T>
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 int32_t d_roundToIntPositive(const T& value)
 {
     return static_cast<int32_t>(value + static_cast<T>(0.5));
@@ -409,7 +439,7 @@ int32_t d_roundToIntPositive(const T& value)
    Fast operation for values known to be 0 or positive.
  */
 template<typename T>
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 uint32_t d_roundToUnsignedInt(const T& value)
 {
     return static_cast<uint32_t>(value + static_cast<T>(0.5));
@@ -420,7 +450,7 @@ uint32_t d_roundToUnsignedInt(const T& value)
    Fast operation for values known to be 0 or negative.
  */
 template<typename T>
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 int32_t d_roundToIntNegative(const T& value)
 {
     return static_cast<int32_t>(value - static_cast<T>(0.5));
@@ -430,7 +460,7 @@ int32_t d_roundToIntNegative(const T& value)
    Round a floating point number to integer.
  */
 template<typename T>
-static inline constexpr
+CPP_INLINE_CONSTEXPR
 int32_t d_roundToInt(const T& value)
 {
     return value >= 0 ? static_cast<int32_t>(value + static_cast<T>(0.5))

@@ -274,6 +274,16 @@ Size<uint> NanoImage::getSize() const noexcept
     return fSize;
 }
 
+uint NanoImage::getWidth() const noexcept
+{
+    return fSize.getWidth();
+}
+
+uint NanoImage::getHeight() const noexcept
+{
+    return fSize.getHeight();
+}
+
 GLuint NanoImage::getTextureHandle() const
 {
     DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0, 0);

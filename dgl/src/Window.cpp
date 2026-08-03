@@ -276,7 +276,7 @@ void Window::setSize(uint width, uint height)
     {
         PuglArea area = puglGetSizeHint(pData->view, PUGL_FIXED_ASPECT);
 
-        if (pData->autoScaling && d_isNotEqual(scaleFactor, 1.0))
+        if (pData->autoScaling && d_isNotEqual<double>(scaleFactor, 1.0))
         {
             area.width = d_roundToUnsignedInt(area.width * scaleFactor);
             area.height = d_roundToUnsignedInt(area.height * scaleFactor);
@@ -311,7 +311,7 @@ void Window::setSize(uint width, uint height)
     }
     else
     {
-        if (pData->autoScaling && d_isNotEqual(scaleFactor, 1.0))
+        if (pData->autoScaling && d_isNotEqual<double>(scaleFactor, 1.0))
         {
             width = d_roundToUnsignedInt(width * scaleFactor);
             height = d_roundToUnsignedInt(height * scaleFactor);
@@ -441,7 +441,7 @@ void Window::enableInternalScalingWithSize(uint baseWidth, uint baseHeight, cons
 
     const double scaleFactor = pData->scaleFactor;
 
-    if (d_isNotEqual(scaleFactor, 1.0))
+    if (d_isNotEqual<double>(scaleFactor, 1.0))
     {
         baseWidth = d_roundToUnsignedInt(baseWidth * scaleFactor);
         baseHeight = d_roundToUnsignedInt(baseHeight * scaleFactor);

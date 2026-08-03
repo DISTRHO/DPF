@@ -148,7 +148,7 @@
 // Test for wrong compiler macros
 
 #if defined(DISTRHO_PLUGIN_HAS_EMBED_UI)
-# warning DISTRHO_PLUGIN_HAS_EMBED_UI has been removed, it is now always on
+WARNING("DISTRHO_PLUGIN_HAS_EMBED_UI has been removed, it is now always on")
 #endif
 
 #if defined(DISTRHO_PLUGIN_HAS_EXTERNAL_UI)
@@ -202,7 +202,7 @@
 // Enable state if plugin wants state files (deprecated)
 
 #ifdef DISTRHO_PLUGIN_WANT_STATEFILES
-# warning DISTRHO_PLUGIN_WANT_STATEFILES is deprecated
+WARNING("DISTRHO_PLUGIN_WANT_STATEFILES is deprecated")
 # undef DISTRHO_PLUGIN_WANT_STATEFILES
 # if ! DISTRHO_PLUGIN_WANT_STATE
 #  undef DISTRHO_PLUGIN_WANT_STATE
@@ -214,7 +214,7 @@
 // Enable full state if plugin exports presets
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && defined(DISTRHO_PLUGIN_WANT_FULL_STATE_WAS_NOT_SET)
-# warning Plugins with programs and state should implement full state API too
+WARNING("Plugins with programs and state should implement full state API too")
 # undef DISTRHO_PLUGIN_WANT_FULL_STATE
 # define DISTRHO_PLUGIN_WANT_FULL_STATE 1
 #endif

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -50,6 +50,17 @@ struct WebViewOptions {
     } offset;
 
    /**
+      Set the background color in RGBA format.
+      The value of 0xffffffff is used as default and means unset/unused.
+    */
+    uint backgroundColor;
+
+   /**
+      Set whether developer tools are enabled, false by default.
+    */
+    bool developerToolsEnabled;
+
+   /**
       Set some JavaScript to evalute on every new page load.
     */
     const char* initialJS;
@@ -63,6 +74,8 @@ struct WebViewOptions {
     /** Constructor for default values */
     WebViewOptions()
       : offset(),
+        backgroundColor(0xffffffff),
+        developerToolsEnabled(false),
         initialJS(nullptr),
         callback(nullptr),
         callbackPtr(nullptr) {}
@@ -70,6 +83,8 @@ struct WebViewOptions {
     /** Constructor providing a callback */
     WebViewOptions(const WebViewMessageCallback cb, void* const ptr)
       : offset(),
+        backgroundColor(0xffffffff),
+        developerToolsEnabled(false),
         initialJS(nullptr),
         callback(cb),
         callbackPtr(ptr) {}

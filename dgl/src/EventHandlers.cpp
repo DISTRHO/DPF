@@ -145,7 +145,11 @@ struct ButtonEventHandler::PrivateData {
         if (active == active2)
             return;
 
-        state |= kButtonStateActive;
+        if (active2)
+            state |= kButtonStateActive;
+        else
+            state &= ~kButtonStateActive;
+
         widget->repaint();
 
         if (sendCallback)
@@ -249,6 +253,11 @@ bool ButtonEventHandler::isEnabled() const noexcept
 void ButtonEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
 {
     pData->setEnabled(enabled, appliesToEventInput);
+}
+
+bool ButtonEventHandler::isHovered() const noexcept
+{
+    return (pData->state & ButtonEventHandler::kButtonStateHover) != 0;
 }
 
 Point<double> ButtonEventHandler::getLastClickPosition() const noexcept

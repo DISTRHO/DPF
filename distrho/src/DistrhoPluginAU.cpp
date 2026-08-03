@@ -206,13 +206,6 @@ static constexpr const uint32_t kWantedAudioFormat = 0
                                                    | kAudioFormatFlagsNativeFloatPacked
                                                    | kAudioFormatFlagIsNonInterleaved;
 
-
-// --------------------------------------------------------------------------------------------------------------------
-// clang `std::max` is not constexpr compatible, we need to define our own
-
-template<typename T>
-static inline constexpr T d_max(const T a, const T b) { return a > b ? a : b; }
-
 // --------------------------------------------------------------------------------------------------------------------
 
 static constexpr const AUChannelInfo kChannelInfo[] = {

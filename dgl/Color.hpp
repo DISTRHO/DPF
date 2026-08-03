@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -25,6 +25,15 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+static constexpr float k1Over255 = 1.f / 255.f;
+
+static constexpr inline float getFixedColorRange(const float value) noexcept
+{
+    return value <= 0.0f ? 0.0f : value >= 1.0f ? 1.0f : value;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 /**
    A color made from red, green, blue and alpha floating-point values in [0..1] range.
 */
@@ -40,24 +49,50 @@ struct Color {
    /**
       Create solid black color.
     */
-    Color() noexcept;
+    constexpr Color() noexcept
+        : red(0.0f),
+          green(0.0f),
+          blue(0.0f),
+          alpha(1.0f) {}
 
    /**
       Create a color from red, green, blue and alpha numeric values.
       All values except alpha must be in [0..255] range, with alpha in [0..1] range.
     */
-    Color(int red, int green, int blue, float alpha = 1.0f) noexcept;
+    constexpr Color(const int r, const int g, const int b, const float a = 1.0f) noexcept
+        : red(getFixedColorRange(r * k1Over255)),
+          green(getFixedColorRange(g * k1Over255)),
+          blue(getFixedColorRange(b * k1Over255)),
+          alpha(getFixedColorRange(a)) {}
 
    /**
       Create a color from red, green, blue and alpha floating-point values.
       All values must in [0..1] range.
     */
-    Color(float red, float green, float blue, float alpha = 1.0f) noexcept;
+    constexpr Color(const float r, const float g, const float b, const float a = 1.0f) noexcept
+        : red(getFixedColorRange(r)),
+          green(getFixedColorRange(g)),
+          blue(getFixedColorRange(b)),
+          alpha(getFixedColorRange(a)) {}
 
    /**
       Create a color by copying another color.
     */
-    Color(const Color& color) noexcept;
+    constexpr Color(const Color& color) noexcept
+        : red(getFixedColorRange(color.red)),
+          green(getFixedColorRange(color.green)),
+          blue(getFixedColorRange(color.blue)),
+          alpha(getFixedColorRange(color.alpha)) {}
+
+   /**
+      Create a color by copying another color but with a different alpha value.
+    */
+    constexpr Color(const Color& color, const float a) noexcept
+        : red(getFixedColorRange(color.red)),
+          green(getFixedColorRange(color.green)),
+          blue(getFixedColorRange(color.blue)),
+          alpha(getFixedColorRange(a)) {}
+
     Color& operator=(const Color& color) noexcept;
 
    /**

@@ -15,7 +15,7 @@ jobs:
         target: [linux-arm64, linux-armhf, linux-i686, linux-x86_64, win32, win64, pluginval]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-makefile-action@v1
@@ -30,7 +30,7 @@ jobs:
         target: [linux-arm64, linux-armhf, linux-x86_64, pluginval]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-makefile-action@v1
@@ -45,7 +45,7 @@ jobs:
         target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-makefile-action@v1
@@ -67,7 +67,7 @@ jobs:
         target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-makefile-action@v1

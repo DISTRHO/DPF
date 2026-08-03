@@ -38,9 +38,6 @@ public:
 
         setGeometryConstraints(width, height);
 
-        if (d_isNotEqual(scaleFactor, 1.0))
-            setSize(width, height);
-
         webview = webViewCreate("https://distrho.github.io/DPF/",
                                 getWindow().getNativeWindowHandle(),
                                 width, height, scaleFactor);

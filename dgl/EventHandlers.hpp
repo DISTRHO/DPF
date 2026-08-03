@@ -66,6 +66,8 @@ public:
     bool isEnabled() const noexcept;
     void setEnabled(bool enabled, bool appliesToEventInput = true) noexcept;
 
+    bool isHovered() const noexcept;
+
     Point<double> getLastClickPosition() const noexcept;
     Point<double> getLastMotionPosition() const noexcept;
 

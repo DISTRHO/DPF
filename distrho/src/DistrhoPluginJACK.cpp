@@ -999,10 +999,16 @@ int main(int argc, char* argv[])
     }
    #endif
 
-   #if defined(DISTRHO_UI_LINUX_WEBVIEW_START)
     if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
+    {
+       #ifdef DISTRHO_UI_LINUX_WEBVIEW_START
         return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
-   #endif
+       #else
+        d_stderr2("Build configuration error, webview attempted to start but it is not enabled");
+        d_stderr2("Try setting DISTRHO_UI_WEB_VIEW to 1 in your 'DistrhoPluginInfo.h'");
+        return 1;
+       #endif
+    }
 
     if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
     {

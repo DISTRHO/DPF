@@ -15,7 +15,7 @@ jobs:
         target: [linux-arm64, linux-armhf, linux-i686, linux-x86_64, win32, win64, pluginval]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -30,7 +30,7 @@ jobs:
         target: [linux-arm64, linux-armhf, linux-x86_64, pluginval]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -45,7 +45,7 @@ jobs:
         target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -67,7 +67,7 @@ jobs:
         target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -86,7 +86,7 @@ jobs:
   msvc-win32:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     - name: Configure
@@ -97,7 +97,7 @@ jobs:
     - name: Show built files
       working-directory: build/bin
       run: tree
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: msvc-win32
         path: build/bin/
@@ -105,19 +105,18 @@ jobs:
   msvc-win64:
     runs-on: windows-2022
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     - name: Configure CMake
       run: |
        cmake -S . -B build -G"Visual Studio 17 2022" -A"x64" -DCMAKE_BUILD_TYPE="Release"
     - name: Build all
-      working-directory: build
-      run: cmake --build . --config "Release" -j 2
+      run: cmake --build build --config "Release" -j 2
     - name: Show built files
       working-directory: build/bin
       run: tree
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: msvc-win64
         path: build/bin/
@@ -125,19 +124,18 @@ jobs:
   msvc-arm64:
     runs-on: windows-11-arm
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     - name: Configure CMake
       run: |
        cmake -S . -B build -G"Visual Studio 17 2022" -A"ARM64" -DCMAKE_BUILD_TYPE="Release"
     - name: Build all
-      working-directory: build
-      run: cmake --build . --config "Release" -j 2
+      run: cmake --build build --config "Release" -j 2
     - name: Show built files
       working-directory: build/bin
       run: tree
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v7
       with:
         name: msvc-arm64
         path: build/bin/

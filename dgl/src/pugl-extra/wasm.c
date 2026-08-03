@@ -83,14 +83,7 @@ puglInitViewInternals(PuglWorld* const world)
   return impl;
 }
 
-PuglStatus
-puglApplySizeHint(PuglView* const view, const PuglSizeHint PUGL_UNUSED(hint))
-{
-  // No fine-grained updates, hints are always recalculated together
-  return puglUpdateSizeHints(view);
-}
-
-PuglStatus
+static PuglStatus
 puglUpdateSizeHints(PuglView* const view)
 {
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
@@ -148,6 +141,13 @@ puglUpdateSizeHints(PuglView* const view)
   }
 
   return PUGL_SUCCESS;
+}
+
+PuglStatus
+puglApplySizeHint(PuglView* const view, const PuglSizeHint PUGL_UNUSED(hint))
+{
+  // No fine-grained updates, hints are always recalculated together
+  return puglUpdateSizeHints(view);
 }
 
 static PuglStatus
@@ -983,11 +983,15 @@ puglGetNativeView(const PuglView* const view)
 }
 
 PuglStatus
-puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const value)
+puglApplyViewString(PuglView*,
+                    const PuglStringHint key,
+                    const char* const    value)
 {
   switch (key) {
+  case PUGL_APPLICATION_NAME:
   case PUGL_CLASS_NAME:
     break;
+
   case PUGL_WINDOW_TITLE:
     emscripten_set_window_title(value);
     break;
@@ -995,7 +999,6 @@ puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const val
 
   return PUGL_SUCCESS;
 }
-
 
 PuglStatus
 puglSetWindowPosition(PuglView* const view, const int x, const int y)
@@ -1048,7 +1051,7 @@ puglStartTimer(PuglView* const view, const uintptr_t id, const double timeout)
   if (impl->timers == NULL)
     impl->timers = (PuglTimer*)malloc(sizeof(PuglTimer));
   else
-    impl->timers = (PuglTimer*)realloc(impl->timers, sizeof(PuglTimer) * timerIndex);
+    impl->timers = (PuglTimer*)realloc(impl->timers, sizeof(PuglTimer) * impl->numTimers);
 
   PuglTimer* const timer = &impl->timers[timerIndex];
   timer->view = view;

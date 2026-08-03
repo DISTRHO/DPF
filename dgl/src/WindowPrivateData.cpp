@@ -62,7 +62,7 @@ static double getScaleFactor(const PuglView* const view)
 {
     // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
-        return std::max(1.0, std::atof(scale));
+        return std::max<double>(1.0, std::atof(scale));
 
     if (view != nullptr)
         return puglGetScaleFactor(view);

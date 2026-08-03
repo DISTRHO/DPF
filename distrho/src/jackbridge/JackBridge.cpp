@@ -62,6 +62,7 @@ typedef void* lib_t;
 
 #if defined(HAVE_RTAUDIO) && (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) > 0
 // fix conflict between DGL and macOS names
+# define Fixed CoreFixed
 # define Point CorePoint
 # define Size CoreSize
 # ifdef __clang__
@@ -82,6 +83,7 @@ typedef void* lib_t;
 # ifdef __clang__
 #  pragma clang diagnostic pop
 # endif
+# undef Fixed
 # undef Point
 # undef Size
 #endif

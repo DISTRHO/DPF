@@ -171,7 +171,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
         const int w = static_cast<int>(self->getWidth());
         const int h = static_cast<int>(self->getHeight());
 
-        if (d_isNotZero(viewportScaleFactor) && d_isNotEqual(viewportScaleFactor, 1.0))
+        if (d_isNotZero(viewportScaleFactor) && d_isNotEqual<double>(viewportScaleFactor, 1.0))
         {
             glViewport(x,
                        -d_roundToIntPositive(height * viewportScaleFactor - height + absolutePos.getY()),

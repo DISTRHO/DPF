@@ -86,7 +86,7 @@
 #if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
 # define DISTRHO_DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
-# define DISTRHO_DEPRECATED [[deprecated]] /* Note: __declspec(deprecated) it not applicable to enum members */
+# define DISTRHO_DEPRECATED [[deprecated]] /* Note: __declspec(deprecated) is not applicable to enum members */
 #else
 # define DISTRHO_DEPRECATED
 #endif
@@ -219,6 +219,21 @@ private:                                         \
 #define CPP_AGGREGATE_INIT(ClassName) ClassName
 #else
 #define CPP_AGGREGATE_INIT(ClassName) (ClassName)
+#endif
+
+#if __cplusplus >= 201703L
+#define CPP_INLINE_CONSTEXPR inline constexpr
+#else
+#define CPP_INLINE_CONSTEXPR static inline constexpr
+#endif
+
+#define _PRAGMA_HELPER(x) _Pragma(#x)
+#if defined(_MSC_VER)
+#define WARNING(msg) _PRAGMA_HELPER(message(__FILE__ ": warning: " msg))
+#elif defined(__GNUC__)
+#define WARNING(msg) _PRAGMA_HELPER(GCC warning msg)
+#else
+#define WARNING(msg)
 #endif
 
 /* Useful typedefs */

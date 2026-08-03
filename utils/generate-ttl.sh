@@ -9,15 +9,17 @@ fi
 
 set -e
 
-BIN_DIR=${1}
-
-if [ -z "${BIN_DIR}" ]; then
-  BIN_DIR=bin
+if [ -z "${DPF_TARGET_DIR}" ]; then
+  if [ -n "${1}" ]; then
+    DPF_TARGET_DIR="${1}"
+  else
+    DPF_TARGET_DIR=bin
+  fi
 fi
 
-if [ ! -d ${BIN_DIR} ]; then
+if [ ! -d "${DPF_TARGET_DIR}" ]; then
   echo "Please run this script from the source root folder"
-  exit
+  exit 1
 fi
 
 PWD="$(dirname "${0}")"
@@ -34,7 +36,7 @@ else
   fi
 fi
 
-cd ${BIN_DIR}
+cd "${DPF_TARGET_DIR}"
 FOLDERS=`find . -type d -name \*.lv2`
 
 for i in ${FOLDERS}; do

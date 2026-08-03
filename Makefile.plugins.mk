@@ -9,6 +9,9 @@
 # extra useful variables to define before including this file:
 # - DPF_BUILD_DIR: where to place temporary build files
 # - DPF_TARGET_DIR: where to place final binary files
+# - DPF_RUNTIME_TESTING: enable testing and validation of the plugin during run-time
+#                        this includes e.g. checking parameter ranges and unique symbols
+#                        not recommended for release builds
 # - UI_TYPE: one of cairo, external, gles2, gles3, opengl, opengl3 or webview, with opengl being default
 #            ("generic" is also allowed if only using basic DPF classes like image widgets)
 
@@ -480,7 +483,7 @@ endif
 # Runtime test build
 
 ifeq ($(DPF_RUNTIME_TESTING),true)
-BUILD_CXX_FLAGS += -DDPF_RUNTIME_TESTING -Wno-pmf-conversions
+BUILD_CXX_FLAGS += -DDPF_RUNTIME_TESTING
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

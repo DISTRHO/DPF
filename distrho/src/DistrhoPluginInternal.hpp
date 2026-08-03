@@ -25,6 +25,11 @@
 
 #include <set>
 
+#ifdef DPF_RUNTIME_TESTING
+#include <string>
+#include <vector>
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -355,6 +360,7 @@ public:
        #ifdef DPF_RUNTIME_TESTING
         uint32_t parameterDesignationBypass = UINT32_MAX;
         uint32_t parameterDesignationReset = UINT32_MAX;
+        std::vector<std::string> parameterSymbols;
        #endif
 
         for (uint32_t i=0, count=fData->parameterCount; i < count; ++i)
@@ -362,6 +368,15 @@ public:
             fPlugin->initParameter(i, fData->parameters[i]);
 
            #ifdef DPF_RUNTIME_TESTING
+            const std::string symbol = fData->parameters[i].symbol.buffer();
+            if (std::find(parameterSymbols.cbegin(), parameterSymbols.cend(), symbol) != parameterSymbols.cend())
+            {
+                d_stderr2("DPF error: Parameter symbol '%s' used more than once", symbol.c_str());
+                abort();
+            }
+
+            parameterSymbols.push_back(fData->parameters[i].symbol.buffer());
+
             switch (fData->parameters[i].designation)
             {
             case kParameterDesignationNull:
@@ -369,7 +384,7 @@ public:
             case kParameterDesignationBypass:
                 if (parameterDesignationBypass != UINT32_MAX)
                 {
-                    d_stderr2("DPF warning: Bypass parameter designation used more than once");
+                    d_stderr2("DPF error: Bypass parameter designation used more than once");
                     abort();
                 }
                 parameterDesignationBypass = i;
@@ -377,13 +392,14 @@ public:
             case kParameterDesignationReset:
                 if (parameterDesignationReset != UINT32_MAX)
                 {
-                    d_stderr2("DPF warning: Reset parameter designation used more than once");
+                    d_stderr2("DPF error: Reset parameter designation used more than once");
                     abort();
                 }
                 parameterDesignationReset = i;
                 break;
             default:
-                d_stderr2("DPF warning: Invalid parameter designation %d (for index %u)", fData->parameters[i].designation, i);
+                d_stderr2("DPF warning: Invalid parameter designation %d (for index %u)",
+                          fData->parameters[i].designation, i);
                 abort();
                 break;
             }
@@ -431,7 +447,9 @@ public:
             fPlugin->initState(i, fData->states[i]);
 #endif
 
-#if defined(DPF_RUNTIME_TESTING) && defined(__GNUC__) && !defined(__clang__)
+      #if defined(DPF_RUNTIME_TESTING) && defined(__GNUC__) && !defined(__clang__)
+       #pragma GCC diagnostic push
+       #pragma GCC diagnostic ignored "-Wpmf-conversions"
         /* Run-time testing build.
          * Verify that virtual functions are overriden if parameters, programs or states are in use.
          * This does not work on all compilers, but we use it purely as informational check anyway. */
@@ -454,7 +472,7 @@ public:
             }
         }
 
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (fData->programCount != 0)
         {
             if ((void*)(fPlugin->*(&Plugin::initProgramName)) == (void*)&Plugin::initProgramName)
@@ -468,9 +486,9 @@ public:
                 abort();
             }
         }
-# endif
+       #endif
 
-# if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         if (fData->stateCount != 0)
         {
             bool hasNonUiState = false;
@@ -499,9 +517,9 @@ public:
                 }
             }
         }
-# endif
+       #endif
 
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
         if (fData->stateCount != 0)
         {
             if ((void*)(fPlugin->*(&Plugin::getState)) == (void*)&Plugin::getState)
@@ -515,8 +533,9 @@ public:
             d_stderr2("DPF warning: Plugins with full state must have at least 1 state");
             abort();
         }
-# endif
-#endif
+       #endif
+       #pragma GCC diagnostic pop
+      #endif
 
         fData->callbacksPtr = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
@@ -722,71 +741,100 @@ public:
 
     const String& getParameterName(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackString);
 
         return fData->parameters[index].name;
     }
 
     const String& getParameterShortName(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackString);
 
         return fData->parameters[index].shortName;
     }
 
     const String& getParameterSymbol(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackString);
 
         return fData->parameters[index].symbol;
     }
 
     const String& getParameterUnit(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackString);
 
         return fData->parameters[index].unit;
     }
 
     const String& getParameterDescription(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackString);
 
         return fData->parameters[index].description;
     }
 
     const ParameterEnumerationValues& getParameterEnumValues(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackEnumValues);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackEnumValues);
 
         return fData->parameters[index].enumValues;
     }
 
     const ParameterRanges& getParameterRanges(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackRanges);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         sFallbackRanges);
 
         return fData->parameters[index].ranges;
     }
 
     uint8_t getParameterMidiCC(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         0);
 
         return fData->parameters[index].midiCC;
     }
 
     uint32_t getParameterGroupId(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, kPortGroupNone);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         kPortGroupNone);
 
         return fData->parameters[index].groupId;
     }
 
     float getParameterDefault(const uint32_t index) const
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0.0f);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         0.f);
 
         return fData->parameters[index].ranges.def;
     }
@@ -794,7 +842,10 @@ public:
     float getParameterValue(const uint32_t index) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0.0f);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,
+                                         0.f);
 
         return fPlugin->getParameterValue(index);
     }
@@ -802,7 +853,9 @@ public:
     void setParameterValue(const uint32_t index, const float value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount,);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(fData != nullptr && index < fData->parameterCount,
+                                         index,
+                                         fData->parameterCount,);
 
         fPlugin->setParameterValue(index, value);
     }

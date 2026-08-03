@@ -27,7 +27,7 @@
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS && !defined(DISTRHO_NO_WARNINGS)
-# warning LADSPA/DSSI does not support TimePos
+WARNING("LADSPA/DSSI does not support TimePos")
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_DSSI
@@ -38,7 +38,7 @@
 #  error Cannot use MIDI with LADSPA
 # endif
 # if DISTRHO_PLUGIN_WANT_STATE && !defined(DISTRHO_NO_WARNINGS)
-#  warning LADSPA cannot handle states
+WARNING("LADSPA cannot handle states")
 # endif
 #endif
 

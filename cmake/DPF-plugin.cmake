@@ -110,6 +110,11 @@ include(CMakeParseArguments)
 #   `SKIP_NATIVE_AUDIO_FALLBACK`
 #       force the JACK/Standalone format to always use JACK, skipping native audio fallback
 #
+#   `RUNTIME_TESTING`
+#       enable testing and validation of the plugin during run-time
+#       this includes e.g. checking parameter ranges and unique symbols
+#       not recommended for release builds
+#
 #   `USE_FILE_BROWSER`
 #       enable file browser dialog APIs
 #
@@ -117,7 +122,7 @@ include(CMakeParseArguments)
 #       enable web browser view APIs
 #
 function(dpf_add_plugin NAME)
-  set(options MONOLITHIC NO_SHARED_RESOURCES FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK USE_FILE_BROWSER USE_WEB_VIEW)
+  set(options MONOLITHIC NO_SHARED_RESOURCES FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK RUNTIME_TESTING USE_FILE_BROWSER USE_WEB_VIEW)
   set(oneValueArgs MODGUI_CLASS_NAME UI_TYPE)
   set(multiValueArgs FILES_COMMON FILES_DSP FILES_UI TARGETS)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -188,6 +193,10 @@ function(dpf_add_plugin NAME)
   dpf__add_static_library("${NAME}" ${_dpf_plugin_FILES_COMMON})
   target_include_directories("${NAME}" PUBLIC
     "${DPF_ROOT_DIR}/distrho")
+
+  if(_dpf_plugin_RUNTIME_TESTING)
+    target_compile_definitions("${NAME}" PUBLIC "DPF_RUNTIME_TESTING")
+  endif()
 
   if(_dpf_plugin_USE_FILE_BROWSER)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
@@ -346,7 +355,7 @@ function(dpf_add_executable NAME)
     dpf__add_dgl_external(${_dpf_plugin_USE_FILE_BROWSER}
                           ${_dpf_plugin_USE_WEB_VIEW})
     set(_dgl_library dgl-external)
-  else()
+  elseif(NOT _dpf_plugin_UI_TYPE STREQUAL "none")
     message(FATAL_ERROR "Unrecognized UI type for executable: ${_dpf_plugin_UI_TYPE}")
   endif()
 
@@ -1563,18 +1572,7 @@ function(dpf__add_dgl_system_libs)
    endif()
 
    if(MSVC)
-     file(MAKE_DIRECTORY "${DPF_ROOT_DIR}/khronos/GL")
-     foreach(_gl_header "glext.h")
-       if(NOT EXISTS "${DPF_ROOT_DIR}/khronos/GL/${_gl_header}")
-         file(DOWNLOAD "https://www.khronos.org/registry/OpenGL/api/GL/${_gl_header}" "${DPF_ROOT_DIR}/khronos/GL/${_gl_header}" SHOW_PROGRESS)
-       endif()
-     endforeach()
-     foreach(_khr_header "khrplatform.h")
-       if(NOT EXISTS "${DPF_ROOT_DIR}/khronos/KHR/${_khr_header}")
-         file(DOWNLOAD "https://www.khronos.org/registry/EGL/api/KHR/${_khr_header}" "${DPF_ROOT_DIR}/khronos/KHR/${_khr_header}" SHOW_PROGRESS)
-       endif()
-     endforeach()
-     target_include_directories(dgl-system-libs-definitions INTERFACE "${DPF_ROOT_DIR}/khronos")
+    target_include_directories(dgl-system-libs-definitions INTERFACE "${DPF_ROOT_DIR}/dgl/src/khronos")
    endif()
 
   target_link_libraries(dgl-system-libs INTERFACE dgl-system-libs-definitions)

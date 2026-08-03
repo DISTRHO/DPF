@@ -108,6 +108,16 @@ public:
     Size<uint> getSize() const noexcept;
 
    /**
+      Get width.
+    */
+    uint getWidth() const noexcept;
+
+   /**
+      Get height.
+    */
+    uint getHeight() const noexcept;
+
+   /**
       Get the OpenGL texture handle.
     */
     GLuint getTextureHandle() const;
@@ -844,7 +854,7 @@ public:
    /**
       Draws text string at specified location. If end is specified only the sub-string up to the end is drawn.
     */
-    float text(float x, float y, const char* string, const char* end);
+    float text(float x, float y, const char* string, const char* end = nullptr);
 
    /**
       Draws multi-line text string at specified location wrapped at the specified width.

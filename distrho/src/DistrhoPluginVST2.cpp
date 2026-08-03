@@ -426,7 +426,7 @@ public:
         fUsingNsView = true;
        #else
         #ifndef DISTRHO_NO_WARNINGS
-         #warning 32bit VST UIs on macOS only work if the host supports "hasCockosViewAsConfig"
+         WARNING("32bit VST UIs on macOS only work if the host supports 'hasCockosViewAsConfig'")
         #endif
         fUsingNsView = false;
        #endif

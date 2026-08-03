@@ -21,7 +21,7 @@ jobs:
           - ubuntu-24.04
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
     - name: Set up dependencies
@@ -41,6 +41,14 @@ jobs:
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: Without any warnings + -fsingle-precision-constant
+      if: ${{ runner.os == 'Linux' }}
+      env:
+        CFLAGS: -Werror -fsingle-precision-constant
+        CXXFLAGS: -Werror -fsingle-precision-constant
       run: |
         make clean >/dev/null
         make -j ${{ env.JOBS }}

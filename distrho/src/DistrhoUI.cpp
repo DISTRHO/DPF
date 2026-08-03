@@ -94,7 +94,7 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 {
     // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
-        return std::max(1.0, std::atof(scale));
+        return std::max<double>(1.0, std::atof(scale));
 
    #if defined(DISTRHO_OS_WASM)
     return emscripten_get_device_pixel_ratio();
@@ -118,7 +118,8 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
         DWORD dpiAware = 0;
         DWORD scaleFactor = 100;
-        if (GetProcessDpiAwareness && GetScaleFactorForMonitor
+        if (GetProcessDpiAwareness != nullptr
+            && GetScaleFactorForMonitor != nullptr
             && GetProcessDpiAwareness(nullptr, &dpiAware) == 0 && dpiAware != 0)
         {
             const HMONITOR hMon = parentWindowHandle != 0
@@ -180,7 +181,7 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint h
     UI::PrivateData* const uiData = s_nextPrivateData;
     const double scaleFactor = d_isNotZero(uiData->scaleFactor) ? uiData->scaleFactor : getDesktopScaleFactor(uiData->winId);
 
-    if (d_isNotEqual(scaleFactor, 1.0))
+    if (d_isNotEqual<double>(scaleFactor, 1.0))
     {
         width *= scaleFactor;
         height *= scaleFactor;
