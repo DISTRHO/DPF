@@ -334,14 +334,24 @@ void d_safe_exception(const char* const exception, const char* const file, const
  */
 
 /**
+   constexpr compatible version of std::abs.
+ */
+template<typename T>
+static inline constexpr
+T d_abs(const T value)
+{
+    return value < 0 ? -value : value;
+}
+
+/**
    Safely compare two floating point numbers.
    Returns true if they match.
  */
 template<typename T>
 static inline constexpr
-bool d_isEqual(const T& v1, const T& v2)
+bool d_isEqual(const T v1, const T v2)
 {
-    return std::abs(v1-v2) < std::numeric_limits<T>::epsilon();
+    return d_abs(v1 - v2) < std::numeric_limits<T>::epsilon();
 }
 
 /**
@@ -350,9 +360,9 @@ bool d_isEqual(const T& v1, const T& v2)
  */
 template<typename T>
 static inline constexpr
-bool d_isNotEqual(const T& v1, const T& v2)
+bool d_isNotEqual(const T v1, const T v2)
 {
-    return std::abs(v1-v2) >= std::numeric_limits<T>::epsilon();
+    return d_abs(v1 - v2) >= std::numeric_limits<T>::epsilon();
 }
 
 /**
@@ -360,9 +370,9 @@ bool d_isNotEqual(const T& v1, const T& v2)
  */
 template<typename T>
 static inline constexpr
-bool d_isZero(const T& value)
+bool d_isZero(const T value)
 {
-    return std::abs(value) < std::numeric_limits<T>::epsilon();
+    return d_abs(value) < std::numeric_limits<T>::epsilon();
 }
 
 /**
@@ -370,9 +380,9 @@ bool d_isZero(const T& value)
  */
 template<typename T>
 static inline constexpr
-bool d_isNotZero(const T& value)
+bool d_isNotZero(const T value)
 {
-    return std::abs(value) >= std::numeric_limits<T>::epsilon();
+    return d_abs(value) >= std::numeric_limits<T>::epsilon();
 }
 
 /**
