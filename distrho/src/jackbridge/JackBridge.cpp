@@ -1,6 +1,6 @@
 /*
  * JackBridge for DPF
- * Copyright (C) 2013-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2013-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -60,7 +60,7 @@ typedef void* lib_t;
 # undef HAVE_SDL2
 #endif
 
-#if defined(HAVE_RTAUDIO) && (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) > 0
+#ifdef HAVE_RTAUDIO
 // fix conflict between DGL and macOS names
 # define Fixed CoreFixed
 # define Point CorePoint
@@ -972,7 +972,7 @@ jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options,
     delete nativeBridge;
    #endif
 
-   #if defined(HAVE_SDL2) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+   #if defined(HAVE_SDL2) && (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0)
     nativeBridge = new SDL2Bridge;
     if (nativeBridge->open(client_name))
         return kValidClient;

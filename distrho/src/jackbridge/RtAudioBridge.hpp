@@ -1,6 +1,6 @@
 /*
  * RtAudio Bridge for DPF
- * Copyright (C) 2021-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,10 +18,6 @@
 #define RTAUDIO_BRIDGE_HPP_INCLUDED
 
 #include "NativeBridge.hpp"
-
-#if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) == 0
-# error RtAudio without audio does not make sense
-#endif
 
 #if defined(DISTRHO_OS_MAC)
 # define __MACOSX_CORE__
@@ -51,21 +47,27 @@
 # include "../../extra/ScopedPointer.hpp"
 # include "../../extra/String.hpp"
 # include "../../extra/ScopedDenormalDisable.hpp"
+# include "../../extra/Thread.hpp"
 
 using DISTRHO_NAMESPACE::ScopedDenormalDisable;
 using DISTRHO_NAMESPACE::ScopedPointer;
 using DISTRHO_NAMESPACE::String;
 
-struct RtAudioBridge : NativeBridge {
-    // pointer to RtAudio instance
+struct RtAudioBridge : NativeBridge
+   #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) == 0
+    , private DISTRHO_NAMESPACE::Thread
+   #endif
+{
+   #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
     ScopedPointer<RtAudio> handle;
-    bool captureEnabled = false;
+   #endif
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
     std::vector<RtMidiIn> midiIns;
    #endif
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     std::vector<RtMidiOut> midiOuts;
    #endif
+    bool audioCaptureEnabled = false;
 
     // caching
     String name;
@@ -86,11 +88,19 @@ struct RtAudioBridge : NativeBridge {
     bool open(const char* const clientName) override
     {
         name = clientName;
+       #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
         return _open(false);
+       #else
+        bufferSize = 512;
+        sampleRate = 48000;
+        allocBuffers(false, true);
+        return true;
+       #endif
     }
 
     bool close() override
     {
+       #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
         if (handle->isStreamRunning())
@@ -99,32 +109,41 @@ struct RtAudioBridge : NativeBridge {
                 handle->abortStream();
             } DISTRHO_SAFE_EXCEPTION("handle->abortStream()");
         }
-
-       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        freeBuffers();
        #endif
+
+        freeBuffers();
+       #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
         handle = nullptr;
+       #endif
         return true;
     }
 
     bool activate() override
     {
+       #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
         try {
             handle->startStream();
         } DISTRHO_SAFE_EXCEPTION_RETURN("handle->startStream()", false);
+       #else
+        startThread();
+       #endif
 
         return true;
     }
 
     bool deactivate() override
     {
+       #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
         try {
             handle->stopStream();
         } DISTRHO_SAFE_EXCEPTION_RETURN("handle->stopStream()", false);
+       #else
+        stopThread(-1);
+       #endif
 
         return true;
     }
@@ -132,7 +151,7 @@ struct RtAudioBridge : NativeBridge {
     bool isAudioInputEnabled() const override
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        return captureEnabled;
+        return audioCaptureEnabled;
        #else
         return false;
        #endif
@@ -149,7 +168,7 @@ struct RtAudioBridge : NativeBridge {
         const bool ok = _open(true);
 
         if (ok)
-            captureEnabled = true;
+            audioCaptureEnabled = true;
         else
             _open(false);
 
@@ -252,6 +271,7 @@ struct RtAudioBridge : NativeBridge {
         return true;
     }
 
+   #if (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) != 0
     bool supportsBufferSizeChanges() const override
     {
         return true;
@@ -266,13 +286,13 @@ struct RtAudioBridge : NativeBridge {
         // try to open with new buffer size
         nextBufferSize = newBufferSize;
 
-        const bool ok = _open(captureEnabled);
+        const bool ok = _open(audioCaptureEnabled);
 
         if (!ok)
         {
             // revert to old buffer size if new one failed
             nextBufferSize = bufferSize;
-            _open(captureEnabled);
+            _open(audioCaptureEnabled);
         }
 
         if (bufferSizeCallback != nullptr)
@@ -416,6 +436,43 @@ struct RtAudioBridge : NativeBridge {
 
         return 0;
     }
+   #else
+    void run() override
+    {
+        if (jackProcessCallback == nullptr)
+            return;
+
+        const ScopedDenormalDisable sdd;
+
+        while (! shouldThreadExit())
+        {
+            DISTRHO_NAMESPACE::d_msleep(10);
+            jackProcessCallback(512, jackProcessArg);
+
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            if (midiOutBuffer.isDataAvailableForReading())
+            {
+                static_assert(kMaxMIDIInputMessageSize + 1u == 4, "change code if bumping this value");
+                uint8_t data[4] = {};
+
+                while (midiOutBuffer.isDataAvailableForReading() &&
+                        midiOutBuffer.readCustomData(data, ARRAY_SIZE(data)))
+                {
+                    // offset not used in RtMidiOut
+                    midiOutBuffer.readUInt();
+
+                    for (std::vector<RtMidiOut>::iterator it = midiOuts.begin(), end = midiOuts.end(); it != end; ++it)
+                    {
+                        static_cast<RtMidiOut&>(*it).sendMessage(data + 1, data[0]);
+                    }
+                }
+
+                midiOutBuffer.flush();
+            }
+           #endif
+        }
+    }
+   #endif
 
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static void RtMidiCallback(double /*timestamp*/, std::vector<uchar>* const message, void* const userData)
