@@ -29,8 +29,7 @@
 #if defined(DISTRHO_OS_WASM)
 # include <emscripten/emscripten.h>
 #elif defined(DISTRHO_OS_WINDOWS)
-# include <winsock2.h>
-# include <windows.h>
+# include "../extra/Windows-include.h"
 #elif defined(HAVE_X11)
 # define Window X11Window
 # include <X11/Xresource.h>

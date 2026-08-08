@@ -20,10 +20,7 @@
 #if ! (defined(JACKBRIDGE_DIRECT) || defined(JACKBRIDGE_DUMMY))
 
 #ifdef __WINE__
-# ifndef NOMINMAX
-#  define NOMINMAX
-# endif
-# include <windows.h>
+# include "../extra/Windows-include.h"
 # include <pthread.h>
 #endif
 
