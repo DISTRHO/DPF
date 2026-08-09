@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -257,7 +257,7 @@ void ButtonEventHandler::setEnabled(const bool enabled, const bool appliesToEven
 
 bool ButtonEventHandler::isHovered() const noexcept
 {
-    return (pData->state & ButtonEventHandler::kButtonStateHover) != 0;
+    return (pData->state & kButtonStateHover) != 0;
 }
 
 Point<double> ButtonEventHandler::getLastClickPosition() const noexcept
@@ -334,6 +334,7 @@ struct KnobEventHandler::PrivateData {
     double lastX;
     double lastY;
     uint lastClickTime;
+    Point<double> lastMotionPos;
 
     PrivateData(KnobEventHandler* const s, SubWidget* const w)
         : self(s),
@@ -354,7 +355,8 @@ struct KnobEventHandler::PrivateData {
           state(kKnobStateDefault),
           lastX(0.0),
           lastY(0.0),
-          lastClickTime(0) {}
+          lastClickTime(0),
+          lastMotionPos(0, 0) {}
 
     PrivateData(KnobEventHandler* const s, SubWidget* const w, PrivateData* const other)
         : self(s),
@@ -375,7 +377,8 @@ struct KnobEventHandler::PrivateData {
           state(kKnobStateDefault),
           lastX(0.0),
           lastY(0.0),
-          lastClickTime(0) {}
+          lastClickTime(0),
+          lastMotionPos(0, 0) {}
 
     void assignFrom(PrivateData* const other)
     {
@@ -396,6 +399,7 @@ struct KnobEventHandler::PrivateData {
         lastX        = 0.0;
         lastY        = 0.0;
         lastClickTime = 0;
+        lastMotionPos.setPos(0, 0);
     }
 
     inline float logscale(const float v) const
@@ -473,8 +477,37 @@ struct KnobEventHandler::PrivateData {
         if (! enabledInput)
             return false;
 
+        bool ret = false;
+
+        if (widget->contains(ev.pos))
+        {
+            // check if entering hover
+            if ((state & kKnobStateHover) == 0x0)
+            {
+                const int oldState = state;
+                state |= kKnobStateHover;
+                ret = widget->contains(lastMotionPos);
+                self->stateChanged(static_cast<State>(state), static_cast<State>(oldState));
+                widget->repaint();
+            }
+        }
+        else
+        {
+            // check if exiting hover
+            if (state & kKnobStateHover)
+            {
+                const int oldState = state;
+                state &= ~kKnobStateHover;
+                ret = widget->contains(lastMotionPos);
+                self->stateChanged(static_cast<State>(state), static_cast<State>(oldState));
+                widget->repaint();
+            }
+        }
+
+        lastMotionPos = ev.pos;
+
         if ((state & kKnobStateDragging) == 0x0)
-            return false;
+            return ret;
 
         double movDiff;
 
@@ -494,7 +527,7 @@ struct KnobEventHandler::PrivateData {
             }
             break;
         default:
-            return false;
+            return ret;
         }
 
         if (d_isZero(movDiff))
@@ -616,6 +649,7 @@ struct KnobEventHandler::PrivateData {
             lastX = 0.0;
             lastY = 0.0;
             lastClickTime = 0;
+            lastMotionPos = Point<double>();
             valueTmp = value;
         }
 
@@ -688,6 +722,11 @@ bool KnobEventHandler::isEnabled() const noexcept
 void KnobEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
 {
     pData->setEnabled(enabled, appliesToEventInput);
+}
+
+bool KnobEventHandler::isHovered() const noexcept
+{
+    return (pData->state & kKnobStateHover) != 0;
 }
 
 bool KnobEventHandler::isInteger() const noexcept
@@ -784,6 +823,15 @@ bool KnobEventHandler::scrollEvent(const Widget::ScrollEvent& ev)
 KnobEventHandler::State KnobEventHandler::getState() const noexcept
 {
     return static_cast<State>(pData->state);
+}
+
+void KnobEventHandler::clearState() noexcept
+{
+    pData->state = kKnobStateDefault;
+}
+
+void KnobEventHandler::stateChanged(State, State)
+{
 }
 
 // --------------------------------------------------------------------------------------------------------------------

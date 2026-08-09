@@ -103,7 +103,6 @@ public:
         Both
     };
 
-    // NOTE hover not implemented yet
     enum State {
         kKnobStateDefault = 0x0,
         kKnobStateHover = 0x1,
@@ -128,6 +127,8 @@ public:
 
     bool isEnabled() const noexcept;
     void setEnabled(bool enabled, bool appliesToEventInput = true) noexcept;
+
+    bool isHovered() const noexcept;
 
     // if setStep(1) has been called before, this returns true
     bool isInteger() const noexcept;
@@ -170,6 +171,9 @@ public:
 
 protected:
     State getState() const noexcept;
+    void clearState() noexcept;
+
+    virtual void stateChanged(State state, State oldState);
 
 private:
     struct PrivateData;
