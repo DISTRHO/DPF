@@ -344,6 +344,16 @@ T d_abs(const T value)
 }
 
 /**
+   constexpr compatible version of std::clamp.
+ */
+template<typename T>
+CPP_INLINE_CONSTEXPR
+T d_clamp(const T value, const T vmin, const T vmax)
+{
+    return value <= vmin ? vmin : value >= vmax ? vmax : value;
+}
+
+/**
    constexpr compatible version of std::max.
  */
 template<typename T>
