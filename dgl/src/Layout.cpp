@@ -51,6 +51,8 @@ uint HorizontalLayout::setAbsolutePos(int x, int y, const uint padding, uint mar
     for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         maxHeight = std::max(maxHeight, s.widget->getHeight());
         s.widget->setAbsolutePos(x, y);
         x += static_cast<int>(s.widget->getWidth());
@@ -68,16 +70,21 @@ void HorizontalLayout::setWidth(const uint width, const uint padding, uint margi
     uint maxHeight = 0;
     uint nonFixedWidth = width - margin * 2;
     uint numDynamiclySizedWidgets = 0;
+    uint numVisibleWidgets = 0;
 
     for (SubWidgetWithSizeHintIterator it = widgets.begin(), end = widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         maxHeight = std::max(maxHeight, s.widget->getHeight());
 
         if (s.sizeHint == Fixed)
             nonFixedWidth -= s.widget->getWidth();
         else
             ++numDynamiclySizedWidgets;
+
+        ++numVisibleWidgets;
     }
 
     if (maxHeight > margin * 2)
@@ -85,14 +92,16 @@ void HorizontalLayout::setWidth(const uint width, const uint padding, uint margi
     else
         maxHeight = 1;
 
-    if (const size_t numWidgets = widgets.size())
-        nonFixedWidth -= padding * static_cast<uint>(numWidgets - 1);
+    if (numVisibleWidgets != 0)
+        nonFixedWidth -= padding * static_cast<uint>(numVisibleWidgets - 1);
 
     const uint widthPerWidget = numDynamiclySizedWidgets != 0 ? nonFixedWidth / numDynamiclySizedWidgets : 0;
 
     for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         if (s.sizeHint != Fixed)
             s.widget->setSize(widthPerWidget, maxHeight);
         else
@@ -128,6 +137,8 @@ uint VerticalLayout::setAbsolutePos(int x, int y, const uint padding, uint margi
     for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         maxWidth = std::max(maxWidth, s.widget->getWidth());
         s.widget->setAbsolutePos(x, y);
         y += static_cast<int>(s.widget->getHeight());
@@ -145,16 +156,21 @@ void VerticalLayout::setHeight(const uint height, const uint padding, uint margi
     uint biggestWidth = 0;
     uint nonFixedHeight = height - margin * 2;
     uint numDynamiclySizedWidgets = 0;
+    uint numVisibleWidgets = 0;
 
     for (SubWidgetWithSizeHintIterator it = widgets.begin(), end=widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         biggestWidth = std::max(biggestWidth, s.widget->getWidth());
 
         if (s.sizeHint == Fixed)
             nonFixedHeight -= s.widget->getHeight();
         else
             ++numDynamiclySizedWidgets;
+
+        ++numVisibleWidgets;
     }
 
     if (biggestWidth > margin * 2)
@@ -162,14 +178,16 @@ void VerticalLayout::setHeight(const uint height, const uint padding, uint margi
     else
         biggestWidth = 1;
 
-    if (const size_t numWidgets = widgets.size())
-        nonFixedHeight -= padding * static_cast<uint>(numWidgets - 1);
+    if (numVisibleWidgets != 0)
+        nonFixedHeight -= padding * static_cast<uint>(numVisibleWidgets - 1);
 
     const uint heightPerWidget = numDynamiclySizedWidgets != 0 ? nonFixedHeight / numDynamiclySizedWidgets : 0;
 
     for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
         SubWidgetWithSizeHint& s(*it);
+        if (! s.widget->isVisible())
+            continue;
         if (s.sizeHint != Fixed)
             s.widget->setSize(biggestWidth, heightPerWidget);
         else
