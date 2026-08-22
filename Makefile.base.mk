@@ -481,6 +481,7 @@ DGL_SYSTEM_LIBS += -lcomdlg32
 DGL_SYSTEM_LIBS += -ldwmapi
 DGL_SYSTEM_LIBS += -lgdi32
 # DGL_SYSTEM_LIBS += -lole32
+DGL_SYSTEM_LIBS += -lshlwapi
 ifeq ($(USE_WEB_VIEW),true)
 DGL_SYSTEM_LIBS += -lole32
 DGL_SYSTEM_LIBS += -luuid
