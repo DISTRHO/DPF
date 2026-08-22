@@ -379,7 +379,11 @@ const void* Window::getClipboard(size_t& dataSize)
 bool Window::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
 {
     return pData->view != nullptr
-        && puglSetClipboard(pData->view, mimeType != nullptr ? mimeType : "text/plain", data, dataSize) == PUGL_SUCCESS;
+        && puglSetClipboard(pData->view,
+                            PUGL_CLIPBOARD_GENERAL,
+                            mimeType != nullptr ? mimeType : "text/plain",
+                            data,
+                            dataSize) == PUGL_SUCCESS;
 }
 
 bool Window::setCursor(const MouseCursor cursor)
@@ -602,13 +606,13 @@ std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
     if (pData->view == nullptr)
         return offerTypes;
 
-    if (const uint32_t numTypes = puglGetNumClipboardTypes(pData->view))
+    if (const uint32_t numTypes = puglGetNumClipboardTypes(pData->view, PUGL_CLIPBOARD_GENERAL))
     {
         offerTypes.reserve(numTypes);
 
-        for (uint32_t i=0; i<numTypes; ++i)
+        for (uint32_t i = 0; i < numTypes; ++i)
         {
-            const ClipboardDataOffer offer = { i + 1, puglGetClipboardType(pData->view, i) };
+            const ClipboardDataOffer offer = { i + 1, puglGetClipboardType(pData->view, PUGL_CLIPBOARD_GENERAL, i) };
             offerTypes.push_back(offer);
         }
     }

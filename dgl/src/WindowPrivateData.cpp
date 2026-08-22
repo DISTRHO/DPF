@@ -912,7 +912,7 @@ const void* Window::PrivateData::getClipboard(size_t& dataSize)
     }
 
     waitingForClipboardEvents = false;
-    return puglGetClipboard(view, clipboardTypeId - 1, &dataSize);
+    return puglGetClipboard(view, PUGL_CLIPBOARD_GENERAL, clipboardTypeId - 1, &dataSize);
 }
 
 uint32_t Window::PrivateData::onClipboardDataOffer()
@@ -1180,7 +1180,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Data offered from clipboard, a #PuglDataOfferEvent
     case PUGL_DATA_OFFER:
         if (const uint32_t offerTypeId = pData->onClipboardDataOffer())
-            puglAcceptOffer(view, &event->offer, offerTypeId - 1);
+            puglAcceptOffer(view, &event->offer, offerTypeId - 1, PUGL_DATA_ACTION_COPY, 0, 0, 0, 0);
         break;
 
     ///< Data available from clipboard, a #PuglDataEvent
