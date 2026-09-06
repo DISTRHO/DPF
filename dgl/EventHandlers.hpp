@@ -58,7 +58,7 @@ public:
     void setActive(bool active, bool sendCallback) noexcept;
 
     bool isChecked() const noexcept;
-    void setChecked(bool checked, bool sendCallback) noexcept;
+    bool setChecked(bool checked, bool sendCallback) noexcept;
 
     bool isCheckable() const noexcept;
     void setCheckable(bool checkable) noexcept;

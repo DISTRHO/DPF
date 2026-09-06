@@ -70,21 +70,20 @@ struct ButtonEventHandler::PrivateData {
             const int state2 = state;
             state &= ~kButtonStateActive;
 
+            // only register click if cursor is still within bounds
+            if (widget->contains(ev.pos))
+            {
+                if (checkable)
+                    checked = !checked;
+
+                if (internalCallback != nullptr)
+                    internalCallback->buttonClicked(widget, button2);
+                else if (userCallback != nullptr)
+                    userCallback->buttonClicked(widget, button2);
+            }
+
             self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
             widget->repaint();
-
-            // cursor was moved outside the button bounds, ignore click
-            if (! widget->contains(ev.pos))
-                return true;
-
-            // still on bounds, register click
-            if (checkable)
-                checked = !checked;
-
-            if (internalCallback != nullptr)
-                internalCallback->buttonClicked(widget, button2);
-            else if (userCallback != nullptr)
-                userCallback->buttonClicked(widget, button2);
 
             return true;
         }
@@ -161,10 +160,10 @@ struct ButtonEventHandler::PrivateData {
         }
     }
 
-    void setChecked(const bool checked2, const bool sendCallback) noexcept
+    bool setChecked(const bool checked2, const bool sendCallback) noexcept
     {
         if (checked == checked2)
-            return;
+            return false;
 
         checked = checked2;
         widget->repaint();
@@ -176,6 +175,8 @@ struct ButtonEventHandler::PrivateData {
             else if (userCallback != nullptr)
                 userCallback->buttonClicked(widget, -1);
         }
+
+        return true;
     }
 
     void setEnabled(const bool enabled2, const bool appliesToEventInput) noexcept
@@ -227,9 +228,9 @@ bool ButtonEventHandler::isChecked() const noexcept
     return pData->checked;
 }
 
-void ButtonEventHandler::setChecked(const bool checked, const bool sendCallback) noexcept
+bool ButtonEventHandler::setChecked(const bool checked, const bool sendCallback) noexcept
 {
-    pData->setChecked(checked, sendCallback);
+    return pData->setChecked(checked, sendCallback);
 }
 
 bool ButtonEventHandler::isCheckable() const noexcept
