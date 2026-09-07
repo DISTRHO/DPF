@@ -428,7 +428,7 @@ protected:
     virtual bool onMouse(const MouseEvent&);
 
    /**
-      A function called when the pointer moves.
+      A function called when the cursor/pointer moves.
       @return True to stop event propagation, false otherwise.
     */
     virtual bool onMotion(const MotionEvent&);

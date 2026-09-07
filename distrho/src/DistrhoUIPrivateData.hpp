@@ -226,6 +226,16 @@ protected:
         return ui->uiClipboardDataOffer();
     }
 
+    void onCrossing(const bool enter, const DGL_NAMESPACE::CrossingMode mode) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        if (initializing)
+            return;
+
+        ui->uiCrossing(enter, mode);
+    }
+
     void onFocus(const bool focus, const DGL_NAMESPACE::CrossingMode mode) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);

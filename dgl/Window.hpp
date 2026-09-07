@@ -545,6 +545,12 @@ protected:
     virtual bool onClose();
 
    /**
+      A function called when the cursor/pointer crosses (enters or leaves) the window area.
+      The default implementation does nothing.
+    */
+    virtual void onCrossing(bool enter, CrossingMode mode);
+
+   /**
       A function called when the window gains or loses the keyboard focus.
       The default implementation does nothing.
     */

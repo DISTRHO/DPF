@@ -299,7 +299,15 @@ protected:
     virtual uint32_t uiClipboardDataOffer();
 
    /**
-      Windows focus function, called when the window gains or loses the keyboard focus.
+      Window crossing function, called when the cursor/pointer crosses (enters or leaves) the window area.
+      This function is for plugin UIs to be able to override Window::onCrossing(bool, CrossingMode).
+
+      The default implementation does nothing.
+    */
+    virtual void uiCrossing(bool enter, DGL_NAMESPACE::CrossingMode mode);
+
+   /**
+      Window focus function, called when the window gains or loses the keyboard focus.
       This function is for plugin UIs to be able to override Window::onFocus(bool, CrossingMode).
 
       The default implementation does nothing.

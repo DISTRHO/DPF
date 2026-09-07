@@ -770,6 +770,16 @@ void Window::PrivateData::onPuglClose()
     close();
 }
 
+void Window::PrivateData::onPuglCrossing(const bool enter, const CrossingMode mode)
+{
+    DGL_DBGp("onPuglCrossing : %i %i | %i\n", enter, mode, isClosed);
+
+    if (isClosed)
+        return;
+
+    self->onCrossing(enter, mode);
+}
+
 void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
 {
     DGL_DBGp("onPuglFocus : %i %i | %i\n", focus, mode, isClosed);
@@ -1032,8 +1042,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_FOCUS_IN:
     ///< Keyboard focus left view, a #PuglFocusEvent
     case PUGL_FOCUS_OUT:
-        pData->onPuglFocus(event->type == PUGL_FOCUS_IN,
-                           static_cast<CrossingMode>(event->focus.mode));
+        pData->onPuglFocus(event->type == PUGL_FOCUS_IN, static_cast<CrossingMode>(event->focus.mode));
         break;
 
     ///< Key pressed, a #PuglKeyEvent
@@ -1078,9 +1087,9 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Pointer entered view, a #PuglCrossingEvent
     case PUGL_POINTER_IN:
-        break;
     ///< Pointer left view, a #PuglCrossingEvent
     case PUGL_POINTER_OUT:
+        pData->onPuglCrossing(event->type == PUGL_POINTER_IN, static_cast<CrossingMode>(event->focus.mode));
         break;
 
     ///< Mouse button pressed, a #PuglButtonEvent

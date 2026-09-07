@@ -605,6 +605,10 @@ uint32_t UI::uiClipboardDataOffer()
     return 0;
 }
 
+void UI::uiCrossing(bool, DGL_NAMESPACE::CrossingMode)
+{
+}
+
 void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }

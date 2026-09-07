@@ -639,6 +639,10 @@ bool Window::onClose()
     return true;
 }
 
+void Window::onCrossing(bool, CrossingMode)
+{
+}
+
 void Window::onFocus(bool, CrossingMode)
 {
 }
