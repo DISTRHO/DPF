@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -39,7 +39,7 @@
 #include "lv2/lv2_programs.h"
 #include "lv2/control-input-port-change-request.h"
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+#ifdef _DARKGLASS_DEVICE_PABLITO
 # include "mod-license.h"
 #endif
 
@@ -106,8 +106,8 @@ static constexpr const char* const lv2ManifestPluginExtensionData[] = {
    #if DISTRHO_PLUGIN_WANT_PROGRAMS
     LV2_PROGRAMS__Interface,
    #endif
-   #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-    MOD_LICENSE__interface,
+   #ifdef _DARKGLASS_DEVICE_PABLITO
+    "licns:interface",
    #endif
     nullptr
 };
@@ -133,8 +133,8 @@ static constexpr const char* const lv2ManifestPluginRequiredFeatures[] = {
    #if DISTRHO_PLUGIN_WANT_STATE
     LV2_WORKER__schedule,
    #endif
-   #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-    MOD_LICENSE__feature,
+   #ifdef _DARKGLASS_DEVICE_PABLITO
+    "licns:feature",
    #endif
     nullptr
 };
@@ -370,6 +370,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix dg:    <http://www.darkglass.com/lv2/ns#> .\n";
         pluginString += "@prefix doap:  <http://usefulinc.com/ns/doap#> .\n";
         pluginString += "@prefix foaf:  <http://xmlns.com/foaf/0.1/> .\n";
+        pluginString += "@prefix licns: <http://www.darkglass.com/lv2/ns/lv2ext/license#> .\n";
         pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
         pluginString += "@prefix midi:  <" LV2_MIDI_PREFIX "> .\n";
         pluginString += "@prefix mod:   <http://moddevices.com/ns/mod#> .\n";
@@ -445,6 +446,16 @@ void lv2_generate_ttl(const char* const basename)
         addAttribute(pluginString, "lv2:optionalFeature", lv2ManifestPluginOptionalFeatures, 4);
         addAttribute(pluginString, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures, 4);
         addAttribute(pluginString, "opts:supportedOption", lv2ManifestPluginSupportedOptions, 4);
+
+#ifdef _DARKGLASS_DEVICE_PABLITO
+#if DISTRHO_PLUGIN_IS_COMMERCIAL
+        pluginString += "    licns:uri <" DISTRHO_PLUGIN_URI "> ;\n";
+#else
+        pluginString += "    licns:uri <" DISTRHO_PLUGIN_URI "> ,\n";
+        pluginString += "              <urn:darkglass:pablito> ;\n";
+#endif
+        pluginString += "\n";
+#endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
         if (hasHostVisibleState)
@@ -1041,6 +1052,8 @@ void lv2_generate_ttl(const char* const basename)
             {
                 pluginString += "    doap:license <" +  license + "> ;\n\n";
             }
+            // license property should be URI, which can't be done from a copyright string
+           #if ! DISTRHO_PLUGIN_IS_COMMERCIAL
             // String contaning quotes, use as-is
             else if (license.contains('"'))
             {
@@ -1182,10 +1195,11 @@ void lv2_generate_ttl(const char* const basename)
                 // unknown or not handled yet, log a warning
                 else
                 {
-                    d_stderr("Unknown license string '%s'", license.buffer());
+                    d_stderr("Unknown license string '%s', maybe set DISTRHO_PLUGIN_IS_COMMERCIAL to 1?", license.buffer());
                     pluginString += "    doap:license \"" +  license + "\" ;\n\n";
                 }
             }
+           #endif
         }
 
         // developer
