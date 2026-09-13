@@ -1760,6 +1760,9 @@ public:
         else if (hints & kParameterIsAutomatable)
             flags |= V3_PARAM_CAN_AUTOMATE;
 
+        if (hints & kParameterIsHidden)
+            flags |= V3_PARAM_IS_HIDDEN;
+
         // set up step_count
         int32_t step_count = 0;
 

@@ -1173,6 +1173,9 @@ public:
             if (hints & (kParameterIsBoolean|kParameterIsInteger))
                 info->flags |= CLAP_PARAM_IS_STEPPED;
 
+            if (hints & kParameterIsHidden)
+                info->flags |= CLAP_PARAM_IS_HIDDEN;
+
             d_strncpy(info->name, fPlugin.getParameterName(paramId), CLAP_NAME_SIZE);
 
             uint wrtn;
