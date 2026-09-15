@@ -1145,8 +1145,8 @@ inline void NanoBaseWidget<SubWidget>::onDisplay()
         NanoVG::save();
         translate(SubWidget::getAbsoluteX(), SubWidget::getAbsoluteY());
         onNanoDisplay();
-        NanoVG::restore();
         displayChildren();
+        NanoVG::restore();
     }
     else
     {
