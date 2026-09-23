@@ -1,6 +1,6 @@
 # DISTRHO Plugin Framework (DPF)
 # Copyright (C) 2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
-# Copyright (C) 2022-2024 Filipe Coelho <falktx@falktx.com>
+# Copyright (C) 2022-2026 Filipe Coelho <falktx@falktx.com>
 #
 # SPDX-License-Identifier: ISC
 
@@ -227,6 +227,12 @@ function(dpf_add_plugin NAME)
 
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
   target_link_libraries("${NAME}-dsp" PUBLIC "${NAME}")
+
+  # darkglass: link against libnickel for licensing/copy-protection
+  if($ENV{CXXFLAGS} MATCHES "^.*-D_DARKGLASS_DEVICE_PABLITO.*$")
+    target_link_libraries("${NAME}-dsp" PUBLIC
+      $<IF:$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>,nickel-gcc15,nickel-gcc9>)
+  endif()
 
   if(_dgl_library)
     dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})

@@ -34,7 +34,9 @@
 #include "lv2/lv2_programs.h"
 #include "lv2/control-input-port-change-request.h"
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+#if defined(_DARKGLASS_DEVICE_PABLITO)
+# include "libnickel.h"
+#elif defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
 # include "libmodla.h"
 #endif
 
@@ -78,9 +80,9 @@ public:
               const bool usingNominal)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback),
           fUsingNominal(usingNominal),
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+         #if defined(_DARKGLASS_DEVICE_PABLITO) || defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
           fRunCount(0),
-#endif
+         #endif
           fPortControls(nullptr),
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
@@ -252,7 +254,7 @@ public:
         fTimePosition.bbt.ticksPerBeat = 1920.0;
         fTimePosition.bbt.beatsPerMinute = 120.0;
        #endif
-       #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+       #if defined(_DARKGLASS_DEVICE_PABLITO) || defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
         fRunCount = 0;
        #endif
         fPlugin.activate();
@@ -618,7 +620,7 @@ public:
 
                 fPlugin.setParameterValue(i, curValue);
 
-               #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+               #if defined(_DARKGLASS_DEVICE_PABLITO) || defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
                 if (fPlugin.getParameterDesignation(i) == kParameterDesignationReset)
                     fRunCount = 0;
                #endif
@@ -628,7 +630,9 @@ public:
         // Run plugin
         if (sampleCount != 0)
         {
-           #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+           #if defined(_DARKGLASS_DEVICE_PABLITO)
+            fRunCount = nickel_license_run_begin(fRunCount, sampleCount);
+           #elif defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
             fRunCount = mod_license_run_begin(fRunCount, sampleCount);
            #endif
 
@@ -638,7 +642,10 @@ public:
             fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
            #endif
 
-           #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+           #if defined(_DARKGLASS_DEVICE_PABLITO)
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                nickel_license_run_silence(fRunCount, fPortAudioOuts[i], sampleCount, i);
+           #elif defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
             for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
                 mod_license_run_silence(fRunCount, fPortAudioOuts[i], sampleCount, i);
            #endif
@@ -1187,7 +1194,7 @@ private:
     PluginExporter fPlugin;
     const bool fUsingNominal; // if false use maxBlockLength
 
-   #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+   #if defined(_DARKGLASS_DEVICE_PABLITO) || defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
     uint32_t fRunCount;
    #endif
 
@@ -1504,17 +1511,24 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
         return nullptr;
     }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     if (worker == nullptr)
     {
         d_stderr("Worker feature missing, cannot continue!");
         return nullptr;
     }
-#endif
+   #endif
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+   #if defined(_DARKGLASS_DEVICE_PABLITO)
+    if (! nickel_init(sampleRate, features, DISTRHO_PLUGIN_URI))
+    {
+       #if ! DISTRHO_PLUGIN_IS_COMMERCIAL
+        nickel_init(sampleRate, features, "urn:darkglass:pablito");
+       #endif
+    }
+   #elif defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
     mod_license_check(features, DISTRHO_PLUGIN_URI);
-#endif
+   #endif
 
     d_nextBufferSize = 0;
     bool usingNominal = false;
@@ -1685,11 +1699,13 @@ static const void* lv2_extension_data(const char* uri)
         return &directaccess;
 #endif
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+   #if defined(_DARKGLASS_DEVICE_PABLITO)
+    return nickel_license_interface(uri);
+   #elif defined(DISTRHO_PLUGIN_LICENSED_FOR_MOD)
     return mod_license_interface(uri);
-#else
+   #else
     return nullptr;
-#endif
+   #endif
 }
 
 #undef instancePtr
