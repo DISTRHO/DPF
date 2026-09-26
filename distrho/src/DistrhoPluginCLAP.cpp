@@ -135,6 +135,7 @@ struct ClapEventQueue
   #if DISTRHO_PLUGIN_WANT_STATE
     StringMap fStateMap;
    #if DISTRHO_PLUGIN_HAS_UI
+    bool* fNeededUiSends;
     virtual void setStateFromUI(const char* key, const char* value) = 0;
    #endif
   #endif
@@ -786,10 +787,24 @@ public:
        #endif
 
        #if DISTRHO_PLUGIN_WANT_STATE
-        for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
+        if (const uint32_t count = fPlugin.getStateCount())
         {
-            const String& dkey(fPlugin.getStateKey(i));
-            fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
+           #if DISTRHO_PLUGIN_HAS_UI
+            fNeededUiSends = new bool[count];
+            std::memset(fNeededUiSends, 0, sizeof(bool) * count);
+           #endif
+
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                const String& dkey(fPlugin.getStateKey(i));
+                fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
+            }
+        }
+        else
+        {
+           #if DISTRHO_PLUGIN_HAS_UI
+            fNeededUiSends = nullptr;
+           #endif
         }
        #endif
 
@@ -801,6 +816,17 @@ public:
        #endif
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         fillInBusInfoPairs();
+       #endif
+    }
+
+    ~PluginCLAP() override
+    {
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+        if (fNeededUiSends != nullptr)
+        {
+            delete[] fNeededUiSends;
+            fNeededUiSends = nullptr;
+        }
        #endif
     }
 
@@ -1128,6 +1154,29 @@ public:
 
     void onMainThread()
     {
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+        for (uint32_t i = 0, count = fPlugin.getStateCount(); i < count; ++i)
+        {
+            if (! fNeededUiSends[i])
+                continue;
+            fNeededUiSends[i] = false;
+
+            const String& curKey(fPlugin.getStateKey(i));
+
+            for (StringMap::const_iterator cit = fStateMap.begin(), cite = fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key(cit->first);
+
+                if (curKey != key)
+                    continue;
+
+                const String& value(cit->second);
+
+                fUI->setStateFromPlugin(key, value);
+            }
+        }
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_LATENCY
         reportLatencyChangeIfNeeded();
        #endif
@@ -1777,10 +1826,27 @@ public:
         return true;
     }
 
+   #if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        fPlugin.setState(key, value);
+
+        for (uint32_t i = 0, count = fPlugin.getStateCount(); i < count; ++i)
+        {
+            if (fPlugin.getStateKey(i) == key)
+            {
+                const String dkey(key);
+                fStateMap[dkey] = value;
+                break;
+            }
+        }
+    }
+   #endif
+
     // ----------------------------------------------------------------------------------------------------------------
     // gui
 
-   #if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     bool createUI(const bool isFloating)
     {
         const clap_host_gui_t* const hostGui = getHostExtension<clap_host_gui_t>(CLAP_EXT_GUI);
@@ -1808,20 +1874,14 @@ public:
     {
         return fUI.get();
     }
-   #endif
 
-   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     void setStateFromUI(const char* const key, const char* const value) override
     {
-        fPlugin.setState(key, value);
-
-        if (fPlugin.wantStateKey(key))
-        {
-            const String dkey(key);
-            fStateMap[dkey] = value;
-        }
+        setState(key, value);
     }
    #endif
+  #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -1864,28 +1924,28 @@ private:
     struct HostExtensions {
         const clap_host_t* const host;
         const clap_host_params_t* params;
+        const clap_host_thread_check_t* threadCheck;
        #if DISTRHO_PLUGIN_WANT_LATENCY
         const clap_host_latency_t* latency;
-        const clap_host_thread_check_t* threadCheck;
        #endif
 
         HostExtensions(const clap_host_t* const host)
             : host(host),
-              params(nullptr)
+              params(nullptr),
+              threadCheck(nullptr)
            #if DISTRHO_PLUGIN_WANT_LATENCY
             , latency(nullptr)
-            , threadCheck(nullptr)
            #endif
         {}
 
         bool init()
         {
             params = static_cast<const clap_host_params_t*>(host->get_extension(host, CLAP_EXT_PARAMS));
+            threadCheck = static_cast<const clap_host_thread_check_t*>(host->get_extension(host, CLAP_EXT_THREAD_CHECK));
            #if DISTRHO_PLUGIN_WANT_LATENCY
             DISTRHO_SAFE_ASSERT_RETURN(host->request_restart != nullptr, false);
             DISTRHO_SAFE_ASSERT_RETURN(host->request_callback != nullptr, false);
             latency = static_cast<const clap_host_latency_t*>(host->get_extension(host, CLAP_EXT_LATENCY));
-            threadCheck = static_cast<const clap_host_thread_check_t*>(host->get_extension(host, CLAP_EXT_THREAD_CHECK));
            #endif
             return true;
         }
@@ -2092,8 +2152,56 @@ private:
    #endif
 
    #if DISTRHO_PLUGIN_WANT_STATE
-    bool updateState(const char*, const char*)
+    bool updateState(const char* const key, const char* const value)
     {
+        fPlugin.setState(key, value);
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        if (fHostExtensions.threadCheck != nullptr && fHostExtensions.threadCheck->is_main_thread(fHost))
+        {
+            for (uint32_t i = 0, count = fPlugin.getStateCount(); i < count; ++i)
+            {
+                if (fPlugin.getStateKey(i) != key)
+                    continue;
+
+                const String dkey(key);
+                fStateMap[dkey] = value;
+                break;
+            }
+
+            if (ClapUI * const ui = fUI.get())
+                ui->setStateFromPlugin(key, value);
+
+            return true;
+        }
+
+        const bool uiIsOpen = fUI.get() != nullptr;
+       #endif
+
+        for (uint32_t i = 0, count = fPlugin.getStateCount(); i < count; ++i)
+        {
+            if (fPlugin.getStateKey(i) != key)
+                continue;
+
+            const String dkey(key);
+            fStateMap[dkey] = value;
+
+           #if DISTRHO_PLUGIN_HAS_UI
+            if (uiIsOpen && (fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
+                fNeededUiSends[i] = true;
+           #endif
+
+            break;
+        }
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        if (uiIsOpen)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(fHost->request_callback != nullptr, false);
+            fHost->request_callback(fHost);
+        }
+       #endif
+
         return true;
     }
 

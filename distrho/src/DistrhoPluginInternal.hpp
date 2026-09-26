@@ -317,7 +317,6 @@ struct Plugin::PrivateData {
         DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0', false);
         DISTRHO_SAFE_ASSERT_RETURN(value != nullptr, false);
 
-        d_stdout("updateStateValueCallback %p", updateStateValueCallbackFunc);
         if (updateStateValueCallbackFunc != nullptr)
             return updateStateValueCallbackFunc(callbacksPtr, key, value);
 
