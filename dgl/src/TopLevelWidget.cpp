@@ -127,6 +127,8 @@ bool TopLevelWidget::onCharacterInput(const CharacterInputEvent& ev)
 
 bool TopLevelWidget::onMouse(const MouseEvent& ev)
 {
+    if (ev.press)
+        getWindow().focus();
     return pData->mouseEvent(ev);
 }
 
