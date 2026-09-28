@@ -1155,11 +1155,16 @@ public:
     void onMainThread()
     {
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+        ClapUI* const ui = fUI.get();
+
         for (uint32_t i = 0, count = fPlugin.getStateCount(); i < count; ++i)
         {
             if (! fNeededUiSends[i])
                 continue;
             fNeededUiSends[i] = false;
+
+            if (ui == nullptr)
+                continue;
 
             const String& curKey(fPlugin.getStateKey(i));
 
@@ -1172,7 +1177,7 @@ public:
 
                 const String& value(cit->second);
 
-                fUI->setStateFromPlugin(key, value);
+                ui->setStateFromPlugin(key, value);
             }
         }
        #endif
