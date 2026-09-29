@@ -826,6 +826,9 @@ public:
         fPlugin.setSampleRate(sampleRate, true);
         fPlugin.setBufferSize(maxFramesCount, true);
         fPlugin.activate();
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        reportLatencyChangeWhileActivating();
+       #endif
     }
 
     void deactivate()
@@ -1405,8 +1408,26 @@ public:
         return fPlugin.getLatency();
     }
 
+    // CLAP 1.2 only allows latency.changed() during activate()
     void checkForLatencyChanges(const bool isActive, const bool fromMainThread)
     {
+        (void)fromMainThread;
+
+        if (fLastKnownLatency == fPlugin.getLatency())
+            return;
+
+        if (isActive && ! fLatencyChanged)
+        {
+            fLatencyChanged = true;
+            fHost->request_restart(fHost);
+        }
+    }
+
+    // called from activate()
+    void reportLatencyChangeWhileActivating()
+    {
+        fLatencyChanged = false;
+
         const uint32_t latency = fPlugin.getLatency();
 
         if (fLastKnownLatency == latency)
@@ -1414,39 +1435,13 @@ public:
 
         fLastKnownLatency = latency;
 
-        if (fHostExtensions.latency == nullptr)
-            return;
-
-        if (isActive)
-        {
-            fLatencyChanged = true;
-            fHost->request_restart(fHost);
-        }
-        else
-        {
-            // if this is main-thread we can report latency change directly
-            if (fromMainThread || (fHostExtensions.threadCheck != nullptr && fHostExtensions.threadCheck->is_main_thread(fHost)))
-            {
-                fLatencyChanged = false;
-                fHostExtensions.latency->changed(fHost);
-            }
-            // otherwise we need to request a main-thread callback
-            else
-            {
-                fLatencyChanged = true;
-                fHost->request_callback(fHost);
-            }
-        }
+        if (fHostExtensions.latency != nullptr)
+            fHostExtensions.latency->changed(fHost);
     }
 
-    // called from main thread
+    // latency changes are reported during activate()
     void reportLatencyChangeIfNeeded()
     {
-        if (fLatencyChanged)
-        {
-            fLatencyChanged = false;
-            fHostExtensions.latency->changed(fHost);
-        }
     }
    #endif
 
