@@ -153,7 +153,7 @@ enum GLNVGshaderType {
 	NSVG_SHADER_IMG
 };
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 enum GLNVGuniformBindings {
 	GLNVG_FRAG_BINDING = 0,
 };
@@ -217,7 +217,7 @@ struct GLNVGpath {
 typedef struct GLNVGpath GLNVGpath;
 
 struct GLNVGfragUniforms {
-	#if NANOVG_GL_USE_UNIFORMBUFFER
+	#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 		float scissorMat[12]; // matrices are actually 3 vec4s
 		float paintMat[12];
 		struct NVGcolor innerCol;
@@ -271,10 +271,10 @@ struct GLNVGcontext {
 	GLNVGtextureContext* textureContext;
 	float view[2];
 	GLuint vertBuf;
-#if defined NANOVG_GL3
+#ifdef NANOVG_GL3
 	GLuint vertArr;
 #endif
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	GLuint fragBuf;
 #endif
 	int fragSize;
@@ -295,14 +295,14 @@ struct GLNVGcontext {
 	int nuniforms;
 
 	// cached state
-	#if NANOVG_GL_USE_STATE_FILTER
+#ifdef NANOVG_GL_USE_STATE_FILTER
 	GLuint boundTexture;
 	GLuint stencilMask;
 	GLenum stencilFunc;
 	GLint stencilFuncRef;
 	GLuint stencilFuncMask;
 	GLNVGblend blendFunc;
-	#endif
+#endif
 
 	int dummyTex;
 };
@@ -535,7 +535,7 @@ static void glnvg__getUniforms(GLNVGshader* shader)
 	shader->loc[GLNVG_LOC_VIEWSIZE] = glGetUniformLocation(shader->prog, "viewSize");
 	shader->loc[GLNVG_LOC_TEX] = glGetUniformLocation(shader->prog, "tex");
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	shader->loc[GLNVG_LOC_FRAG] = glGetUniformBlockIndex(shader->prog, "frag");
 #else
 	shader->loc[GLNVG_LOC_FRAG] = glGetUniformLocation(shader->prog, "frag");
@@ -576,7 +576,7 @@ static int glnvg__renderCreate(void* uptr, void* otherUptr)   // Share the textu
 		"#define NANOVG_GL3 1\n"
 #endif
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	"#define USE_UNIFORMBUFFER 1\n"
 #else
 	"#define UNIFORMARRAY_SIZE 11\n"
@@ -742,12 +742,12 @@ static int glnvg__renderCreate(void* uptr, void* otherUptr)   // Share the textu
 	glnvg__getUniforms(&gl->shader);
 
 	// Create dynamic vertex array
-#if defined NANOVG_GL3
+#ifdef NANOVG_GL3
 	glGenVertexArrays(1, &gl->vertArr);
 #endif
 	glGenBuffers(1, &gl->vertBuf);
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	// Create UBOs
 	glUniformBlockBinding(gl->shader.prog, gl->shader.loc[GLNVG_LOC_FRAG], GLNVG_FRAG_BINDING);
 	glGenBuffers(1, &gl->fragBuf);
@@ -1077,7 +1077,7 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 		}
 		frag->type = NSVG_SHADER_FILLIMG;
 
-		#if NANOVG_GL_USE_UNIFORMBUFFER
+		#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 		switch (tex->type)
 		{
 		case NVG_TEXTURE_BGR:
@@ -1122,7 +1122,7 @@ static GLNVGfragUniforms* nvg__fragUniformPtr(GLNVGcontext* gl, int i);
 static void glnvg__setUniforms(GLNVGcontext* gl, int uniformOffset, int image)
 {
 	GLNVGtexture* tex = NULL;
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	glBindBufferRange(GL_UNIFORM_BUFFER, GLNVG_FRAG_BINDING, gl->fragBuf, uniformOffset, sizeof(GLNVGfragUniforms));
 #else
 	GLNVGfragUniforms* frag = nvg__fragUniformPtr(gl, uniformOffset);
@@ -1350,14 +1350,14 @@ static void glnvg__renderFlush(void* uptr)
 		gl->blendFunc.dstAlpha = GL_INVALID_ENUM;
 		#endif
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 		// Upload ubo for frag shaders
 		glBindBuffer(GL_UNIFORM_BUFFER, gl->fragBuf);
 		glBufferData(GL_UNIFORM_BUFFER, gl->nuniforms * gl->fragSize, gl->uniforms, GL_STREAM_DRAW);
 #endif
 
 		// Upload vertex data
-#if defined NANOVG_GL3
+#ifdef NANOVG_GL3
 		glBindVertexArray(gl->vertArr);
 #endif
 		glBindBuffer(GL_ARRAY_BUFFER, gl->vertBuf);
@@ -1371,7 +1371,7 @@ static void glnvg__renderFlush(void* uptr)
 		glUniform1i(gl->shader.loc[GLNVG_LOC_TEX], 0);
 		glUniform2fv(gl->shader.loc[GLNVG_LOC_VIEWSIZE], 1, gl->view);
 
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 		glBindBuffer(GL_UNIFORM_BUFFER, gl->fragBuf);
 #endif
 
@@ -1390,7 +1390,7 @@ static void glnvg__renderFlush(void* uptr)
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
-#if defined NANOVG_GL3
+#ifdef NANOVG_GL3
 		glBindVertexArray(0);
 #endif
 		glDisable(GL_CULL_FACE);
@@ -1674,8 +1674,8 @@ static void glnvg__renderDelete(void* uptr)
 
 	glnvg__deleteShader(&gl->shader);
 
-#if NANOVG_GL3
-#if NANOVG_GL_USE_UNIFORMBUFFER
+#ifdef NANOVG_GL3
+#ifdef NANOVG_GL_USE_UNIFORMBUFFER
 	if (gl->fragBuf != 0)
 		glDeleteBuffers(1, &gl->fragBuf);
 #endif

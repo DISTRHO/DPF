@@ -72,7 +72,14 @@
 #define NVG_SKIPPED_CHAR NVG_CHAR
 #endif
 
-#ifndef NVG_FONT_TEXTURE_FLAGS
+#ifdef NVG_FONT_TEXTURE_FLAGS
+// safely compare against NVG_IMAGE_NEAREST
+#define NVG_IMAGE_NEAREST 1337
+#if NVG_FONT_TEXTURE_FLAGS == NVG_IMAGE_NEAREST
+#define NVG_FONT_TEXTURE_FLAGS_IS_NEAREST
+#endif
+#undef NVG_IMAGE_NEAREST
+#else
 #define NVG_FONT_TEXTURE_FLAGS 0
 #endif
 
@@ -2628,7 +2635,7 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 		nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y1*invscale);
 		// Create triangles
 		if (nverts+6 <= cverts) {
-#if NVG_FONT_TEXTURE_FLAGS
+#ifdef NVG_FONT_TEXTURE_FLAGS_IS_NEAREST
 			// align font kerning to integer pixel positions
 			for (int i = 0; i < 8; ++i)
 				c[i] = (int)(c[i] + 0.5f);
