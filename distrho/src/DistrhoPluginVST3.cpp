@@ -4800,6 +4800,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         {
             dpf_component** const componentptr = new dpf_component*;
             *componentptr = new dpf_component(hostApplication);
+            if (hostApplication != nullptr)
+                v3_cpp_obj_unref(hostApplication);
             *instance = static_cast<void*>(componentptr);
             return V3_OK;
         }
@@ -4811,6 +4813,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         {
             dpf_edit_controller** const controllerptr = new dpf_edit_controller*;
             *controllerptr = new dpf_edit_controller(hostApplication);
+            if (hostApplication != nullptr)
+                v3_cpp_obj_unref(hostApplication);
             *instance = static_cast<void*>(controllerptr);
             return V3_OK;
         }
