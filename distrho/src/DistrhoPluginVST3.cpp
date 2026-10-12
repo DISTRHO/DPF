@@ -954,6 +954,17 @@ public:
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Tracks which parameters this call actually assigned a value to,
+        // so that anything left untouched can be backfilled with its default
+        // below instead of silently keeping whatever value the plugin instance
+        // happened to have before this call.
+        // A plain new[]/delete[] pair would leak on the early-return paths
+        // below (several of which are inside the read loop), so this needs
+        // to be RAII.
+        std::vector<bool> paramsSet(fParameterCount, false);
+       #endif
+
         char buffer[512], orig;
         buffer[sizeof(buffer)-1] = '\xff';
         v3_result res;
@@ -1135,6 +1146,9 @@ public:
                             }
                            #endif
                             fPlugin.setParameterValue(j, fvalue);
+                           #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                            paramsSet[j] = true;
+                           #endif
                             break;
                         }
                     }
@@ -1145,6 +1159,46 @@ public:
                 }
             }
         }
+
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Anything not explicitly touched above is reset to its default here,
+        // rather than being left at whatever value this plugin instance
+        // happened to have before this call. This is what makes a (possibly
+        // partial) state restore deterministic regardless of the plugin's
+        // prior runtime state. Each parameter is still only ever assigned
+        // once per call: this loop is disjoint from the parameter setting
+        // above.
+        for (uint32_t j = 0; j < fParameterCount; ++j)
+        {
+            if (paramsSet[j] || fPlugin.isParameterOutputOrTrigger(j))
+                continue;
+
+            const float fvalue = fPlugin.getParameterRanges(j).def;
+
+            fCachedParameterValues[kVst3InternalParameterBaseCount + j] = fvalue;
+
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
+            // If this is the component make sure the controller also knows about the state change
+            if (fIsComponent)
+            {
+                componentValuesChanged = true;
+                fParameterValuesChangedDuringProcessing[kVst3InternalParameterBaseCount + j] = true;
+            }
+           #else
+            componentValuesChanged = true;
+           #endif
+
+           #if DISTRHO_PLUGIN_HAS_UI
+            if (connectedToUI)
+            {
+                // UI parameter updates are handled outside the read loop (after host param restart)
+                fParameterValueChangesForUI[kVst3InternalParameterBaseCount + j] = true;
+            }
+           #endif
+
+            fPlugin.setParameterValue(j, fvalue);
+        }
+       #endif // DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
 
         if (fComponentHandler != nullptr && componentValuesChanged)
             v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);

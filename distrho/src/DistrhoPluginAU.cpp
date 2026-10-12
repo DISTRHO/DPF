@@ -2649,6 +2649,15 @@ private:
                                                                  reinterpret_cast<const void**>(&data)),);
         DISTRHO_SAFE_ASSERT_RETURN(CFGetTypeID(data) == CFDictionaryGetTypeID(),);
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Tracks which parameters this call actually assigned a value to,
+        // when loaded via the plugin's setParameterValue callback, so
+        // that anything left untouched can be backfilled with its default
+        // instead of silently keeping whatever value the plugin instance
+        // happened to have before this call.
+        std::vector<bool> paramsSet(fParameterCount, false);
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         CFNumberRef programRef = nullptr;
         if (CFDictionaryGetValueIfPresent(data, CFSTR("program"), reinterpret_cast<const void**>(&programRef))
@@ -2778,6 +2787,9 @@ private:
 
                     fLastParameterValues[j] = value;
                     fPlugin.setParameterValue(j, value);
+                   #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                    paramsSet[j] = true;
+                   #endif
                     notifyPropertyListeners('DPFp', kAudioUnitScope_Global, j);
 
                     if (fBypassParameterIndex == j)
@@ -2789,6 +2801,27 @@ private:
 
             std::free(symbol);
         }
+
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Anything not explicitly touched above is reset to its
+        // default here, rather than being left at whatever value it had
+        // before this call. Each parameter is still only ever assigned once
+        // per call: this loop is disjoint from the parameter setting above.
+        for (uint32_t j=0; j<fParameterCount; ++j)
+        {
+            if (paramsSet[j] || fPlugin.isParameterOutputOrTrigger(j))
+                continue;
+
+            const float value = fPlugin.getParameterRanges(j).def;
+
+            fLastParameterValues[j] = value;
+            fPlugin.setParameterValue(j, value);
+            notifyPropertyListeners('DPFp', kAudioUnitScope_Global, j);
+
+            if (fBypassParameterIndex == j)
+                notifyPropertyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
+        }
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
