@@ -51,6 +51,20 @@ START_NAMESPACE_DISTRHO
    DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.@n
    When enabled you need to implement initProgramName() and loadProgram().
 
+   DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE makes full-state restore (as
+   used by e.g. a saved VST3/CLAP preset file) deterministic regardless of
+   the plugin's prior runtime state: any parameter not covered by the
+   incoming state is reset to its coded default, rather than being left at
+   whatever value the plugin instance happened to already have. This holds
+   whether or not DISTRHO_PLUGIN_WANT_PROGRAMS is also enabled. When it is,
+   this flag additionally changes loadProgram()'s signature to accept an
+   optional bool* parametersSet out-parameter (see loadProgram()'s own
+   documentation for its contract), so that a parameter already covered by a
+   restored program is not needlessly reset a second time, nor incorrectly
+   overwritten if the program left it at a value other than its coded
+   default. Existing loadProgram() overrides need updating to populate
+   parametersSet when this flag is turned on.
+
    DISTRHO_PLUGIN_WANT_STATE activates internal state features.@n
    When enabled you need to implement initState() and setState().
 
@@ -335,12 +349,30 @@ protected:
     virtual void setParameterValue(uint32_t index, float value);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
+ #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+   /**
+      Load a program.@n
+      The host may call this function from any context, including realtime processing.@n
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
+      @param parametersSet Optional pointer to a caller-allocated, zero-initialized
+             bool array of size getParameterCount(). If non-null, implementations
+             must set parametersSet[i] = true for every parameter index i whose
+             value this call assigns. Callers that don't need this information
+             (e.g. a plain host-triggered program change) may omit it.
+      @note This extra parameter only exists because
+            DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE is enabled; see its
+            description above for why, and update any existing loadProgram()
+            override to match when turning this flag on.
+    */
+    virtual void loadProgram(uint32_t index, bool* parametersSet = nullptr);
+ #else
    /**
       Load a program.@n
       The host may call this function from any context, including realtime processing.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
     */
     virtual void loadProgram(uint32_t index);
+ #endif
 #endif
 
 #if DISTRHO_PLUGIN_WANT_FULL_STATE

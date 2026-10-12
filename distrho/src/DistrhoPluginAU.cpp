@@ -30,6 +30,7 @@
 #include <AudioToolbox/AudioUnitUtilities.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #ifndef DISTRHO_PLUGIN_BRAND_ID
@@ -2649,6 +2650,18 @@ private:
                                                                  reinterpret_cast<const void**>(&data)),);
         DISTRHO_SAFE_ASSERT_RETURN(CFGetTypeID(data) == CFDictionaryGetTypeID(),);
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Tracks which parameters this call actually assigned a value to,
+        // whether via a loaded program or an explicit "params" entry, so that
+        // anything left untouched can be backfilled with its coded default
+        // below instead of silently keeping whatever value the plugin
+        // instance happened to have before this call.
+        // std::vector<bool> is NOT usable here since its bit-packed
+        // specialization can't hand back a real bool* for loadProgram()'s
+        // out-parameter.
+        const std::unique_ptr<bool[]> paramsSet(new bool[fParameterCount]());
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         CFNumberRef programRef = nullptr;
         if (CFDictionaryGetValueIfPresent(data, CFSTR("program"), reinterpret_cast<const void**>(&programRef))
@@ -2662,7 +2675,11 @@ private:
                 if (program >= 0)
                 {
                     fLastFactoryProgram = program;
+                   #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                    fPlugin.loadProgram(fLastFactoryProgram, paramsSet.get());
+                   #else
                     fPlugin.loadProgram(fLastFactoryProgram);
+                   #endif
                     notifyPropertyListeners('DPFo', kAudioUnitScope_Global, 0);
                 }
 
@@ -2778,6 +2795,9 @@ private:
 
                     fLastParameterValues[j] = value;
                     fPlugin.setParameterValue(j, value);
+                   #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                    paramsSet[j] = true;
+                   #endif
                     notifyPropertyListeners('DPFp', kAudioUnitScope_Global, j);
 
                     if (fBypassParameterIndex == j)
@@ -2789,6 +2809,32 @@ private:
 
             std::free(symbol);
         }
+
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Anything not explicitly touched above -- whether because it was
+        // never mentioned by the incoming preset at all, because a "params"
+        // entry was malformed or named an unknown symbol, or (when
+        // DISTRHO_PLUGIN_WANT_PROGRAMS is also enabled) because the requested
+        // program did not assign it -- is reset to its coded default here,
+        // rather than being left at whatever value this plugin instance had
+        // before this call. Each parameter is still only ever assigned once
+        // per call: this loop is disjoint from both the program-load and the
+        // explicit "params" assignments above.
+        for (uint32_t j=0; j<fParameterCount; ++j)
+        {
+            if (paramsSet[j] || fPlugin.isParameterOutputOrTrigger(j))
+                continue;
+
+            const float value = fPlugin.getParameterRanges(j).def;
+
+            fLastParameterValues[j] = value;
+            fPlugin.setParameterValue(j, value);
+            notifyPropertyListeners('DPFp', kAudioUnitScope_Global, j);
+
+            if (fBypassParameterIndex == j)
+                notifyPropertyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
+        }
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------

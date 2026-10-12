@@ -230,7 +230,11 @@ float Plugin::getParameterValue(uint32_t) const { return 0.0f; }
 void Plugin::setParameterValue(uint32_t, float) {}
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
+ #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+void Plugin::loadProgram(uint32_t, bool*) {}
+ #else
 void Plugin::loadProgram(uint32_t) {}
+ #endif
 #endif
 
 #if DISTRHO_PLUGIN_WANT_FULL_STATE

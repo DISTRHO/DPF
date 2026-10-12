@@ -44,6 +44,7 @@
 #endif
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "clap/entry.h"
@@ -1567,6 +1568,20 @@ public:
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Tracks which parameters this call actually assigned a value to,
+        // whether via a loaded program or an explicit "__dpf_parameters_begin__"
+        // entry, so that anything left untouched can be backfilled with its
+        // coded default below instead of silently keeping whatever value the
+        // plugin instance happened to have before this call.
+        // A plain new[]/delete[] pair would leak on the early-return paths
+        // below (several of which are inside the read loop), so this needs
+        // to be RAII; std::vector<bool> is NOT usable here since its
+        // bit-packed specialization can't hand back a real bool* for
+        // loadProgram()'s out-parameter.
+        const std::unique_ptr<bool[]> paramsSet(new bool[fCachedParameters.numParams]());
+       #endif
+
         char buffer[512], orig;
         buffer[sizeof(buffer)-1] = '\xff';
 
@@ -1673,7 +1688,11 @@ public:
                         DISTRHO_SAFE_ASSERT_CONTINUE(program >= 0);
 
                         fCurrentProgram = static_cast<uint32_t>(program);
+                       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                        fPlugin.loadProgram(fCurrentProgram, paramsSet.get());
+                       #else
                         fPlugin.loadProgram(fCurrentProgram);
+                       #endif
 
                        #if DISTRHO_PLUGIN_HAS_UI
                         if (ui != nullptr)
@@ -1730,6 +1749,9 @@ public:
                             }
                            #endif
                             fPlugin.setParameterValue(j, fvalue);
+                           #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                            paramsSet[j] = true;
+                           #endif
                             break;
                         }
                     }
@@ -1740,6 +1762,34 @@ public:
                 }
             }
         }
+
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Anything not explicitly touched above -- whether because it was
+        // never mentioned by the incoming state at all, or (when
+        // DISTRHO_PLUGIN_WANT_PROGRAMS is also enabled) because a requested
+        // program index turned out to be invalid and fPlugin.loadProgram()
+        // silently no-op'd -- is reset to its coded default here, rather
+        // than being left at whatever value this plugin instance happened
+        // to have before this call. This is what makes a (possibly
+        // partial) state restore deterministic regardless of the plugin's
+        // prior runtime state. Each parameter is still only ever assigned
+        // once per call: this loop is disjoint from both the program-load
+        // and explicit-parameter-list assignments above.
+        for (uint32_t j = 0; j < fCachedParameters.numParams; ++j)
+        {
+            if (paramsSet[j] || fPlugin.isParameterOutputOrTrigger(j))
+                continue;
+
+            const float fvalue = fPlugin.getParameterRanges(j).def;
+
+            fCachedParameters.values[j] = fvalue;
+           #if DISTRHO_PLUGIN_HAS_UI
+            if (ui != nullptr)
+                fCachedParameters.changed[j] = true;
+           #endif
+            fPlugin.setParameterValue(j, fvalue);
+        }
+       #endif // DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
 
         if (fHostExtensions.params != nullptr)
             fHostExtensions.params->rescan(fHost, CLAP_PARAM_RESCAN_VALUES|CLAP_PARAM_RESCAN_TEXT);

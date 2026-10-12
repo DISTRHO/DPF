@@ -841,12 +841,20 @@ public:
         return fData->programNames[index];
     }
 
-    void loadProgram(const uint32_t index)
+    void loadProgram(const uint32_t index
+                     #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                      , bool* const parametersSet = nullptr
+                     #endif
+                     )
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->programCount,);
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        fPlugin->loadProgram(index, parametersSet);
+       #else
         fPlugin->loadProgram(index);
+       #endif
     }
 #endif
 
