@@ -2758,8 +2758,13 @@ private:
                 DISTRHO_SAFE_ASSERT_BREAK(keyRef != nullptr && CFGetTypeID(keyRef) == CFStringGetTypeID());
                 DISTRHO_SAFE_ASSERT_BREAK(valueRef != nullptr && CFGetTypeID(valueRef) == CFNumberGetTypeID());
 
+                // Plist <real> values are parsed as doubles, so this
+                // conversion is "lossy" (returns false) whenever the value
+                // is not exactly representable as a float32, e.g. 1.15.
+                // The nearest (clamped) float is still stored in value,
+                // so the return value must not be treated as an error.
                 float value = 0.f;
-                DISTRHO_SAFE_ASSERT_BREAK(CFNumberGetValue(valueRef, kCFNumberFloat32Type, &value));
+                CFNumberGetValue(valueRef, kCFNumberFloat32Type, &value);
 
                 const CFIndex keyRefLen = CFStringGetLength(keyRef);
                 if (symbolLen < keyRefLen)
