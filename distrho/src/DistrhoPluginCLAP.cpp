@@ -1567,6 +1567,17 @@ public:
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
 
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Tracks which parameters this call actually assigned a value to, so
+        // anything left untouched can be backfilled with its default below
+        // instead of silently keeping whatever value the plugin instance
+        // happened to have before this call.
+        // A plain new[]/delete[] pair would leak on the early-return paths
+        // below (several of which are inside the read loop), so this needs
+        // to be RAII.
+        std::vector<bool> paramsSet(fCachedParameters.numParams, false);
+       #endif
+
         char buffer[512], orig;
         buffer[sizeof(buffer)-1] = '\xff';
 
@@ -1730,6 +1741,9 @@ public:
                             }
                            #endif
                             fPlugin.setParameterValue(j, fvalue);
+                           #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+                            paramsSet[j] = true;
+                           #endif
                             break;
                         }
                     }
@@ -1740,6 +1754,31 @@ public:
                 }
             }
         }
+
+       #if DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
+        // Anything not explicitly touched above -- because it was
+        // never mentioned by the incoming state, is reset to its default here
+        // rather than being left at whatever value this plugin instance
+        // happened to have before this call. This is what makes a (possibly
+        // partial) state restore deterministic regardless of the plugin's
+        // prior runtime state. Each parameter is still only ever assigned
+        // once per call: this loop is disjoint from the parameter setting
+        // above.
+        for (uint32_t j = 0; j < fCachedParameters.numParams; ++j)
+        {
+            if (paramsSet[j] || fPlugin.isParameterOutputOrTrigger(j))
+                continue;
+
+            const float fvalue = fPlugin.getParameterRanges(j).def;
+
+            fCachedParameters.values[j] = fvalue;
+           #if DISTRHO_PLUGIN_HAS_UI
+            if (ui != nullptr)
+                fCachedParameters.changed[j] = true;
+           #endif
+            fPlugin.setParameterValue(j, fvalue);
+        }
+       #endif // DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE
 
         if (fHostExtensions.params != nullptr)
             fHostExtensions.params->rescan(fHost, CLAP_PARAM_RESCAN_VALUES|CLAP_PARAM_RESCAN_TEXT);

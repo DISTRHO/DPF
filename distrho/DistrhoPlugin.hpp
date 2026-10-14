@@ -51,6 +51,13 @@ START_NAMESPACE_DISTRHO
    DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.@n
    When enabled you need to implement initProgramName() and loadProgram().
 
+   DISTRHO_PLUGIN_WANT_STRICT_PARAMETER_RESTORE makes full-state restore (as
+   used by e.g. a saved VST3/CLAP preset file) deterministic regardless of
+   the plugin's prior runtime state: any parameter not covered by the
+   incoming state is reset to its coded default, rather than being left at
+   whatever value the plugin instance happened to already have. This holds
+   whether or not DISTRHO_PLUGIN_WANT_PROGRAMS is also enabled.
+
    DISTRHO_PLUGIN_WANT_STATE activates internal state features.@n
    When enabled you need to implement initState() and setState().
 
