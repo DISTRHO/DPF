@@ -1010,17 +1010,24 @@ public:
                 {
                     const clap_event_header_t* const event = inputEvents->get(inputEvents, i);
 
+                    if (event->space_id != CLAP_CORE_EVENT_SPACE_ID)
+                        continue;
+
                     switch (event->type)
                     {
                     case CLAP_EVENT_NOTE_ON:
                        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                         // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
+                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_note_t),
+                                                        event->size, sizeof(clap_event_note_t));
                         addNoteEvent(reinterpret_cast<const clap_event_note_t*>(event), true);
                        #endif
                         break;
                     case CLAP_EVENT_NOTE_OFF:
                        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                         // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
+                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_note_t),
+                                                        event->size, sizeof(clap_event_note_t));
                         addNoteEvent(reinterpret_cast<const clap_event_note_t*>(event), false);
                        #endif
                         break;
@@ -1031,8 +1038,7 @@ public:
                     case CLAP_EVENT_PARAM_VALUE:
                         DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
                                                         event->size, sizeof(clap_event_param_value_t));
-                        if (event->space_id == 0)
-                            setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
+                        setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
                         break;
                     case CLAP_EVENT_PARAM_MOD:
                     case CLAP_EVENT_PARAM_GESTURE_BEGIN:
@@ -1325,7 +1331,7 @@ public:
 
     void flushParameters(const clap_input_events_t* const in,
                          const clap_output_events_t* const out,
-                         const uint32_t frameOffset)
+                         const uint32_t frameOffset = 0)
     {
         if (fResetParameterIndex != UINT32_MAX && d_isNotZero(fPlugin.getParameterValue(fResetParameterIndex)))
             fPlugin.setParameterValue(fResetParameterIndex, 0.f);
@@ -1338,7 +1344,7 @@ public:
 
                 if (event->type != CLAP_EVENT_PARAM_VALUE)
                     continue;
-                if (event->space_id != 0)
+                if (event->space_id != CLAP_CORE_EVENT_SPACE_ID)
                     continue;
 
                 DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
@@ -2522,7 +2528,7 @@ static bool CLAP_ABI clap_plugin_params_text_to_value(const clap_plugin_t* plugi
 static void CLAP_ABI clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    return instance->flushParameters(in, out, 0);
+    instance->flushParameters(in, out);
 }
 
 static const clap_plugin_params_t clap_plugin_params = {
