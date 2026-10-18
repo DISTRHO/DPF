@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -43,17 +43,23 @@ public:
    /**
       Constructor for (0, 0) point.
     */
-    Point() noexcept;
+    constexpr Point() noexcept
+        : x(0),
+          y(0) {}
 
    /**
       Constructor using custom X and Y values.
     */
-    Point(const T& x, const T& y) noexcept;
+    constexpr Point(const T x2, const T y2) noexcept
+        : x(x2),
+          y(y2) {}
 
    /**
       Constructor using another Point class values.
     */
-    Point(const Point<T>& pos) noexcept;
+    constexpr Point(const Point<T>& pos) noexcept
+        : x(pos.x),
+          y(pos.y) {}
 
    /**
       Get X value.
@@ -98,12 +104,18 @@ public:
    /**
       Return true if point is (0, 0).
     */
-    bool isZero() const noexcept;
+    constexpr bool isZero() const noexcept
+    {
+        return x == 0 && y == 0;
+    }
 
    /**
       Return true if point is not (0, 0).
     */
-    bool isNotZero() const noexcept;
+    constexpr bool isNotZero() const noexcept
+    {
+        return x != 0 || y != 0;
+    }
 
     Point<T> operator+(const Point<T>& pos) noexcept;
     Point<T> operator-(const Point<T>& pos) noexcept;
@@ -135,17 +147,23 @@ public:
    /**
       Constructor for null size (0x0).
     */
-    Size() noexcept;
+    constexpr Size() noexcept
+        : fWidth(0),
+          fHeight(0) {}
 
    /**
       Constructor using custom width and height values.
     */
-    Size(const T& width, const T& height) noexcept;
+    constexpr Size(const T& width, const T& height) noexcept
+        : fWidth(width),
+          fHeight(height) {}
 
    /**
       Constructor using another Size class values.
     */
-    Size(const Size<T>& size) noexcept;
+    constexpr Size(const Size<T>& size) noexcept
+        : fWidth(size.fWidth),
+          fHeight(size.fHeight) {}
 
    /**
       Get width.
@@ -191,24 +209,36 @@ public:
       Return true if size is null (0x0).
       An null size is also invalid.
     */
-    bool isNull() const noexcept;
+    constexpr bool isNull() const noexcept
+    {
+        return fWidth == 0 && fHeight == 0;
+    }
 
    /**
       Return true if size is not null (0x0).
       A non-null size is still invalid if its width or height are negative.
     */
-    bool isNotNull() const noexcept;
+    constexpr bool isNotNull() const noexcept
+    {
+        return fWidth != 0 || fHeight != 0;
+    }
 
    /**
       Return true if size is valid (width and height are higher than zero).
     */
-    bool isValid() const noexcept;
+    constexpr bool isValid() const noexcept
+    {
+        return fWidth > 0 && fHeight > 0;
+    }
 
    /**
       Return true if size is invalid (width or height are lower or equal to zero).
       An invalid size might not be null under some circumstances.
     */
-    bool isInvalid() const noexcept;
+    constexpr bool isInvalid() const noexcept
+    {
+        return fWidth <= 0 || fHeight <= 0;
+    }
 
     Size<int> toInt() const noexcept;
 
@@ -614,12 +644,16 @@ public:
    /**
       Constructor for a null rectangle.
     */
-    Rectangle() noexcept;
+    constexpr Rectangle() noexcept
+        : pos(0, 0),
+          size(0, 0) {}
 
    /**
       Constructor using custom X, Y, width and height values.
     */
-    Rectangle(const T& x, const T& y, const T& width, const T& height) noexcept;
+    constexpr Rectangle(const T& x, const T& y, const T& width, const T& height) noexcept
+        : pos(x, y),
+          size(width, height) {}
 
    /**
       Constructor using custom X, Y and size values.
@@ -776,24 +810,36 @@ public:
       Return true if size is null (0x0).
       An null size is also invalid.
     */
-    bool isNull() const noexcept;
+    constexpr bool isNull() const noexcept
+    {
+        return size.isNull();
+    }
 
    /**
       Return true if size is not null (0x0).
       A non-null size is still invalid if its width or height are negative.
     */
-    bool isNotNull() const noexcept;
+    constexpr bool isNotNull() const noexcept
+    {
+        return size.isNotNull();
+    }
 
    /**
       Return true if size is valid (width and height are higher than zero).
     */
-    bool isValid() const noexcept;
+    constexpr bool isValid() const noexcept
+    {
+        return size.isValid();
+    }
 
    /**
       Return true if size is invalid (width or height are lower or equal to zero).
       An invalid size might not be null under some circumstances.
     */
-    bool isInvalid() const noexcept;
+    constexpr bool isInvalid() const noexcept
+    {
+        return size.isInvalid();
+    }
 
    /**
       Draw this rectangle using the provided graphics context.

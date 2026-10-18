@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,25 +29,10 @@
 
 START_NAMESPACE_DGL
 
-static const float M_2PIf = 3.14159265358979323846f*2.0f;
+static constexpr const float M_2PIf = 3.14159265358979323846f * 2.0f;
 
 // -----------------------------------------------------------------------
 // Point
-
-template<typename T>
-Point<T>::Point() noexcept
-    : x(0),
-      y(0) {}
-
-template<typename T>
-Point<T>::Point(const T& x2, const T& y2) noexcept
-    : x(x2),
-      y(y2) {}
-
-template<typename T>
-Point<T>::Point(const Point<T>& pos) noexcept
-    : x(pos.x),
-      y(pos.y) {}
 
 template<typename T>
 const T& Point<T>::getX() const noexcept
@@ -102,18 +87,6 @@ void Point<T>::moveBy(const Point<T>& pos) noexcept
 }
 
 template<typename T>
-bool Point<T>::isZero() const noexcept
-{
-    return x == 0 && y == 0;
-}
-
-template<typename T>
-bool Point<T>::isNotZero() const noexcept
-{
-    return x != 0 || y != 0;
-}
-
-template<typename T>
 Point<T> Point<T>::operator+(const Point<T>& pos) noexcept
 {
     return Point<T>(x+pos.x, y+pos.y);
@@ -165,21 +138,6 @@ bool Point<T>::operator!=(const Point<T>& pos) const noexcept
 // Size
 
 template<typename T>
-Size<T>::Size() noexcept
-    : fWidth(0),
-      fHeight(0) {}
-
-template<typename T>
-Size<T>::Size(const T& width, const T& height) noexcept
-    : fWidth(width),
-      fHeight(height) {}
-
-template<typename T>
-Size<T>::Size(const Size<T>& size) noexcept
-    : fWidth(size.fWidth),
-      fHeight(size.fHeight) {}
-
-template<typename T>
 const T& Size<T>::getWidth() const noexcept
 {
     return fWidth;
@@ -229,30 +187,6 @@ void Size<T>::shrinkBy(double divider) noexcept
 {
     fWidth  = static_cast<T>(static_cast<double>(fWidth)/divider);
     fHeight = static_cast<T>(static_cast<double>(fHeight)/divider);
-}
-
-template<typename T>
-bool Size<T>::isNull() const noexcept
-{
-    return fWidth == 0 && fHeight == 0;
-}
-
-template<typename T>
-bool Size<T>::isNotNull() const noexcept
-{
-    return fWidth != 0 || fHeight != 0;
-}
-
-template<typename T>
-bool Size<T>::isValid() const noexcept
-{
-    return fWidth > 0 && fHeight > 0;
-}
-
-template<typename T>
-bool Size<T>::isInvalid() const noexcept
-{
-    return fWidth <= 0 || fHeight <= 0;
 }
 
 template<typename T>
@@ -745,16 +679,6 @@ bool Triangle<T>::operator!=(const Triangle<T>& tri) const noexcept
 // Rectangle
 
 template<typename T>
-Rectangle<T>::Rectangle() noexcept
-    : pos(0, 0),
-      size(0, 0) {}
-
-template<typename T>
-Rectangle<T>::Rectangle(const T& x, const T& y, const T& w, const T& h) noexcept
-    : pos(x, y),
-      size(w, h) {}
-
-template<typename T>
 Rectangle<T>::Rectangle(const T& x, const T& y, const Size<T>& s) noexcept
     : pos(x, y),
       size(s) {}
@@ -945,30 +869,6 @@ template<typename T>
 bool Rectangle<T>::containsY(const T& y) const noexcept
 {
     return (y >= pos.y && y <= pos.y + size.fHeight);
-}
-
-template<typename T>
-bool Rectangle<T>::isNull() const noexcept
-{
-    return size.isNull();
-}
-
-template<typename T>
-bool Rectangle<T>::isNotNull() const noexcept
-{
-    return size.isNotNull();
-}
-
-template<typename T>
-bool Rectangle<T>::isValid() const noexcept
-{
-    return size.isValid();
-}
-
-template<typename T>
-bool Rectangle<T>::isInvalid() const noexcept
-{
-    return size.isInvalid();
 }
 
 template<typename T>
