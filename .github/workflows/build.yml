@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-14
           - macos-15
           # webgui failure
           # - ubuntu-20.04
