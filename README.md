@@ -38,4 +38,4 @@ Online help and discussion about DPF happens in the [DPF github discussions](htt
 
 See [this wiki page](https://github.com/DISTRHO/DPF/wiki/Plugins-made-with-DPF) for a list of plugins made with DPF.
 
-Plugin examples are also available in the `example/` folder inside this repo.
+Plugin examples are also available in the `examples/` folder inside this repo.
