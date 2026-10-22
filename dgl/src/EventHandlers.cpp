@@ -330,6 +330,8 @@ struct KnobEventHandler::PrivateData {
     bool usingDefault;
     bool usingLog;
     Orientation orientation;
+    Modifier resetModifier;
+    Modifier slowModifier;
     int state;
 
     double lastX;
@@ -353,6 +355,8 @@ struct KnobEventHandler::PrivateData {
           usingDefault(false),
           usingLog(false),
           orientation(Vertical),
+          resetModifier(kModifierShift),
+          slowModifier(kModifierControl),
           state(kKnobStateDefault),
           lastX(0.0),
           lastY(0.0),
@@ -375,6 +379,8 @@ struct KnobEventHandler::PrivateData {
           usingDefault(other->usingDefault),
           usingLog(other->usingLog),
           orientation(other->orientation),
+          resetModifier(other->resetModifier),
+          slowModifier(other->slowModifier),
           state(kKnobStateDefault),
           lastX(0.0),
           lastY(0.0),
@@ -383,38 +389,40 @@ struct KnobEventHandler::PrivateData {
 
     void assignFrom(PrivateData* const other)
     {
-        callback     = other->callback;
-        accel        = other->accel;
-        minimum      = other->minimum;
-        maximum      = other->maximum;
-        step         = other->step;
-        value        = other->value;
-        valueDef     = other->valueDef;
-        valueTmp     = value;
-        enabled      = other->enabled;
-        enabledInput = other->enabledInput;
-        usingDefault = other->usingDefault;
-        usingLog     = other->usingLog;
-        orientation  = other->orientation;
-        state        = kKnobStateDefault;
-        lastX        = 0.0;
-        lastY        = 0.0;
+        callback      = other->callback;
+        accel         = other->accel;
+        minimum       = other->minimum;
+        maximum       = other->maximum;
+        step          = other->step;
+        value         = other->value;
+        valueDef      = other->valueDef;
+        valueTmp      = value;
+        enabled       = other->enabled;
+        enabledInput  = other->enabledInput;
+        usingDefault  = other->usingDefault;
+        usingLog      = other->usingLog;
+        orientation   = other->orientation;
+        resetModifier = other->resetModifier;
+        slowModifier  = other->slowModifier;
+        state         = kKnobStateDefault;
+        lastX         = 0.0;
+        lastY         = 0.0;
         lastClickTime = 0;
         lastMotionPos.setPos(0, 0);
     }
 
     inline float logscale(const float v) const
     {
-        const float b = std::log(maximum/minimum)/(maximum-minimum);
-        const float a = maximum/std::exp(maximum*b);
-        return a * std::exp(b*v);
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum / std::exp(maximum * b);
+        return a * std::exp(b * v);
     }
 
     inline float invlogscale(const float v) const
     {
-        const float b = std::log(maximum/minimum)/(maximum-minimum);
-        const float a = maximum/std::exp(maximum*b);
-        return std::log(v/a)/b;
+        const float b = std::log(maximum / minimum) / (maximum - minimum);
+        const float a = maximum/std::exp(maximum * b);
+        return std::log(v / a) / b;
     }
 
     bool mouseEvent(const Widget::MouseEvent& ev, const double scaleFactor)
@@ -430,7 +438,7 @@ struct KnobEventHandler::PrivateData {
             if (! widget->contains(ev.pos))
                 return false;
 
-            if ((ev.mod & kModifierShift) != 0 && usingDefault)
+            if ((ev.mod & resetModifier) != 0 && usingDefault)
             {
                 setValue(valueDef, true);
                 valueTmp = value;
@@ -534,7 +542,7 @@ struct KnobEventHandler::PrivateData {
         if (d_isZero(movDiff))
             return true;
 
-        const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
+        const float divisor = (ev.mod & slowModifier) != 0 ? accel * 10.f : accel;
         valueTmp = (usingLog ? invlogscale(valueTmp) : valueTmp)
                  + (maximum - minimum) / divisor * static_cast<float>(movDiff);
 
@@ -600,7 +608,7 @@ struct KnobEventHandler::PrivateData {
             return false;
 
         const float dir    = (ev.delta.getY() > 0.f) ? 1.f : -1.f;
-        const float d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
+        const float d      = (ev.mod & slowModifier) != 0 ? accel * 10.f : accel;
         float       value2 = (usingLog ? invlogscale(valueTmp) : valueTmp)
                            + ((maximum - minimum) / d * 10.f * dir);
 
@@ -800,6 +808,16 @@ void KnobEventHandler::setOrientation(const Orientation orientation) noexcept
 void KnobEventHandler::setCallback(Callback* const callback) noexcept
 {
     pData->callback = callback;
+}
+
+void KnobEventHandler::setResetModifier(Modifier mod) noexcept
+{
+    pData->resetModifier = mod;
+}
+
+void KnobEventHandler::setSlowModifier(const Modifier mod) noexcept
+{
+    pData->slowModifier = mod;
 }
 
 void KnobEventHandler::setMouseDeceleration(float accel) noexcept

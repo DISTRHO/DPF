@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -161,6 +161,8 @@ public:
     void setOrientation(Orientation orientation) noexcept;
 
     void setCallback(Callback* callback) noexcept;
+    void setResetModifier(Modifier mod) noexcept;
+    void setSlowModifier(Modifier mod) noexcept;
 
     // default 200, higher means slower
     void setMouseDeceleration(float accel) noexcept;
