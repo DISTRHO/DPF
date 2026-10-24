@@ -440,8 +440,15 @@ struct KnobEventHandler::PrivateData {
 
             if ((ev.mod & resetModifier) != 0 && usingDefault)
             {
+                if (callback != nullptr)
+                    callback->knobDragStarted(widget);
+
                 setValue(valueDef, true);
                 valueTmp = value;
+
+                if (callback != nullptr)
+                    callback->knobDragFinished(widget);
+
                 return true;
             }
 
