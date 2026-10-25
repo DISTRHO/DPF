@@ -32,6 +32,7 @@ struct SubWidget::PrivateData {
     bool needsFullViewportForDrawing; // needed for widgets drawing out of bounds
     bool needsViewportScaling; // needed for NanoVG
     bool skipDrawing; // for context reuse in NanoVG based guis
+    bool parentDeleted;
     double viewportScaleFactor; // auto-scaling for NanoVG
 
     explicit PrivateData(SubWidget* const s, Widget* const pw);

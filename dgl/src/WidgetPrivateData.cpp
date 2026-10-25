@@ -52,6 +52,11 @@ Widget::PrivateData::PrivateData(Widget* const s, Widget* const pw)
 
 Widget::PrivateData::~PrivateData()
 {
+    for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
+    {
+        SubWidget* const subwidget(*it);
+        subwidget->pData->parentDeleted = true;
+    }
     subWidgets.clear();
     std::free(name);
 }

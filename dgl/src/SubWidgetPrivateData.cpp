@@ -30,6 +30,7 @@ SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const pw)
       needsFullViewportForDrawing(false),
       needsViewportScaling(false),
       skipDrawing(false),
+      parentDeleted(false),
       viewportScaleFactor(0.0)
 {
     parentWidget->pData->subWidgets.push_back(self);
@@ -37,7 +38,8 @@ SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const pw)
 
 SubWidget::PrivateData::~PrivateData()
 {
-    parentWidget->pData->subWidgets.remove(self);
+    if (! parentDeleted)
+        parentWidget->pData->subWidgets.remove(self);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
