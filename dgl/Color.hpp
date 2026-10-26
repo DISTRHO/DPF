@@ -170,10 +170,10 @@ struct Color {
       Check if this color matches another.
       @note Comparison is done within 8-bit color space.
     */
-    bool isEqual(const Color& color, bool withAlpha = true) noexcept;
-    bool isNotEqual(const Color& color, bool withAlpha = true) noexcept;
-    bool operator==(const Color& color) noexcept;
-    bool operator!=(const Color& color) noexcept;
+    bool isEqual(const Color& color, bool withAlpha = true) const noexcept;
+    bool isNotEqual(const Color& color, bool withAlpha = true) const noexcept;
+    bool operator==(const Color& color) const noexcept;
+    bool operator!=(const Color& color) const noexcept;
 
    /**
       Fix color bounds if needed.

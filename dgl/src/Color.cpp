@@ -223,7 +223,7 @@ void Color::interpolate(const Color& other, float u) noexcept
 
 // -----------------------------------------------------------------------
 
-bool Color::isEqual(const Color& color, const bool withAlpha) noexcept
+bool Color::isEqual(const Color& color, const bool withAlpha) const noexcept
 {
     const uchar r1 = getFixedRange2(rgba[0]);
     const uchar g1 = getFixedRange2(rgba[1]);
@@ -241,7 +241,7 @@ bool Color::isEqual(const Color& color, const bool withAlpha) noexcept
         return (r1 == r2 && g1 == g2 && b1 == b2);
 }
 
-bool Color::isNotEqual(const Color& color, const bool withAlpha) noexcept
+bool Color::isNotEqual(const Color& color, const bool withAlpha) const noexcept
 {
     const uchar r1 = getFixedRange2(rgba[0]);
     const uchar g1 = getFixedRange2(rgba[1]);
@@ -259,12 +259,12 @@ bool Color::isNotEqual(const Color& color, const bool withAlpha) noexcept
         return (r1 != r2 || g1 != g2 || b1 != b2);
 }
 
-bool Color::operator==(const Color& color) noexcept
+bool Color::operator==(const Color& color) const noexcept
 {
     return isEqual(color, true);
 }
 
-bool Color::operator!=(const Color& color) noexcept
+bool Color::operator!=(const Color& color) const noexcept
 {
     return isNotEqual(color, true);
 }
