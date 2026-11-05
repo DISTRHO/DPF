@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,7 +26,7 @@
 # include "Resources.hpp"
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #if defined(DISTRHO_OS_WINDOWS)
 # include <windows.h>
@@ -83,7 +83,7 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 # undef DGL_EXT
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Include NanoVG OpenGL implementation
 
 //#define STB_IMAGE_STATIC
@@ -112,31 +112,35 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 
 #if defined(NANOVG_GL2)
 # define nvgCreateGLfn nvgCreateGL2
-# define nvgDeleteGL nvgDeleteGL2
+# define nvgCreateSharedGLfn nvgCreateSharedGL2
+# define nvgDeleteGLfn nvgDeleteGL2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL2
 # define nvglImageHandle nvglImageHandleGL2
 #elif defined(NANOVG_GL3)
 # define nvgCreateGLfn nvgCreateGL3
-# define nvgDeleteGL nvgDeleteGL3
+# define nvgCreateSharedGLfn nvgCreateSharedGL3
+# define nvgDeleteGLfn nvgDeleteGL3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL3
 # define nvglImageHandle nvglImageHandleGL3
 #elif defined(NANOVG_GLES2)
 # define nvgCreateGLfn nvgCreateGLES2
-# define nvgDeleteGL nvgDeleteGLES2
+# define nvgCreateSharedGLfn nvgCreateSharedGLES2
+# define nvgDeleteGLfn nvgDeleteGLES2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES2
 # define nvglImageHandle nvglImageHandleGLES2
 #elif defined(NANOVG_GLES3)
 # define nvgCreateGLfn nvgCreateGLES3
-# define nvgDeleteGL nvgDeleteGLES3
+# define nvgCreateSharedGLfn nvgCreateSharedGLES3
+# define nvgDeleteGLfn nvgDeleteGLES3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES3
 # define nvglImageHandle nvglImageHandleGLES3
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 START_NAMESPACE_DGL
 
-NVGcontext* nvgCreateGL(int flags)
+NVGcontext* nvgCreateGL(const int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
 # if defined(__GNUC__) && (__GNUC__ >= 9)
@@ -211,7 +215,17 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
     return nvgCreateGLfn(flags);
 }
 
-// -----------------------------------------------------------------------
+NVGcontext* nvgCreateSharedGL(NVGcontext* const other, const int flags)
+{
+    return nvgCreateSharedGLfn(other, flags);
+}
+
+void nvgDeleteGL(NVGcontext* const context)
+{
+    nvgDeleteGLfn(context);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // DGL Color class conversion
 
 Color::Color(const NVGcolor& c) noexcept
@@ -230,7 +244,7 @@ Color::operator NVGcolor() const noexcept
     return nc;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoImage
 
 NanoImage::NanoImage()
@@ -245,16 +259,6 @@ NanoImage::NanoImage(const Handle& handle)
 
     _updateSize();
 }
-
-#ifdef DGL_USE_NANOVG_FBO
-NanoImage::NanoImage(const NVGLUframebuffer& framebuffer)
-    : fHandle(framebuffer.ctx, framebuffer.image),
-      fSize()
-{
-    fHandle.owned = false;
-    _updateSize();
-}
-#endif
 
 NanoImage::~NanoImage()
 {
@@ -322,7 +326,7 @@ void NanoImage::_updateSize()
     fSize.setSize(static_cast<uint>(w), static_cast<uint>(h));
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Paint
 
 NanoVG::Paint::Paint() noexcept
@@ -352,23 +356,31 @@ NanoVG::Paint::operator NVGpaint() const noexcept
     return p;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoVG
 
-NanoVG::NanoVG(int flags)
+NanoVG::NanoVG(const int flags)
     : fContext(nvgCreateGL(flags)),
-      fInFrame(false),
-      fIsSubWidget(false)
+      fIsSubWidget(false),
+      fInFrame(false)
 {
     DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
 }
 
 NanoVG::NanoVG(NVGcontext* const context)
     : fContext(context),
-      fInFrame(false),
-      fIsSubWidget(true)
+      fIsSubWidget(true),
+      fInFrame(false)
 {
     DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
+}
+
+NanoVG::NanoVG(NVGcontext* const context, const int flags)
+    : fContext(nvgCreateSharedGL(context, flags)),
+      fIsSubWidget(false),
+      fInFrame(false)
+{
+    DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG shared context", fContext != nullptr);
 }
 
 NanoVG::~NanoVG()
@@ -376,10 +388,10 @@ NanoVG::~NanoVG()
     DISTRHO_CUSTOM_SAFE_ASSERT("Destroying NanoVG context with still active frame", ! fInFrame);
 
     if (fContext != nullptr && ! fIsSubWidget)
-        nvgDeleteGL(fContext);
+        nvgDeleteGLfn(fContext);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor)
 {
@@ -442,7 +454,7 @@ void NanoVG::endFrame()
     fInFrame = false;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // State Handling
 
 void NanoVG::save()
@@ -463,7 +475,7 @@ void NanoVG::reset()
         nvgReset(fContext);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Render styles
 
 void NanoVG::strokeColor(const Color& color)
@@ -574,7 +586,7 @@ void NanoVG::globalTint(Color tint)
         nvgGlobalTint(fContext, tint);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Transforms
 
 void NanoVG::resetTransform()
@@ -692,7 +704,7 @@ float NanoVG::radToDeg(float rad)
     return nvgRadToDeg(rad);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Images
 
 NanoImage::Handle NanoVG::createImageFromFile(const char* filename, ImageFlags imageFlags)
@@ -797,7 +809,7 @@ NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w,
                                                                  static_cast<int>(h), imageFlags));
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Paints
 
 NanoVG::Paint NanoVG::linearGradient(float sx, float sy, float ex, float ey, const Color& icol, const Color& ocol)
@@ -828,7 +840,7 @@ NanoVG::Paint NanoVG::imagePattern(float ox, float oy, float ex, float ey, float
     return nvgImagePattern(fContext, ox, oy, ex, ey, angle, imageId, alpha);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Scissoring
 
 void NanoVG::scissor(float x, float y, float w, float h)
@@ -849,7 +861,7 @@ void NanoVG::resetScissor()
         nvgResetScissor(fContext);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Paths
 
 void NanoVG::beginPath()
@@ -942,7 +954,7 @@ void NanoVG::stroke()
         nvgStroke(fContext);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Text
 
 NanoVG::FontId NanoVG::createFontFromFile(const char* name, const char* filename)
@@ -1101,7 +1113,31 @@ bool NanoVG::loadSharedResources()
 }
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class BaseWidget>
+NanoBaseWidget<BaseWidget>::~NanoBaseWidget()
+{
+   #ifdef DGL_USE_NANOVG_FBO
+    if (fFramebuffer != nullptr)
+        nvgluDeleteFramebuffer(fFramebuffer);
+
+    if (fFramebufferContext != nullptr)
+        fContext = fFramebufferContext;
+   #endif
+}
+
+#ifdef DGL_USE_NANOVG_FBO
+template <class BaseWidget>
+NanoImage::Handle NanoBaseWidget<BaseWidget>::createImageFromFramebuffer() const
+{
+    DISTRHO_SAFE_ASSERT_RETURN(fFramebuffer != nullptr, NanoImage::Handle());
+    DISTRHO_SAFE_ASSERT_RETURN(fFramebufferContext != nullptr, NanoImage::Handle());
+    DISTRHO_SAFE_ASSERT_RETURN(fFramebufferContext == fFramebuffer->ctx, NanoImage::Handle());
+
+    return NanoImage::Handle(fFramebufferContext, fFramebuffer->image, false);
+}
+#endif
 
 template <class BaseWidget>
 void NanoBaseWidget<BaseWidget>::displayChildren()
@@ -1118,13 +1154,18 @@ void NanoBaseWidget<BaseWidget>::displayChildren()
     }
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoSubWidget
 
 template <>
-NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parentWidget, int flags)
+NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parentWidget, const int flags)
     : SubWidget(parentWidget),
       NanoVG(flags),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(false)
 {
     setNeedsViewportScaling();
@@ -1134,8 +1175,30 @@ template <>
 NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget)
     : SubWidget(parentWidget),
       NanoVG(parentWidget->getContext()),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(true)
 {
+    setSkipDrawing();
+}
+
+template <>
+NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget,
+                                          FramebufferCallback* const framebufferCallback,
+                                          const int flags)
+    : SubWidget(parentWidget),
+      NanoVG(parentWidget->getContext(), flags),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(framebufferCallback),
+      fFramebufferContext(getContext()),
+      fFramebuffer(nullptr),
+     #endif
+      fUsingParentContext(true)
+{
+    fContext = parentWidget->getContext();
     setSkipDrawing();
 }
 
@@ -1143,9 +1206,21 @@ template <>
 NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoTopLevelWidget* const parentWidget)
     : SubWidget(parentWidget),
       NanoVG(parentWidget->getContext()),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(true)
 {
     setSkipDrawing();
+}
+
+static bool framebufferSizeMatches(NVGLUframebuffer* const fb, const int width, const int height)
+{
+    int w, h;
+    nvgImageSize(fb->ctx, fb->image, &w, &h);
+    return w == width && h == height;
 }
 
 template <>
@@ -1153,6 +1228,51 @@ inline void NanoBaseWidget<SubWidget>::onDisplay()
 {
     if (fUsingParentContext)
     {
+        if (fFramebufferCallback != nullptr)
+        {
+            const uint width = SubWidget::getWidth();
+            const uint height = SubWidget::getHeight();
+
+            // swap underlying context to the framebuffer one
+            NVGcontext* const context = fContext;
+            fContext = fFramebufferContext;
+
+            // recreate framebuffer as needed
+            if (fFramebuffer != nullptr && ! framebufferSizeMatches(fFramebuffer, width, height))
+            {
+                nvgluDeleteFramebuffer(fFramebuffer);
+                fFramebuffer = nullptr;
+            }
+
+            if (fFramebuffer == nullptr)
+                fFramebuffer = nvgluCreateFramebuffer(fFramebufferContext, width, height, 0);
+
+            if (fFramebuffer != nullptr)
+            {
+                const Window& window(getWindow());
+
+                // draw into framebuffer
+                nvgluBindFramebuffer(fFramebuffer);
+
+                glViewport(0, 0, width, height);
+                glClearColor(0, 0, 0, 0);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+                NanoVG::beginFrame(width, height);
+                fFramebufferCallback->onNanoFramebufferDisplay();
+                NanoVG::endFrame();
+
+                // reset framebuffer
+                nvgluBindFramebuffer(nullptr);
+
+                // restore viewport
+                glViewport(0, 0, window.getWidth(), window.getHeight());
+            }
+
+            // swap back to main context
+            fContext = context;
+        }
+
         NanoVG::save();
         translate(SubWidget::getAbsoluteX(), SubWidget::getAbsoluteY());
         onNanoDisplay();
@@ -1173,13 +1293,18 @@ inline void NanoBaseWidget<SubWidget>::onDisplay()
 
 template class NanoBaseWidget<SubWidget>;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoTopLevelWidget
 
 template <>
 NanoBaseWidget<TopLevelWidget>::NanoBaseWidget(Window& windowToMapTo, int flags)
     : TopLevelWidget(windowToMapTo),
       NanoVG(flags),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(false) {}
 
 template <>
@@ -1193,19 +1318,29 @@ inline void NanoBaseWidget<TopLevelWidget>::onDisplay()
 
 template class NanoBaseWidget<TopLevelWidget>;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoStandaloneWindow
 
 template <>
 NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, int flags)
     : StandaloneWindow(app),
       NanoVG(flags),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(false) {}
 
 template <>
 NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, Window& parentWindow, int flags)
     : StandaloneWindow(app, parentWindow),
       NanoVG(flags),
+     #ifdef DGL_USE_NANOVG_FBO
+      fFramebufferCallback(nullptr),
+      fFramebufferContext(nullptr),
+      fFramebuffer(nullptr),
+     #endif
       fUsingParentContext(false) {}
 
 template <>
@@ -1219,7 +1354,7 @@ inline void NanoBaseWidget<StandaloneWindow>::onDisplay()
 
 template class NanoBaseWidget<StandaloneWindow>;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
@@ -1239,4 +1374,4 @@ extern "C" {
 # pragma GCC diagnostic pop
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2026 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -38,12 +38,13 @@ struct NVGLUframebuffer;
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Forward class names
 
 class NanoVG;
+template <class BaseWidget> class NanoBaseWidget;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Helper methods
 
 /**
@@ -52,7 +53,17 @@ class NanoVG;
  */
 NVGcontext* nvgCreateGL(int flags);
 
-// -----------------------------------------------------------------------
+/**
+   Create a NanoVG context that shares the fonts and textures of 'other'.
+ */
+NVGcontext* nvgCreateSharedGL(NVGcontext* other, int flags);
+
+/**
+   Delete a previously created NanoVG context.
+ */
+void nvgDeleteGL(NVGcontext* context);
+
+// --------------------------------------------------------------------------------------------------------------------
 // NanoImage
 
 /**
@@ -74,10 +85,10 @@ private:
               imageId(0),
               owned(true) {}
 
-        Handle(NVGcontext* c, int id) noexcept
+        Handle(NVGcontext* const c, const int id, const bool own = true) noexcept
             : context(c),
               imageId(id),
-              owned(true) {}
+              owned(own) {}
     };
 
 public:
@@ -90,13 +101,6 @@ public:
       Constructor.
     */
     NanoImage(const Handle& handle);
-
-  #ifdef DGL_USE_NANOVG_FBO
-   /**
-      Constructor.
-    */
-    NanoImage(const NVGLUframebuffer& framebuffer);
-  #endif
 
    /**
       Destructor.
@@ -141,6 +145,9 @@ public:
 private:
     Handle fHandle;
     Size<uint> fSize;
+    friend class NanoBaseWidget<SubWidget>;
+    friend class NanoBaseWidget<TopLevelWidget>;
+    friend class NanoBaseWidget<StandaloneWindow>;
     friend class NanoVG;
 
    /** @internal */
@@ -149,7 +156,7 @@ private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoImage)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoVG
 
 /**
@@ -293,14 +300,13 @@ public:
         MITER
     };
 
-    enum Solidity {
-        SOLID = 1, // CCW
-        HOLE  = 2  // CW
-    };
-
     enum Winding {
         CCW = 1, // Winding for solid shapes
-        CW  = 2  // Winding for holes
+        CW  = 2, // Winding for holes
+
+        // Solidity
+        SOLID = 1, // CCW
+        HOLE  = 2, // CW
     };
 
     struct Paint {
@@ -348,6 +354,11 @@ public:
       Context will not be deleted on class destructor.
     */
     explicit NanoVG(NVGcontext* context);
+
+   /**
+      Constructor for a shared NanoVG context, typically used for framebuffers.
+    */
+    explicit NanoVG(NVGcontext* context, int flags);
 
    /**
       Destructor.
@@ -908,22 +919,26 @@ public:
     */
     int textBreakLines(const char* string, const char* end, float breakRowWidth, TextRow& rows, int maxRows);
 
-#ifndef DGL_NO_SHARED_RESOURCES
+  #ifndef DGL_NO_SHARED_RESOURCES
    /**
       Load DPF's internal shared resources for this NanoVG class.
     */
     virtual bool loadSharedResources();
-#endif
+  #endif
 
 private:
-    NVGcontext* const fContext;
+    NVGcontext* fContext;
+    const bool fIsSubWidget;
     bool fInFrame;
-    bool fIsSubWidget;
+
+    friend class NanoBaseWidget<SubWidget>;
+    friend class NanoBaseWidget<TopLevelWidget>;
+    friend class NanoBaseWidget<StandaloneWindow>;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // NanoWidget
 
 /**
@@ -938,6 +953,13 @@ class NanoBaseWidget : public BaseWidget,
                        public NanoVG
 {
 public:
+   #ifdef DGL_USE_NANOVG_FBO
+    struct FramebufferCallback {
+        virtual ~FramebufferCallback() {}
+        virtual void onNanoFramebufferDisplay() = 0;
+    };
+   #endif
+
    /**
       Constructor for a NanoSubWidget.
       @see CreateFlags
@@ -948,6 +970,15 @@ public:
       Constructor for a NanoSubWidget reusing a parent subwidget nanovg context.
     */
     explicit NanoBaseWidget(NanoBaseWidget<SubWidget>* parentWidget);
+
+  #ifdef DGL_USE_NANOVG_FBO
+   /**
+      Constructor for a NanoSubWidget with an underlying framebuffer.
+    */
+    explicit NanoBaseWidget(NanoBaseWidget<SubWidget>* parentWidget,
+                            FramebufferCallback* framebufferCallback,
+                            int flags = CREATE_ANTIALIAS);
+  #endif
 
    /**
       Constructor for a NanoSubWidget reusing a parent top-level-widget nanovg context.
@@ -975,7 +1006,7 @@ public:
    /**
       Destructor.
     */
-    ~NanoBaseWidget() override {}
+    ~NanoBaseWidget();
 
 protected:
    /**
@@ -983,6 +1014,13 @@ protected:
       @see onDisplay
     */
     virtual void onNanoDisplay() = 0;
+
+  #ifdef DGL_USE_NANOVG_FBO
+   /**
+      Create an image from the underlying framebuffer.
+    */
+    NanoImage::Handle createImageFromFramebuffer() const;
+  #endif
 
 private:
    /**
@@ -999,6 +1037,11 @@ private:
     void endFrame() {}
 
    /** @internal */
+   #ifdef DGL_USE_NANOVG_FBO
+    FramebufferCallback* const fFramebufferCallback;
+    NVGcontext* const fFramebufferContext;
+    NVGLUframebuffer* fFramebuffer;
+   #endif
     const bool fUsingParentContext;
     void displayChildren();
     friend class NanoBaseWidget<TopLevelWidget>;
@@ -1014,7 +1057,7 @@ typedef NanoBaseWidget<StandaloneWindow> NanoStandaloneWindow;
 DISTRHO_DEPRECATED_BY("NanoSubWidget")
 typedef NanoSubWidget NanoWidget;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
