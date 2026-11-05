@@ -246,19 +246,30 @@ NanoImage::NanoImage(const Handle& handle)
     _updateSize();
 }
 
+#ifdef DGL_USE_NANOVG_FBO
+NanoImage::NanoImage(const NVGLUframebuffer& framebuffer)
+    : fHandle(framebuffer.ctx, framebuffer.image),
+      fSize()
+{
+    fHandle.owned = false;
+    _updateSize();
+}
+#endif
+
 NanoImage::~NanoImage()
 {
-    if (fHandle.context != nullptr && fHandle.imageId != 0)
+    if (fHandle.context != nullptr && fHandle.imageId != 0 && fHandle.owned)
         nvgDeleteImage(fHandle.context, fHandle.imageId);
 }
 
 NanoImage& NanoImage::operator=(const Handle& handle)
 {
-    if (fHandle.context != nullptr && fHandle.imageId != 0)
+    if (fHandle.context != nullptr && fHandle.imageId != 0 && fHandle.owned)
         nvgDeleteImage(fHandle.context, fHandle.imageId);
 
     fHandle.context = handle.context;
     fHandle.imageId = handle.imageId;
+    fHandle.owned = handle.owned;
     _updateSize();
 
     return *this;

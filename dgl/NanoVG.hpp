@@ -34,6 +34,7 @@
 
 struct NVGcontext;
 struct NVGpaint;
+struct NVGLUframebuffer;
 
 START_NAMESPACE_DGL
 
@@ -66,14 +67,17 @@ private:
     struct Handle {
         NVGcontext* context;
         int         imageId;
+        bool        owned;
 
         Handle() noexcept
             : context(nullptr),
-              imageId(0) {}
+              imageId(0),
+              owned(true) {}
 
         Handle(NVGcontext* c, int id) noexcept
             : context(c),
-              imageId(id) {}
+              imageId(id),
+              owned(true) {}
     };
 
 public:
@@ -86,6 +90,13 @@ public:
       Constructor.
     */
     NanoImage(const Handle& handle);
+
+  #ifdef DGL_USE_NANOVG_FBO
+   /**
+      Constructor.
+    */
+    NanoImage(const NVGLUframebuffer& framebuffer);
+  #endif
 
    /**
       Destructor.
