@@ -1185,6 +1185,7 @@ NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget)
     setSkipDrawing();
 }
 
+#ifdef DGL_USE_NANOVG_FBO
 template <>
 NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget,
                                           FramebufferCallback* const framebufferCallback,
@@ -1201,6 +1202,7 @@ NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget,
     fContext = parentWidget->getContext();
     setSkipDrawing();
 }
+#endif
 
 template <>
 NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoTopLevelWidget* const parentWidget)
@@ -1216,18 +1218,21 @@ NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoTopLevelWidget* const parentWidget
     setSkipDrawing();
 }
 
+#ifdef DGL_USE_NANOVG_FBO
 static bool framebufferSizeMatches(NVGLUframebuffer* const fb, const int width, const int height)
 {
     int w, h;
     nvgImageSize(fb->ctx, fb->image, &w, &h);
     return w == width && h == height;
 }
+#endif
 
 template <>
 inline void NanoBaseWidget<SubWidget>::onDisplay()
 {
     if (fUsingParentContext)
     {
+       #ifdef DGL_USE_NANOVG_FBO
         if (fFramebufferCallback != nullptr)
         {
             const uint width = SubWidget::getWidth();
@@ -1272,6 +1277,7 @@ inline void NanoBaseWidget<SubWidget>::onDisplay()
             // swap back to main context
             fContext = context;
         }
+       #endif
 
         NanoVG::save();
         translate(SubWidget::getAbsoluteX(), SubWidget::getAbsoluteY());
