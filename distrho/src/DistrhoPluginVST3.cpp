@@ -954,19 +954,33 @@ public:
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
 
-        char buffer[512], orig;
-        buffer[sizeof(buffer)-1] = '\xff';
+        char orig;
+        int bufferSize = 512;
+        int numRead = 0;
+        char* buffer = new char[bufferSize];
+        buffer[bufferSize-1] = '\xff';
         v3_result res;
 
         for (int32_t terminated = 0, read; terminated == 0;)
         {
             read = -1;
-            res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
+            res = v3_cpp_obj(stream)->read(stream, buffer, bufferSize-1, &read);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
             DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
-            if (read == 0)
+            if (read == 0) {
+                delete[] buffer;
                 return empty ? V3_INVALID_ARG : V3_OK;
+            }
+
+            numRead += 1;
+            // extend buffer if the data is very large
+            if (numRead > 8 && numRead % 2 == 0 && bufferSize < 1024 * 1024)
+            {
+                bufferSize *= 2;
+                buffer = (char*)std::realloc(buffer, bufferSize);
+                buffer[bufferSize-1] = '\xff';
+            }
 
             empty = false;
             for (int32_t i = 0; i < read; ++i)
@@ -1145,6 +1159,8 @@ public:
                 }
             }
         }
+
+        delete[] buffer;
 
         if (fComponentHandler != nullptr && componentValuesChanged)
             v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
