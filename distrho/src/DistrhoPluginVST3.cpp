@@ -1457,6 +1457,38 @@ public:
 
         if (data->nframes <= 0)
         {
+            // a process call without audio is how a host flushes parameter changes, apply them
+            if (v3_param_changes** const inparamsptr = data->input_params)
+            {
+                int32_t offset;
+                double normalized;
+
+                for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
+                {
+                    v3_param_value_queue** const queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
+                    DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+
+                    const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
+                    DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fVst3ParameterCount, rindex);
+
+                   #if DPF_VST3_HAS_INTERNAL_PARAMETERS
+                    if (rindex < kVst3InternalParameterCount)
+                        continue;
+                   #endif
+
+                    const int32_t pcount = v3_cpp_obj(queue)->get_point_count(queue);
+
+                    if (pcount <= 0)
+                        continue;
+
+                    if (v3_cpp_obj(queue)->get_point(queue, pcount - 1, &offset, &normalized) != V3_OK)
+                        break;
+
+                    const uint32_t index = rindex - kVst3InternalParameterCount;
+                    _setNormalizedPluginParameterValue(index, normalized);
+                }
+            }
+
             updateParametersFromProcessing(data->output_params, 0);
             return V3_OK;
         }
@@ -2108,16 +2140,18 @@ public:
 
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(rindex >= kVst3InternalParameterCount, rindex, kVst3InternalParameterCount, V3_INVALID_ARG);
 
-       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, V3_INVALID_ARG);
 
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (fIsComponent) {
             DISTRHO_SAFE_ASSERT_RETURN(!fPlugin.isParameterOutputOrTrigger(index), V3_INVALID_ARG);
         }
-
-        _setNormalizedPluginParameterValue(index, normalized);
        #endif
+
+        // without a separate controller this object is the controller too, and getParamNormalized
+        // must give back what was set here (as the "parameter-set" message from the UI does)
+        _setNormalizedPluginParameterValue(index, normalized);
 
         return V3_OK;
     }
