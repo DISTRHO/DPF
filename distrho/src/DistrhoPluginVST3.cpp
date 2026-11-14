@@ -1419,12 +1419,12 @@ public:
             if ((ctx->state & (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID)) == (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID))
             {
                 const double ppqPos    = std::abs(ctx->project_time_quarters);
-                const int    ppqPerBar = ctx->time_sig_numerator * 4 / ctx->time_sig_denom;
+                const double ppqPerBar = ctx->time_sig_numerator * 4.0 / ctx->time_sig_denom;
                 const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * ctx->time_sig_numerator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
                 fTimePosition.bbt.valid       = true;
-                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
+                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos / ppqPerBar) + 1;
                 fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest) + 1;
                 fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
                 fTimePosition.bbt.beatsPerBar = ctx->time_sig_numerator;
