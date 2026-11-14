@@ -2397,17 +2397,19 @@ public:
             DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, valueLength, res);
         }
 
-        // do cheap inline conversion
-        char* const key = (char*)key16;
-        char* const value = (char*)value16;
+        // lengths are the sender's UTF-8 byte counts, which a UTF-16 copy of the same text never exceeds in units,
+        // so the buffers above fit and these terminators only guard against a short host reply
+        key16[keyLength] = 0;
+        value16[valueLength] = 0;
 
-        for (int64_t i=0; i<keyLength; ++i)
-            key[i] = key16[i];
-        for (int64_t i=0; i<valueLength; ++i)
-            value[i] = value16[i];
+        char* const key = (char*)std::malloc(keyLength + 1);
+        DISTRHO_SAFE_ASSERT_RETURN(key != nullptr, V3_NOMEM);
 
-        key[keyLength] = '\0';
-        value[valueLength] = '\0';
+        char* const value = (char*)std::malloc(valueLength + 1);
+        DISTRHO_SAFE_ASSERT_RETURN(value != nullptr, V3_NOMEM);
+
+        strncpy_utf8(key, key16, keyLength + 1);
+        strncpy_utf8(value, value16, valueLength + 1);
 
         fPlugin.setState(key, value);
 
@@ -2418,6 +2420,8 @@ public:
             fStateMap[dkey] = value;
         }
 
+        std::free(key);
+        std::free(value);
         std::free(key16);
         std::free(value16);
         return V3_OK;

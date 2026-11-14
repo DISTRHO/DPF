@@ -91,23 +91,81 @@ enum Vst3InternalParameters {
 
 // --------------------------------------------------------------------------------------------------------------------
 
+// UTF-8 and UTF-16 decoding, one code point at a time.
+// Both advance the pointer past what they consumed, and must not be called on a terminating null.
+// Malformed input (invalid or overlong UTF-8, unpaired surrogates) decodes as U+FFFD,
+// and a sequence cut short by the end of the string never consumes the null.
+
 static inline
-bool strcmp_utf16(const int16_t* const str16, const char* const str8)
+uint32_t decode_utf8(const char*& str8) noexcept
 {
-    size_t i = 0;
-    for (; str8[i] != '\0'; ++i)
+    const uint8_t c0 = static_cast<uint8_t>(*str8++);
+
+    if (c0 < 0x80)
+        return c0;
+
+    uint32_t cp;
+    int extra;
+
+    /**/ if (c0 >= 0xc2 && c0 <= 0xdf) { cp = c0 & 0x1f; extra = 1; }
+    else if (c0 >= 0xe0 && c0 <= 0xef) { cp = c0 & 0x0f; extra = 2; }
+    else if (c0 >= 0xf0 && c0 <= 0xf4) { cp = c0 & 0x07; extra = 3; }
+    else return 0xfffd;
+
+    for (int i = 0; i < extra; ++i)
     {
-        const uint8_t char8 = static_cast<uint8_t>(str8[i]);
+        const uint8_t c = static_cast<uint8_t>(*str8);
 
-        // skip non-ascii chars, unsupported
-        if (char8 >= 0x80)
-            return false;
+        if ((c & 0xc0) != 0x80)
+            return 0xfffd;
 
-        if (str16[i] != char8)
+        cp = (cp << 6) | (c & 0x3f);
+        ++str8;
+    }
+
+    // overlong 3 and 4 byte forms, surrogates and anything past U+10FFFF
+    if ((extra == 2 && cp < 0x800) || (extra == 3 && (cp < 0x10000 || cp > 0x10ffff)))
+        return 0xfffd;
+    if (cp >= 0xd800 && cp <= 0xdfff)
+        return 0xfffd;
+
+    return cp;
+}
+
+static inline
+uint32_t decode_utf16(const int16_t*& str16) noexcept
+{
+    const uint32_t u0 = static_cast<uint16_t>(*str16++);
+
+    if (u0 < 0xd800 || u0 > 0xdfff)
+        return u0;
+
+    // lone low surrogate
+    if (u0 >= 0xdc00)
+        return 0xfffd;
+
+    const uint32_t u1 = static_cast<uint16_t>(*str16);
+
+    // lone high surrogate
+    if (u1 < 0xdc00 || u1 > 0xdfff)
+        return 0xfffd;
+
+    ++str16;
+    return 0x10000 + ((u0 - 0xd800) << 10) + (u1 - 0xdc00);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+static inline
+bool strcmp_utf16(const int16_t* str16, const char* str8)
+{
+    while (*str16 != 0 && *str8 != '\0')
+    {
+        if (decode_utf16(str16) != decode_utf8(str8))
             return false;
     }
 
-    return str16[i] == str8[i];
+    return *str16 == 0 && *str8 == '\0';
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -125,50 +183,90 @@ size_t strlen_utf16(const int16_t* const str)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+// Conversion between UTF-16 and UTF-8.
+// `length` is the size of `dst` in its own units (bytes for UTF-8, 16-bit units for UTF-16), terminator included.
+// The result is always null-terminated, and truncation never splits a character.
+
 static inline
-void strncpy_utf8(char* const dst, const int16_t* const src, const size_t length)
+void strncpy_utf8(char* const dst, const int16_t* src, const size_t length)
 {
     DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
 
-    if (const size_t len = std::min(strlen_utf16(src), length-1U))
-    {
-        for (size_t i=0; i<len; ++i)
-        {
-            // skip non-ascii chars, unsupported
-            if (src[i] >= 0x80)
-                continue;
+    size_t len = 0;
 
-            dst[i] = src[i];
-        }
-        dst[len] = 0;
-    }
-    else
+    while (*src != 0)
     {
-        dst[0] = 0;
+        const uint32_t cp = decode_utf16(src);
+        uint8_t buf[4];
+        size_t n;
+
+        if (cp < 0x80)
+        {
+            buf[0] = static_cast<uint8_t>(cp);
+            n = 1;
+        }
+        else if (cp < 0x800)
+        {
+            buf[0] = static_cast<uint8_t>(0xc0 | (cp >> 6));
+            buf[1] = static_cast<uint8_t>(0x80 | (cp & 0x3f));
+            n = 2;
+        }
+        else if (cp < 0x10000)
+        {
+            buf[0] = static_cast<uint8_t>(0xe0 | (cp >> 12));
+            buf[1] = static_cast<uint8_t>(0x80 | ((cp >> 6) & 0x3f));
+            buf[2] = static_cast<uint8_t>(0x80 | (cp & 0x3f));
+            n = 3;
+        }
+        else
+        {
+            buf[0] = static_cast<uint8_t>(0xf0 | (cp >> 18));
+            buf[1] = static_cast<uint8_t>(0x80 | ((cp >> 12) & 0x3f));
+            buf[2] = static_cast<uint8_t>(0x80 | ((cp >> 6) & 0x3f));
+            buf[3] = static_cast<uint8_t>(0x80 | (cp & 0x3f));
+            n = 4;
+        }
+
+        if (len + n > length - 1)
+            break;
+
+        for (size_t i = 0; i < n; ++i)
+            dst[len++] = static_cast<char>(buf[i]);
     }
+
+    dst[len] = '\0';
 }
 
 static inline
-void strncpy_utf16(int16_t* const dst, const char* const src, const size_t length)
+void strncpy_utf16(int16_t* const dst, const char* src, const size_t length)
 {
     DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
 
-    if (const size_t len = std::min(std::strlen(src), length-1U))
-    {
-        for (size_t i=0; i<len; ++i)
-        {
-            // skip non-ascii chars, unsupported
-            if ((uint8_t)src[i] >= 0x80)
-                continue;
+    size_t len = 0;
 
-            dst[i] = src[i];
-        }
-        dst[len] = 0;
-    }
-    else
+    while (*src != '\0')
     {
-        dst[0] = 0;
+        const uint32_t cp = decode_utf8(src);
+
+        if (cp < 0x10000)
+        {
+            if (len + 1 > length - 1)
+                break;
+
+            dst[len++] = static_cast<int16_t>(static_cast<uint16_t>(cp));
+        }
+        else
+        {
+            if (len + 2 > length - 1)
+                break;
+
+            const uint32_t v = cp - 0x10000;
+            dst[len++] = static_cast<int16_t>(static_cast<uint16_t>(0xd800 + (v >> 10)));
+            dst[len++] = static_cast<int16_t>(static_cast<uint16_t>(0xdc00 + (v & 0x3ff)));
+        }
     }
+
+    dst[len] = 0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
