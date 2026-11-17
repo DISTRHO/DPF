@@ -1592,18 +1592,31 @@ public:
                 }
                #endif
 
-                if (v3_cpp_obj(queue)->get_point_count(queue) <= 0)
+                const int32_t pcount = v3_cpp_obj(queue)->get_point_count(queue);
+
+                if (pcount <= 0)
                     continue;
 
                 // if there are any parameter changes at frame 0, handle them here
-                if (v3_cpp_obj(queue)->get_point(queue, 0, &offset, &normalized) != V3_OK)
-                    break;
+                // a queue can hold several points at offset 0, the last one is the current value
+                // (Ableton Live sends its own previous value in response to begin_edit, followed by the new one)
+                bool hasPointAtZero = false;
+                double valueAtZero = 0.0;
+                for (int32_t j = 0; j < pcount; ++j)
+                {
+                    if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &normalized) != V3_OK)
+                        break;
+                    if (offset != 0)
+                        break;
+                    valueAtZero = normalized;
+                    hasPointAtZero = true;
+                }
 
-                if (offset != 0)
+                if (! hasPointAtZero)
                     continue;
 
                 const uint32_t index = rindex - kVst3InternalParameterCount;
-                _setNormalizedPluginParameterValue(index, normalized);
+                _setNormalizedPluginParameterValue(index, valueAtZero);
             }
         }
 
