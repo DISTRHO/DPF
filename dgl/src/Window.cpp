@@ -274,12 +274,11 @@ void Window::setSize(uint width, uint height)
 
     if (pData->isEmbed)
     {
-        PuglArea area = puglGetSizeHint(pData->view, PUGL_FIXED_ASPECT);
+        // already scaled, as stored by enableInternalScalingWithSize()
+        const PuglArea area = puglGetSizeHint(pData->view, PUGL_FIXED_ASPECT);
 
         if (pData->autoScaling && d_isNotEqual<double>(scaleFactor, 1.0))
         {
-            area.width = d_roundToUnsignedInt(area.width * scaleFactor);
-            area.height = d_roundToUnsignedInt(area.height * scaleFactor);
             width = d_roundToUnsignedInt(width * scaleFactor);
             height = d_roundToUnsignedInt(height * scaleFactor);
         }
