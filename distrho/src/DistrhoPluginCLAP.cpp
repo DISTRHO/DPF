@@ -852,6 +852,9 @@ public:
         fPlugin.setSampleRate(sampleRate, true);
         fPlugin.setBufferSize(maxFramesCount, true);
         fPlugin.activate();
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        fLastKnownLatency = fPlugin.getLatency();
+       #endif
     }
 
     void deactivate()
