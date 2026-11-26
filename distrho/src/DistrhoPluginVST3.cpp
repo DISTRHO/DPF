@@ -2883,8 +2883,8 @@ private:
 
     void updateParametersFromProcessing(v3_param_changes** const outparamsptr, const int32_t offset)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(outparamsptr != nullptr,);
-
+        // a null output parameter list is legal, the host simply does not want parameter changes;
+        // keep going so the bookkeeping below (triggers, caches, UI changes) still happens
         float curValue, defValue;
         double normalized;
 
@@ -2962,6 +2962,9 @@ private:
                                             const double normalized,
                                             const int32_t offset = 0)
     {
+        if (outparamsptr == nullptr)
+            return true;
+
         int32_t index = 0;
         v3_param_value_queue** const queue = v3_cpp_obj(outparamsptr)->add_param_data(outparamsptr,
                                                                                       &paramId, &index);
